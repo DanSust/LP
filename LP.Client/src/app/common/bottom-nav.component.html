@@ -1,0 +1,23 @@
+<nav class="bottom-nav" *ngIf="true">
+  <!-- Уберите *ngIf в продакшене -->
+  <div *ngFor="let item of navItems"
+       class="nav-item"
+       [class.active]="isActive(item.route)"
+       [routerLink]="item.route"
+       (click)="onNavClick(item)">
+    <!-- Иконка -->
+    <div class="nav-icon">
+      <span class="material-icons">{{ item.icon }}</span>
+
+      <!-- Badge (уведомления) -->
+      <span class="badge"
+            *ngIf="item.badge && item.badge > 0"
+            [class.badge-pulse]="item.badge > 3">
+        {{ item.badge > 9 ? '9+' : item.badge }}
+      </span>
+    </div>
+
+    <!-- Текст -->
+    <!--<span class="nav-label">{{ item.label }}</span>-->
+  </div>
+</nav>

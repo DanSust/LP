@@ -1,0 +1,162 @@
+<div class="auth-container">
+  <div class="auth-tabs">
+    <button class="tab-button"
+            [class.active]="activeTab === 'login'"
+            (click)="switchTab('login')">
+      Вход
+    </button>
+    <button class="tab-button"
+            [class.active]="activeTab === 'register'"
+            (click)="switchTab('register')">
+      Регистрация
+    </button>
+  </div>
+
+  <div class="form-container">
+    <!-- VK ID - вынесен за пределы форм, всегда виден -->
+    <div class="social-auth" [hidden]="activeTab !== 'login'">
+      <button type="button"
+              class="social-button google-button"
+              (click)="GoogleLogin($event)"
+              [disabled]="isLoading">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+        </svg>
+        Войти через Google
+      </button>
+
+      <telegram-login></telegram-login>
+
+      <!-- Контейнер для VK ID - всегда в DOM -->
+      <div id="vk-id-container" style="width: 100%; min-height: 52px; margin-bottom: 15px; margin-top: 15px"></div>
+    </div>
+
+    <div class="divider" *ngIf="activeTab === 'login'">
+      <span>или через email</span>
+    </div>
+
+    <!-- Форма входа -->
+    <form *ngIf="activeTab === 'login'"
+          [formGroup]="loginForm"
+          (ngSubmit)="onLogin()"
+          class="form active">
+      <!-- ... остальные поля формы входа ... -->
+
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input type="email"
+               id="loginEmail"
+               formControlName="email"
+               placeholder="your@email.com"
+               [class.error]="loginEmail?.invalid && loginEmail?.touched">
+        <div class="error-message" *ngIf="loginEmail?.touched && loginEmail?.errors?.['required']">
+          Email обязателен
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="loginPassword">Пароль</label>
+        <input type="password"
+               id="loginPassword"
+               formControlName="password"
+               placeholder="Введите пароль"
+               [class.error]="loginPassword?.invalid && loginPassword?.touched">
+        <div class="error-message" *ngIf="loginPassword?.touched && loginPassword?.errors?.['required']">
+          Пароль обязателен
+        </div>
+      </div>
+
+      <div class="forgot-password">
+        <a routerLink="/forgot-password">Забыли пароль?</a>
+      </div>
+
+      <button type="submit"
+              class="auth-button"
+              [disabled]="loginForm.invalid || isLoading">
+        @if (!isLoading) {
+        <span>Войти в made4love</span>
+        } @else {
+        <span class="spinner"></span>
+        }
+      </button>
+
+      <div class="auth-link">
+        Нет аккаунта?
+        <a href="#" (click)="switchTab('register'); $event.preventDefault()">
+          Создать профиль
+        </a>
+      </div>
+    </form>
+
+    <!-- Форма регистрации -->
+    <form *ngIf="activeTab === 'register'"
+          [formGroup]="registerForm"
+          (ngSubmit)="onRegister()"
+          class="form active">
+      <!-- ... остальные поля формы регистрации ... -->
+
+      <div class="form-group">
+        <label for="registerEmail">Email</label>
+        <input type="email"
+               id="registerEmail"
+               formControlName="email"
+               placeholder="your@email.com"
+               [class.error]="registerEmail?.invalid && registerEmail?.touched">
+      </div>
+
+      <div class="form-group">
+        <label for="registerPassword">Пароль</label>
+        <input type="password"
+               id="registerPassword"
+               formControlName="password"
+               placeholder="Придумайте пароль"
+               [class.error]="registerPassword?.invalid && registerPassword?.touched">
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Подтверждение пароля</label>
+        <input type="password"
+               id="confirmPassword"
+               formControlName="confirmPassword"
+               placeholder="Повторите пароль"
+               [class.error]="confirmPassword?.touched && confirmPassword?.invalid">
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label class="simple-checkbox">
+          <input type="checkbox"
+                 formControlName="acceptTerms"
+                 [class.error]="acceptTerms?.touched && acceptTerms?.invalid">
+          <span class="checkbox-text">
+            Я согласен с
+            <a href="/assets/terms.html" target="_blank">Пользовательским соглашением</a>
+            и подтверждаю, что мне исполнилось 18 лет
+          </span>
+        </label>
+        <div class="error-message" *ngIf="acceptTerms?.touched && acceptTerms?.errors?.['required']">
+          Необходимо принять условия для продолжения
+        </div>
+      </div>
+
+      <button type="submit"
+              class="auth-button"
+              [disabled]="registerForm.invalid || isLoading">
+        @if (!isLoading) {
+        <span>Начать знакомиться</span>
+        } @else {
+        <span class="spinner"></span>
+        }
+      </button>
+
+      <div class="auth-link">
+        Уже есть аккаунт?
+        <a href="#" (click)="switchTab('login'); $event.preventDefault()">
+          Войти
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,138 @@
+:root {
+  --gradient-top: #557A94;
+  --gradient-bottom: #7396AE;
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --divider-color: rgba(255, 255, 255, 0.12);
+}
+
+.profile-view-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(to bottom, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
+  min-height: 100vh;
+  color: var(--text-primary);
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  h1
+
+{
+  margin: 0;
+  font-size: 24px;
+}
+
+.edit-button {
+  background: linear-gradient(45deg, #e91e63, #f06292);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+}
+
+.photo-section {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.info-section {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  .info-item
+
+{
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--divider-color);
+  &:last-child
+
+{
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.value {
+  color: var(--text-primary);
+}
+
+}
+}
+
+.interests-section {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  h3
+
+{
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+mat-chip {
+  background: var(--gradient-top) !important;
+  color: white !important;
+  margin: 5px;
+}
+
+}
+
+.status-section {
+  text-align: center;
+  padding: 20px;
+  mat-slide-toggle
+
+{
+  pointer-events: none;
+  
+}
+
+}
+
+.actions {
+  text-align: center;
+  margin-top: 30px;
+  .btn-back
+
+{
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  p
+
+{
+  margin-top: 20px;
+  font-size: 16px;
+}
+}

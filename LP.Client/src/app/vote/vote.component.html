@@ -1,0 +1,193 @@
+<div class="card-stack">
+
+  <!-- Нет профилей -->
+  @if (profiles().length === 0 && !exitingProfile()) {
+  <div class="no-profiles">
+    <h2>Пока нет новых людей</h2>
+    <p>Попробуйте изменить фильтры</p>
+  </div>
+  }
+
+  <!-- === СЛЕДУЮЩИЙ ПРОФИЛЬ (подложка) === -->
+  @if (profiles()[1]; as nextProfile) {
+  <div class="card next-card" [style.z-index]="1">
+    <div class="card-content">
+      <div class="photo-wrapper">
+        @if (nextProfile.photoUrls && nextProfile.photoUrls.length > 0) {
+        <img [src]="nextProfile.photoUrls[0].path"
+             [alt]="nextProfile.name"
+             class="card-photo" />
+        } @else {
+        <div class="no-photo">Нет фото</div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- === ТЕКУЩИЙ ПРОФИЛЬ (активный для свайпа) === -->
+  @if (profiles()[0]; as profile) {
+  <div class="card active-card"
+       [style.z-index]="10"
+       [class.dragging]="isDragging()">
+    <div class="card-content">
+
+      <div class="photo-wrapper" #activePhotoContainer
+           [class.fullscreen]="isFullscreen()"
+           [style.transform]="getCurrentTransform()"
+           [style.transition]="isDragging() ? 'none' : 'transform 0.3s ease-out'"
+           (click)="onPhotoClick($event)">
+
+        @if (cameFromSearch() && !isFullscreen()) {
+        <button class="back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
+          <mat-icon>reply</mat-icon>
+        </button>
+        }
+
+        <!-- Кнопка закрыть только в полноэкранном режиме -->
+        @if (isFullscreen()) {
+        <button class="close-btn" (click)="toggleFullscreen()" title="Закрыть">
+          <mat-icon>close</mat-icon>
+        </button>
+        } @else {
+        <!-- ИМЯ И ВОЗРАСТ В ПРАВОМ ВЕРХНЕМ УГЛУ -->
+        <div class="profile-header-overlay">
+          <h3>{{ profile.name }}, {{ profile.age }}</h3>
+        </div>
+        }
+
+        @if (profile.photoUrls && profile.photoUrls.length > 0) {
+        <img [src]="profile.photoUrls[currentPhotoIndex()].path"
+             [alt]="profile.name"
+             class="card-photo"
+             (load)="onImageLoad()" />
+        } @else {
+        <div class="no-photo">Нет фото</div>
+        }
+
+        <!-- Стрелки -->
+        @if (profile.photoUrls && profile.photoUrls.length > 1) {
+        <button class="photo-arrow arrow-left"
+                (click)="prevPhoto()"
+                [disabled]="isAnimating()">
+          ‹
+        </button>
+        <button class="photo-arrow arrow-right"
+                (click)="nextPhoto()"
+                [disabled]="isAnimating()">
+          ›
+        </button>
+
+        <div class="photo-indicators">
+          @for (url of profile.photoUrls; track $index) {
+          <span class="photo-indicator" [class.active]="$index === currentPhotoIndex()"></span>
+          }
+        </div>
+        }
+
+        <!-- Кнопки -->
+
+        <div class="card-actions">
+          <button class="action-btn dislike-btn"
+                  (click)="onDislikeClick(); $event.stopPropagation()"
+                  [disabled]="isAnimating()">
+            ✕
+          </button>
+          <button class="action-btn more-btn"
+                  (click)="onChatClick(profile.id); $event.stopPropagation()">
+            ⋯
+          </button>
+          <button class="action-btn like-btn"
+                  (click)="onLikeClick(); $event.stopPropagation()"
+                  [disabled]="isAnimating()">
+            ❤️
+          </button>
+          <!--<button class="action-btn favorite-btn"
+            (click)="onFavoriteClick(profile.id); $event.stopPropagation()"
+            [disabled]="isAnimating()">
+      ⭐
+    </button>-->
+        </div>
+
+      </div>
+
+      <!-- Детали -->
+      <div class="details-wrapper">
+        <div class="profile-details">
+          <!--<h3>{{ profile.name }}, {{ profile.age }}</h3>-->
+
+          <div class="detail-item">
+            <span class="detail-label">📍 {{ profile.city || 'Не указано' }}</span>
+          </div>
+
+          @if (profile.interests && profile.interests.length > 0) {
+          <div class="detail-item">
+            
+            <span class="detail-value">
+              <span class="detail-label">🎯</span>  
+              
+              @for (interest of profile.interests; track interest.id; let last = $last) {
+              <span class="interest-tag">
+                <img [src]="'assets' + interest.path" [alt]="interest.name" class="interest-icon" />
+                {{ interest.name }}
+              </span>
+              @if (!last) {
+              <span class="interest-separator">•</span>
+              }
+              }
+            </span>
+          </div>
+          }
+
+          <div class="detail-item">
+            <span class="detail-label">👤 {{ profile.height || '' }} см. {{ profile.weight || '' }} кг.</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">♈ {{ profile.zodiac || 'Не указано' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">💼 {{ profile.description || 'Не указано' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- === УЛЕТАЮЩИЙ ПРОФИЛЬ (самый верхний слой) === -->
+  @if (exitingProfile(); as exit) {
+  <div class="card exit-card" [style.z-index]="20">
+    <div class="card-content">
+
+      <!-- Оверлеи -->
+      <div class="swipe-overlay like-overlay"
+           [style.opacity]="exit.direction === 'right' ? getOverlayOpacity() : 0">
+
+      </div>
+      <div class="swipe-overlay dislike-overlay"
+           [style.opacity]="exit.direction === 'left' ? getOverlayOpacity() : 0">
+
+      </div>
+
+      <div class="photo-wrapper">
+        <img [src]="exit.photoUrl"
+             [alt]="exit.name"
+             class="card-photo exit-photo"
+             [style.transform]="getExitTransform()"
+             [style.transition]="'transform 300ms ease-out'" />
+      </div>
+
+      <!-- Заглушка кнопок для сохранения layout -->
+      <div class="card-actions dummy-actions">
+        <button class="action-btn" disabled>✕</button>
+        <button class="action-btn" disabled>⋯</button>
+        <button class="action-btn" disabled>❤️</button>
+        <button class="action-btn" disabled>⭐</button>
+      </div>
+    </div>
+  </div>
+  }
+
+</div>

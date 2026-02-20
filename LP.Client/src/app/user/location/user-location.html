@@ -1,0 +1,22 @@
+<div class="location-container">
+  <button (click)="getLocation()" [disabled]="isLoading()">
+    {{ isLoading() ? 'Getting location...' : 'Get Location' }}
+  </button>
+
+  @if (isLoading()) {
+  <mat-spinner diameter="30"> </mat-spinner>
+  }
+
+  @if (error()) {
+  <div class="error"> {{ error() }} </div>
+  }
+
+  @if (position()) {
+  <div class="location-info">
+    <p>Lat: {{ position()?.latitude | number: '1.4-4' }} </p>
+    <p> Lng: {{ position()?.longitude | number: '1.4-4' }} </p>
+    <p> Accuracy: {{ position()?.accuracy | number: '1.0-0' }} m </p>
+    <button (click) ="startWatching()"> Start Tracking </button>
+  </div>
+  }
+</div>

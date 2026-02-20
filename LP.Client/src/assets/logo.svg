@@ -1,0 +1,59 @@
+﻿<svg width="160" height="100" viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg">
+  <title>CoPulse Logo</title>
+  
+  <!-- Фон под логотип -->
+  <defs>
+    <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a0b2e"/>
+      <stop offset="100%" stop-color="#4a1c6d"/>
+    </linearGradient>
+    
+    <!-- Мягкая свечение для сердец -->
+    <filter id="pulseGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Фон логотипа -->
+  <rect width="160" height="100" fill="url(#logoBg)" rx="15"/>
+  
+  <!-- 🔴 ЛЕВОЕ СЕРДЦЕ (красное, как heart-left) -->
+  <path d="M25,35 C25,30 20,20 20,15 C20,10 22,8 25,8 C28,8 30,10 30,15 C30,20 25,30 25,35 Z" 
+        fill="#e91e63" 
+        filter="url(#pulseGlow)"/>
+  
+  <!-- 🔵 ПРАВОЕ СЕРДЦЕ (синее, как heart-right) -->
+  <path d="M45,35 C45,30 40,20 40,15 C40,10 42,8 45,8 C48,8 50,10 50,15 C50,20 45,30 45,35 Z" 
+        fill="#03a9f4" 
+        filter="url(#pulseGlow)"/>
+  
+  <!-- 💚 ПЕРЕКРЫТИЕ (смешивание сердец) -->
+  <path d="M35,35 C35,30 30,20 30,15 C30,10 32,8 35,8 C38,8 40,10 40,15 C40,20 35,30 35,35 Z" 
+        fill="#9c27b0" 
+        opacity="0.7" 
+        filter="url(#pulseGlow)"/>
+  
+  <!-- ⚡ КАРДИОГРАММА (линия осциллографа) -->
+  <path d="M5,70 L15,70 L20,55 L25,85 L30,55 L35,70 L75,70 L80,60 L85,80 L90,60 L95,70 L150,70" 
+        stroke="#e91e63" 
+        stroke-width="2.5" 
+        fill="none" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+  
+  <!-- ✍️ ТЕКСТ CoPulse (как в компоненте) -->
+  <text x="80" y="35" 
+        font-family="Montserrat, sans-serif" 
+        font-weight="700" 
+        font-size="18" 
+        fill="#e91e63">Co</text>
+  <text x="108" y="35" 
+        font-family="Montserrat, sans-serif" 
+        font-weight="700" 
+        font-size="18" 
+        fill="#03a9f4">Pulse</text>
+</svg>

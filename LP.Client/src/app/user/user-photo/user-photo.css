@@ -1,0 +1,115 @@
+.cards {
+  display: grid;
+  gap: var(--gap); /* «резиновый» отступ */
+  padding: var(--gap);
+  max-width: var(--max-width); /* 1200px */
+  margin: 0 auto; /* центрируем */
+  width: 100%;
+  /* автоматически заполняем колонки, минимум 280px */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  border: 1px solid #e5e5e5;
+  border-radius: var(--radius); /* .5rem */
+  padding: 1.5rem;
+  background: #fff; /* если нужен фон */
+}
+
+.photo-list {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  gap: 15px;
+  /*padding: 15px;*/
+  border: solid 0px #ccc;
+  min-height: 60px;
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+.photo-box {
+  position: relative;
+  /*height: fit-content;*/
+  width: 24%;
+  padding: 0px 0px;
+  border: solid 1px #ccc;
+  border-radius: 0px;
+  color: rgba(0, 0, 0, 0.87);
+  display: inline-block;
+  box-sizing: border-box;
+  cursor: move;
+  /*background: white;*/
+  text-align: center;
+  font-size: 14px;
+  min-width: 215px;
+  font-family: sans-serif;
+}
+
+  .photo-box img {
+    width: 100%;
+    height: fit-content;
+    object-fit: cover; /* ✅ Fills container, crops excess */
+    position: relative;
+  }
+
+/* Mobile: vertical list */
+@media (max-width: 768px) {
+  .photo-list {
+    flex-direction: column; /* Stack items vertically */
+    flex-wrap: nowrap; /* Disable wrapping */
+    gap: 10px; /* Smaller gap between items */
+  }
+
+  .photo-box {
+    width: 100% !important; /* Full width on mobile */
+    min-width: auto !important; /* Remove min-width constraint */
+    margin-bottom: 5px; /* Optional: extra spacing */
+  }
+}
+
+.delete-icon {
+  position: absolute; /* ✅ Position relative to photo-box */
+  background: transparent;
+  color: lightgray;
+  padding: 4px;
+  right: 10px;
+  cursor: pointer;
+  top: 10px;
+  z-index: 10;
+  /* ✅ Prevent drag when clicking icon */
+  pointer-events: auto;
+}
+
+.star-icon {
+  position: absolute; /* ✅ Position relative to photo-box */
+  /* Styling for visibility */
+  background: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
+  color: white;
+  padding: 4px;
+  cursor: pointer;
+  top: 10px;
+  right: 10px;
+  /* ✅ Prevent drag when clicking icon */
+  pointer-events: auto;
+}
+/* ✅ Prevent icon from blocking drag */
+.photo-box .delete-icon:active {
+  cursor: pointer; /* Not drag cursor */
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 4px;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

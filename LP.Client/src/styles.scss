@@ -1,0 +1,54 @@
+$color-primary: #5d5c61;
+$color-secondary: #379683;
+
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+  color: (
+         primary: mat.$violet-palette,
+         theme-type: dark,
+         ),
+         ));
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    @include mat.theme((
+    color: (
+           primary: mat.$violet-palette,
+           theme-type: dark,
+           ),
+           ));
+  }
+}
+
+/* You can add global styles to this file, and also import other style files */
+
+
+html {
+  overflow: hidden;  
+  background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
+  background-attachment: fixed; /* Чтобы не повторялся при скролле */
+}
+
+body {
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100%;
+  /*overflow-x: hidden;*/
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
+  background-attachment: fixed; /* Чтобы не повторялся при скролле */
+}
+
+.full-width {
+  width: 100%;
+  display: contents;
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+

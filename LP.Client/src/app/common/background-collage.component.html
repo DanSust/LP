@@ -1,0 +1,6 @@
+<!-- background-collage.component.html -->
+<div class="background-collage">
+  @for (url of photoUrls; track $index) {
+  <div class="collage-photo" [style.background-image]="'url(' + url + ')'"></div>
+  }
+</div>

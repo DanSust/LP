@@ -1,0 +1,60 @@
+/* Avatar */
+.avatar-wrapper {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+@keyframes swing {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(15deg);
+  }
+
+  50% {
+    transform: rotate(0deg);
+  }
+
+  75% {
+    transform: rotate(-15deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.avatar-icon {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 0px solid #e91e63;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e91e63;
+  transition: transform 0.2s ease;
+  z-index: 11;
+
+
+
+  svg {
+    width: 24px;
+    height: 24px;
+    fill: #ffd700;
+    animation: swing 2s ease-in-out infinite;
+    transform-origin: top center;
+
+    &.muted {
+      fill: #999999;
+      animation: none;
+    }
+  }
+}

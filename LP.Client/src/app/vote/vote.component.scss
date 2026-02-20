@@ -1,0 +1,722 @@
+:host {
+  --safe-area-inset-bottom: 60px;
+  --gradient-top: #557A94;
+  --gradient-bottom: #7396AE;
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-hint: rgba(255, 255, 255, 0.38);
+  --divider-color: rgba(255, 255, 255, 0.12);
+  --surface-dark: #456f7a;
+  --surface-light: #2d2d2d;
+  display: block;
+  height: 100%;
+}
+
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  z-index: 2147483646;
+  pointer-events: none; // Чтобы клики проходили сквозь него
+}
+
+.card-stack {
+  width: 100%;
+  max-width: 100%;
+  height: calc(100dvh - 130px);
+  height: calc(100vh - 130px);
+
+  @supports not (height: calc(100dvh - 130px)) {
+    height: calc(100vh - 130px);
+  }
+
+  margin: 0 auto;
+  position: relative; // <-- Якорь для абсолютного позиционирования
+  touch-action: none;
+  user-select: none;
+  overflow: hidden;
+  background: linear-gradient(to bottom, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
+}
+
+.card {
+  position: absolute; // <-- Меняем с relative на absolute
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+  overflow: hidden;
+  min-height: 0;
+  cursor: grab;
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+
+  @media (pointer: fine) {
+    cursor: default;
+  }
+
+  &.active {
+    cursor: grabbing;
+
+    @media (pointer: fine) {
+      cursor: default;
+    }
+  }
+}
+
+.exit-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; // Чтобы не блокировать клики
+
+  .card-photo {
+    will-change: transform;
+    transition: transform 300ms ease-out !important; // Принудительно
+  }
+}
+
+// Стили для превью следующей карточки
+.active-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  z-index: 10;
+
+  &.dragging {
+    cursor: grabbing;
+  }
+}
+
+.next-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: scale(0.95);
+  opacity: 0;
+  filter: brightness(0.7);
+
+  .details-wrapper {
+    opacity: 0.5;
+  }
+}
+
+// Улетающая карточка
+.exit-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  .exit-photo {
+    will-change: transform;
+  }
+
+  .dummy-actions {
+    opacity: 0;
+  }
+}
+
+// Активная карточка
+.active-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  &.dragging {
+    cursor: grabbing;
+  }
+
+  .card-photo {
+    will-change: transform;
+  }
+}
+
+// Z-index слои
+.card-stack {
+  position: relative;
+
+  .card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.card-content {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  height: 100%; // <-- Добавляем высоту
+  margin: 0; // Убираем отступы
+  padding: 0; // Убираем padding
+  box-sizing: border-box;
+}
+
+// vote.component.scss — ПОЛНОСТЬЮ ЗАМЕНИТЕ блок .photo-wrapper на этот
+
+.photo-wrapper {
+  flex: 0 0 70%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  margin: 0;
+  padding: 0;
+  left: 0;
+  box-sizing: border-box;
+  // === FULLSCREEN MODE ===
+  &.fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    min-height: 100vh !important;
+    z-index: 2147483647 !important; // ВЫШЕ оверлея на 1
+    background: black !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: zoom-out;
+    flex: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    isolation: isolate !important; // Новый stacking context
+
+
+    .card-photo {
+      width: 100vw !important;
+      height: calc(100vh - 130px) !important; // Авто высота чтобы не растягивалось
+      object-fit: contain !important;
+      object-position: center !important;
+      transform: none !important;
+    }
+    // Стрелки — фиксируем выше нижней панели
+    .photo-arrow {
+      position: fixed !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      z-index: 1000000 !important; // Выше всего
+      opacity: 1 !important;
+      background: rgba(0, 0, 0, 0.6) !important;
+      width: 50px !important;
+      height: 50px !important;
+
+      &.arrow-left {
+        left: 10px !important;
+      }
+
+      &.arrow-right {
+        right: 10px !important;
+      }
+    }
+    // Индикаторы — выше нижней панели
+    .photo-indicators {
+      position: fixed !important;
+      bottom: 90px !important; // Выше нижней панели (обычно 60-80px)
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      top: auto !important;
+      z-index: 1000000 !important;
+      opacity: 1 !important;
+    }
+
+    .card-actions {
+      display: none !important;
+    }
+  }
+
+  .back-btn {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    left: auto !important;
+    z-index: 1000001 !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .close-btn {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important; // Смещаем левее, чтобы не перекрывать back-btn если обе видны
+    left: auto !important;
+    z-index: 1000001 !important;
+    background: transparent !important;
+    border: 0px !important;
+    border-radius: 50% !important;    
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+  }
+
+  mat-icon {
+    color: white !important;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+
+@keyframes fullscreenIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+// Мобильная версия
+@media (max-width: 768px) {
+  .photo-wrapper {
+    flex: 0 0 auto;
+    width: 100%;
+    height: 60vh;
+    max-height: 500px;
+    min-height: 0;
+
+    &:active .card-photo,
+    &:focus-within .card-photo {
+      padding: 80px 10px 100px; // Больше отступов для мобильных
+    }
+    // На мобильных стрелки всегда видны в fullscreen
+    &:active,
+    &:focus-within {
+      .photo-arrow {
+        width: 50px;
+        height: 50px;
+        font-size: 28px;
+
+        &.arrow-left {
+          left: 10px;
+        }
+
+        &.arrow-right {
+          right: 10px;
+        }
+      }
+    }
+  }
+}
+
+.card-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform; // Оптимизация анимации
+  transform-origin: center center;
+  margin: 0; // Убедиться, что это есть
+  padding: 0; // Убедиться, что это есть
+  display: block; // Добавить это - важно!
+  box-sizing: border-box; // Добавить это
+}
+// Анимация для programmatic swipe
+.card-photo.animating {
+  // Можно добавить дополнительные эффекты
+}
+// Оверлеи для Like/Dislike
+// Улучшенные оверлеи с текстом
+.swipe-overlay {
+  span {
+    font-size: 60px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    border: 8px solid;
+    border-radius: 16px;
+    padding: 20px 30px;
+    transform: rotate(-15deg);
+    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+  }
+
+  &.like-overlay span {
+    color: #2ed573;
+    border-color: #2ed573;
+    background: rgba(46, 213, 115, 0.1);
+  }
+
+  &.dislike-overlay span {
+    color: #ff4757;
+    border-color: #ff4757;
+    background: rgba(255, 71, 87, 0.1);
+    transform: rotate(15deg);
+  }
+}
+// Визуальный индикатор прогресса свайпа
+.swipe-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0095ff 0%, #2ed573 100%);
+  transition: width 0.1s;
+  z-index: 10;
+}
+// Курсор при свайпе
+.photo-wrapper:active {
+  cursor: grabbing;
+}
+
+.no-photo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-dark);
+  color: var(--text-hint);
+  font-size: 18px;
+}
+
+.photo-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  transition: background 0.2s, transform 0.2s, opacity 0.2s;
+  z-index: 15;
+  padding: 0;
+  line-height: 1;
+  opacity: 0;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+
+  &.arrow-left {
+    left: 15px;
+  }
+
+  &.arrow-right {
+    right: 15px;
+  }
+}
+
+.photo-wrapper:hover .photo-arrow {
+  opacity: 1;
+}
+
+.photo-indicators {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 15;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  .photo-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: background 0.2s;
+
+    &.active {
+      background: white;
+    }
+  }
+}
+
+.photo-wrapper:hover .photo-indicators {
+  opacity: 1;
+}
+
+@media (pointer: coarse) {
+  .photo-arrow,
+  .photo-indicators {
+    opacity: 1;
+  }
+}
+// <-- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: позиционируем относительно .card (который теперь absolute и fill)
+.card-actions {
+  position: absolute;
+  bottom: 20px; // <-- Фиксированный отступ от низа карточки
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 30px;
+  pointer-events: all;
+  z-index: 100; // <-- Повышаем z-index
+
+  .action-btn {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    border: 2px solid white;
+    font-size: 28px;
+    cursor: pointer;
+    background: transparent;
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    &.dislike-btn {
+      color: #0095ff;
+    }
+
+    &.more-btn {
+      color: #0095ff;
+    }
+
+    &.like-btn {
+      color: #2ed573;
+    }
+
+    &.favorite-btn {
+      color: #ffd700;
+      font-size: 24px;
+    }
+  }
+}
+
+.details-wrapper {
+  flex: 0 0 30%;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
+  color: var(--text-primary);
+  padding: 30px 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  min-height: 0;
+  margin: 0;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--divider-color);
+    border-radius: 3px;
+  }
+}
+
+
+.interests-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.interest-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.interest-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.interest-separator {
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 4px;
+}
+
+// МОБИЛЬНАЯ ВЕРСИЯ
+@media (max-width: 768px) {
+  .card-stack {
+    height: calc(100vh - 70px);
+  }
+
+  .card-content {
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .photo-wrapper {
+    flex: 0 0 auto;
+    width: 100%;
+    height: 60vh;
+    max-height: 500px;
+    min-height: 0;
+
+    .card-photo {
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .details-wrapper {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: calc(40vh);
+    min-height: 0;
+    padding: 20px 15px 100px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  // <-- Для мобильных: центрируем и прижимаем к низу viewport
+  .card-actions {
+    position: fixed; // <-- Фиксируем относительно viewport
+    left: 50%;
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    gap: 25px;
+
+    .action-btn {
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
+    }
+  }
+
+  .photo-indicators {
+    top: 15px;
+  }
+
+  .profile-details h3 {
+    font-size: 24px;
+  }
+
+  .detail-item {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+}
+
+.profile-details {
+  h3 {
+    margin: 0 0 20px;
+    font-size: 28px;
+    font-weight: 600;
+  }
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.detail-label {
+  font-weight: 600;
+  opacity: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-value {
+  opacity: 1;
+}
+
+.profile-header-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;  
+  padding: 10px 20px;
+  border-radius: 20px;
+
+  h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.indicators {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px;
+  pointer-events: none;
+
+  .indicator {
+    font-size: 80px;
+    opacity: 0;
+    transition: opacity 0.2s;
+
+    &.like {
+      color: #2ed573;
+      text-shadow: 0 0 20px rgba(46, 213, 115, 0.5);
+    }
+
+    &.dislike {
+      color: #0095ff;
+      text-shadow: 0 0 20px rgba(0, 149, 255, 0.5);
+    }
+  }
+}
+
+.no-profiles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 130px);
+  text-align: center;
+  color: var(--text-hint);
+  background: linear-gradient(to bottom, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
+}

@@ -1,0 +1,40 @@
+<div class="chat-list-container">
+  <!-- Шапка списка чатов -->
+  <div class="list-header">
+
+    <button class="new-chat-btn" (click)="toggleMobileMenu()">
+      <span>✏️</span>
+    </button>
+    <h2>Чаты</h2>
+  </div>
+
+  <!-- Поиск -->
+  <!--<div class="search-container">
+    <input type="text" placeholder="Поиск..." class="search-input">
+  </div>-->
+
+  <div class="scrollable-content">
+    <!-- Список чатов -->
+    <div class="chats-scroll">
+      @for (chat of chats(); track chat.id) {
+      <div class="chat-item"
+           [class.active]="chat.id === activeChatId()"
+           (click)="selectChat(chat)">
+
+        <app-user-avatar [userId]="chat.userId"
+                         [name]="chat.name">
+        </app-user-avatar>
+
+        <div class="chat-meta">
+          @if (chat.lastMessageTime) {
+          <div class="message-time">{{ getRelativeTime(chat.lastMessageTime) }}</div>
+          }
+          @if (chat.unreadMessagesCount > 0) {
+          <div class="unread-badge">{{ chat.unreadMessagesCount }}</div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>

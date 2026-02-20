@@ -1,0 +1,135 @@
+<div class="chat-container">
+  <!-- Кнопка "Назад" для мобильных -->
+  <button class="back-button-mobile" (click)="goBack()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="currentColor" />
+    </svg>
+  </button>
+
+  <div class="chat-header">
+    <!--<img class="participant-avatar" [src]="otherParticipantAvatar() || 'assets/default-avatar.svg'" alt="Avatar">-->
+    <app-user-avatar
+      [userId]="(chatService.otherUser()?.userId) ?? ''"
+      (click)="onAvatarClick()"
+      style="cursor: pointer">
+    </app-user-avatar>
+    <span class="participant-name">{{ participantName() }}</span>
+
+    <div class="menu-container">
+      <button mat-icon-button [matMenuTriggerFor]="chatMenu" class="menu-button">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
+      <mat-menu #chatMenu="matMenu" class="chat-menu" xPosition="before" panelClass="chat-menu-panel">
+        <button mat-menu-item (click)="analizeChat()">
+          <mat-icon>auto_awesome</mat-icon>
+          <span>Анализ чата AI</span>
+        </button>
+        <button mat-menu-item (click)="deleteChat()">
+          <mat-icon>delete</mat-icon>
+          <span>Удалить чат</span>
+        </button>
+        <button mat-menu-item (click)="blockUser()">
+          <mat-icon>block</mat-icon>
+          <span>Заблокировать</span>
+        </button>
+        <button mat-menu-item (click)="reportSpam()">
+          <mat-icon>flag</mat-icon>
+          <span>Сообщить о спаме</span>
+        </button>
+      </mat-menu>
+    </div>
+</div>
+
+  <!-- ПРЕВЬЮ ЦИТАТЫ НАД ПОЛЕМ ВВОДА -->
+  @if (quotedMessage()) {
+  <div class="quote-container">
+    <div class="quote-content">
+      <span class="quote-label">Ответ:</span>
+      {{ quotedMessage()?.text }}
+    </div>
+    <button class="quote-cancel" (click)="clearQuote()">✕</button>
+  </div>
+  }
+
+  <div class="messages" #messageContainer>
+    @for (message of chatService.filteredMessages(); track message.id) {
+    <!-- ПАРСИМ СООБЩЕНИЕ ЧЕРЕЗ PIPE -->
+    @let parsed = (message.text | parseQuote);
+    <div class="message" [class.own]="message.own">
+
+      <!-- ОТОБРАЖЕНИЕ ЦИТАТЫ В СООБЩЕНИИ -->
+      @if (parsed.hasQuote) {
+      <div class="message-reply-context">
+        <div class="reply-arrow">↩</div>
+        <div class="reply-content">
+          <!--<div class="reply-author">{{ message.own ? 'Вы' : 'Собеседник' }}:</div>-->
+          <div class="reply-text">{{ parsed.quoteText }}</div>
+        </div>
+      </div>
+      <div class="message-content">{{ parsed.mainText }}</div>
+      } @else {
+      <div class="message-content">{{ message.text }}</div>
+      }
+
+      <div class="message-footer">
+        <div class="message-time">{{ message.time | date:'HH:mm' }}</div>
+
+        <!-- КНОПКА ОТВЕТИТЬ -->
+        @if (!message.own) {
+        <button class="reply-button" (click)="replyToMessage(message)" title="Ответить">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" />
+          </svg>
+        </button>
+        }
+
+        @if (message.own) {
+        <span class="message-status" [ngClass]="message.status || 'pending'">
+          {{ message.status === 'read' ? '✓✓' : '✓' }}
+        </span>
+        }
+      </div>
+    </div>
+    }
+  </div>
+
+  @if (quotedMessage()) {
+  <div class="quote-container">
+    <div class="quote-content">
+      <span class="quote-label">Ответ:</span>
+      {{ quotedMessage()?.text }}
+    </div>
+    <button class="quote-cancel" (click)="clearQuote()">✕</button>
+  </div>
+  }
+
+  <div class="input-area">
+    <!-- ОБЕРТКА ДЛЯ TEXTAREA С ЭМОДЗИ -->
+    <div class="textarea-wrapper">
+      <textarea #messageInput
+                [(ngModel)]="newMessage"
+                (keydown.enter)="onEnter($event)"
+                (input)="onInput()"
+                placeholder="Напишите сообщение..."
+                rows="1">
+    </textarea>
+
+      <!-- КНОПКА ЭМОДЗИ ВНУТРИ TEXTAREA -->
+      <button class="emoji-button" (click)="toggleEmojiPicker($event)" title="Эмодзи">😊</button>
+    </div>
+
+    <button (click)="send()" [disabled]="!newMessage.trim()">Отправить</button>
+
+    <!-- ЭМОДЗИ-ПИКЕР -->
+    @if (showEmojiPicker()) {
+    <div class="emoji-picker">
+      <div class="emoji-grid">
+        @for (emoji of emojis;  track $index) {
+        <button class="emoji-item" (click)="addEmoji(emoji)">{{ emoji }}</button>
+        }
+      </div>
+    </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,223 @@
+/* 0. CSS-переменные и сброс отступов */
+:root {
+  --gap: clamp(1rem, 2vw, 2rem); /* «резиновый» отступ */
+  --radius: .5rem;
+  --max-width: 75rem; /* 1200px */
+  --font-base: clamp(1rem, 1vw + .6rem, 1.125rem);
+  --color-bg: #ffffff;
+  --color-text: #222;
+  --color-accent: #0069ff;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: var(--font-base);
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* 1. Шапка */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gap);
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.logo {
+  font-weight: 700;
+}
+
+.nav {
+  display: flex;
+  gap: 1.2rem;
+}
+
+  .nav a {
+    color: inherit;
+    text-decoration: none;
+    padding: .4em .6em;
+  }
+
+/* 2. Главный экран */
+.hero {
+  text-align: center;
+  padding: clamp(3rem, 10vh, 6rem) var(--gap);
+}
+
+  .hero h1 {
+    //font-size: clamp .cards
+  }
+
+/* app.scss */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.background-collage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 6px;
+  filter: blur(1px);
+
+  .collage-photo {
+    background-size: cover;
+    background-position: center;
+    opacity: 0.6;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, rgba(255,105,180,0.1), rgba(138,43,226,0.1));
+    }
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: -1;
+}
+
+/* === КОНТЕЙНЕР ДЛЯ app-root с панелью === */
+.app-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+}
+
+/* === ВЕРТИКАЛЬНАЯ ПАНЕЛЬ ИКОНОК (прозрачная) === */
+.icon-sidebar {
+  position: absolute;
+  left: -32px;
+  top: 0;
+  width: 32px;
+  height: 100%;
+  background: transparent;
+  backdrop-filter: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.icon-sidebar i.material-icons {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 20px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.icon-sidebar i.material-icons:hover {
+  color: #fff;
+  transform: scale(1.2);
+}
+
+/* === КОНТЕЙНЕР ДЛЯ ИКОНКИ С БЕЙДЖЕМ === */
+.icon-with-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 0px; /* Аналогично margin-bottom у обычных иконок */
+}
+
+/* === БЕЙДЖ С КОЛИЧЕСТВОМ СООБЩЕНИЙ === */
+.badge {
+  position: absolute;
+  top: 5px;
+  right: -5px;
+  background: #ff4081; /* Ярко-розовый цвет */
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  font-weight: bold;
+  font-family: Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 11;
+  pointer-events: none; /* Чтобы не мешал клику по иконке */
+}
+
+
+@media (max-width: 768px) {
+  .icon-sidebar {
+    display: none;
+  }
+
+  .app-wrapper {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  app-root {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .background-collage,
+  .overlay {
+    display: none !important;
+  }
+}

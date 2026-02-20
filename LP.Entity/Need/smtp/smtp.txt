@@ -1,0 +1,6 @@
+﻿docker-mailserver-test
+
+admin@made4love.local
+http://localhost:8080/?_task=mail&_mbox=INBOX#
+
+hosts не менял

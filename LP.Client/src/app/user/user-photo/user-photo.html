@@ -1,0 +1,21 @@
+<div cdkDropList cdkDropListOrientation="mixed" class="photo-list" (cdkDropListDropped)="drop($event)">
+  @for (item of items; track trackById($index, item)) {
+  <div class="photo-box" cdkDrag>
+    <mat-icon class="delete-icon" aria-hidden="false" aria-label="Example home icon" fontIcon="delete" (click)="onDelete(item.id)"></mat-icon>
+    <mat-icon class="star-icon" aria-hidden="false" aria-label="Example home icon" fontIcon="star"></mat-icon>
+    <img src="https://localhost:7010/Photos/image/{{item.id}}" />
+    <!--{{item.id}}-->
+  </div>
+  }
+  <div class="photo-box" height="100%">
+    <file-upload (fileUploaded)="onFileUploaded($event)">
+      <!--<mat-icon class="delete-icon" aria-hidden="false" aria-label="Example home icon" fontIcon="add"></mat-icon>-->
+    </file-upload>
+
+  </div>
+</div>
+
+<!--<div>
+  <input type="file" class="file-input" (change)="onChange($event)" #fileUpload />
+  <button (click)="onUpload()">Upload the file</button>
+</div>-->

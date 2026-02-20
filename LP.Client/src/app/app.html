@@ -1,0 +1,47 @@
+@if (isDevelopmentMode) {
+<app-coming-soon [targetDate]="launchDate"
+                 title="Сайт в разработке"
+                 subtitle="Мы готовим что-то особенное для ваших сердец">
+</app-coming-soon>
+} @else {
+<app-back-collage></app-back-collage>
+
+<div class="overlay"></div>
+
+@if (userId) {
+<!-- КОНТЕЙНЕР С ПАНЕЛЬЮ ИКОНОК -->
+<div class="app-wrapper">
+  <div class="icon-sidebar">
+    <a routerLink="/match" class="icon-link" title="Главная">
+      <i class="material-icons">home</i>
+    </a>
+    <a routerLink="/search" class="icon-link" title="Поиск">
+      <i class="material-icons">search</i>
+    </a>
+    <a routerLink="/vote" class="icon-link" title="Симпатии">
+      <i class="material-icons">favorite</i>
+    </a>
+
+    <div class="icon-with-badge">
+      <a routerLink="/chat" class="icon-link" title="Сообщения">
+        <i class="material-icons">chat</i>
+        @if (chatService.unreadMessageCount() > 0) {
+        <span class="badge">{{ chatService.unreadMessageCount() }}</span>
+        }
+      </a>
+    </div>
+
+    <a routerLink="/profile" class="icon-link" title="Профиль">
+      <i class="material-icons">person</i>
+    </a>
+    <a (click)="logout()" class="icon-link" title="Выход">
+      <i class="material-icons">logout</i>
+    </a>
+  </div>
+</div>
+
+<foto-scroll-component></foto-scroll-component>
+<app-bottom-nav></app-bottom-nav>
+}
+<router-outlet></router-outlet>
+}

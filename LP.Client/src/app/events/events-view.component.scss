@@ -1,0 +1,143 @@
+:host {
+  display: block;
+  min-width: 100%;
+  overflow-y: auto;
+  background: linear-gradient(to bottom, #557A94 0%, #7396AE 100%);
+  border-radius: 8px;
+}
+
+.events-container {
+  padding: 16px;
+}
+
+.events-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+
+  h2 {
+    color: white;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+  }
+
+  
+}
+
+.event-item {
+  &.new-event {
+    background: rgba(233, 30, 99, 0.15);
+    border-left: 4px solid #e91e63;
+    margin-left: -16px;
+    padding-left: 12px;
+  }
+}
+
+mat-list-item {
+  color: white;
+
+  ::ng-deep .mdc-list-item__content {
+    color: white;
+  }
+}
+
+.event-title {
+  font-weight: 600;
+  color: white;
+  font-size: 16px;
+  margin-bottom: 4px;  
+}
+
+.event-description {
+  color: rgba(255, 255, 255, 0.87);
+  font-size: 14px;
+  line-height: 1.4;  
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  text-overflow: unset !important; /* Отключаем многоточие */
+  overflow: visible !important; /* Показываем весь текст */
+  display: block; /* Важно для многострочности */
+}
+
+mat-list-item {
+  color: white;
+  height: auto !important; // Разрешает изменение высоты
+  min-height: 72px; // Минимальная высота вместо фиксированной
+
+  ::ng-deep .mdc-list-item__content {
+    color: white;
+    display: block !important; // Важно для многострочности
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  ::ng-deep .mdc-list-item__primary-text,
+  ::ng-deep .mdc-list-item__secondary-text {
+    white-space: normal !important; // Переопределяет стандартное поведение
+    text-overflow: unset !important; // Отключает многоточие
+    overflow: visible !important; // Показывает весь текст
+  }
+}
+
+
+.event-date {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.6);
+
+  .empty-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+}
+
+.loading-container {
+  padding: 16px;
+}
+
+.skeleton-line {
+  height: 80px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Скроллбар */
+::ng-deep {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+  }
+}

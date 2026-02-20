@@ -1,0 +1,80 @@
+<div class="demo-container" *ngIf="!showResult">
+  <!-- Прогресс-бар -->
+  <div class="progress-bar">
+    <div class="progress-fill" [style.width]="((currentStep + 1) / questions.length * 100) + '%'"></div>
+  </div>
+
+  <!-- Закрыть -->
+  <button class="close-btn" (click)="closeDemo()">✕</button>
+
+  <!-- Текущий вопрос -->
+  <div class="question-card" *ngIf="questions[currentStep]">
+    <h2 class="question-title">{{ questions[currentStep].title }}</h2>
+
+    <!-- Опции -->
+    <div class="options-grid" [class]="'cols-' + questions[currentStep].options.length">
+      <button *ngFor="let option of questions[currentStep].options"
+              class="option-btn"
+              [class.selected]="(questions[currentStep].type === 'color' && selectedColor === option.id) ||
+                         (questions[currentStep].type === 'sound' && selectedSound === option.id)"
+              (click)="selectOption(option.id, questions[currentStep].type)"
+              (mouseenter)="questions[currentStep].type === 'sound' && playSound(option.id)">
+        <!-- Цвет -->
+        <ng-container *ngIf="questions[currentStep].type === 'color'">
+          <div class="color-preview" [style.backgroundColor]="option.value"></div>
+          <span>{{ option.label }}</span>
+        </ng-container>
+
+        <!-- Звук -->
+        <ng-container *ngIf="questions[currentStep].type === 'sound'">
+          <div class="sound-icon">{{ option.label.split(' ')[0] }}</div>
+          <span>{{ option.label.split(' ')[1] }}</span>
+        </ng-container>
+      </button>
+    </div>
+
+    <!-- Подсказка с выбором AI -->
+    <div class="ai-hint" *ngIf="currentStep > 0">
+      <small>
+        Ваш "условный" партнер уже выбрал:
+        <strong>{{ getAiChoiceForQuestion(questions[currentStep].type) }}</strong>
+      </small>
+    </div>
+  </div>
+
+  <!-- Кардиограмма -->
+  <div class="ecg-live">
+    <svg viewBox="0 0 300 60">
+      <path class="ecg-line" d="M0,30 L50,30 L55,10 L60,50 L65,10 L70,30 L150,30 L155,15 L160,45 L165,15 L170,30 L300,30" />
+    </svg>
+  </div>
+</div>
+
+<!-- Экран результата -->
+<div class="result-screen" *ngIf="showResult">
+  <div class="sync-circle" [style.background]="'conic-gradient(#e91e63 0deg, #03a9f4 ' + (syncPercentage * 3.6) + 'deg, #1a0b2e ' + (syncPercentage * 3.6) + 'deg)'">
+    <span class="sync-percentage">{{ syncPercentage }}%</span>
+  </div>
+
+  <h2 class="result-title">
+    {{ syncPercentage >= 80 ? 'Отличный пульс!' : 'Неплохой старт!' }}
+  </h2>
+
+  <p class="result-subtitle">
+    С "реальным" партнером результат будет точнее!
+  </p>
+
+  <div class="result-actions">
+    <button class="btn-primary" (click)="redirectToRegister()">
+      Найти партнера
+    </button>
+    <button class="btn-secondary" (click)="closeDemo()">
+      Позже
+    </button>
+  </div>
+
+  <!-- Chain -->
+  <div class="chain-info">
+    <!--<small>Chain Demo #{{ syncPercentage > 50 ? '1' : '0' }}</small>-->
+  </div>
+</div>

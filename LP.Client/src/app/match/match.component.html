@@ -1,0 +1,76 @@
+<div class="gallery-wrapper">
+  <!-- 🔥 ВКЛАДКИ -->
+  <div class="tabs-container">
+    <button class="tab-button"
+            [class.active]="activeTab === 'mutual'"
+            (click)="setActiveTab('mutual')">
+      Взаимные
+    </button>
+    <button class="tab-button"
+            [class.active]="activeTab === 'likesMe'"
+            (click)="setActiveTab('likesMe')">
+      Я нравлюсь
+    </button>
+    <button class="tab-button"
+            [class.active]="activeTab === 'viewed'"
+            (click)="setActiveTab('viewed')">
+      Просмотры
+    </button>
+  </div>
+
+  <!--<div class="gallery-match-container" *ngIf="!isLoading; else loadingTemplate">
+    @for (image of filteredImages(); track image.userId) {
+    <div class="gallery-item">
+      <img [src]="baseUrl + '/Photos/image/' + image.photoId" routerLink="/vote/{{image.userId}}" />
+      <div class="photo-info">
+        <span class="photo-name">{{ image.name }}</span>
+        <span class="photo-age">{{ image.age }}</span>
+      </div>
+    </div>
+    }
+  </div>-->
+  <!-- 🔥 ГАЛЕРЕЯ -->
+  <div class="gallery-match-container" #galleryContainer>
+    @for (image of filteredImages(); track image.userId) {
+    <div class="gallery-item">
+      <mat-icon class="delete-icon"
+                aria-hidden="false"
+                aria-label="Delete"
+                fontIcon="delete"
+                (click)="onDelete(image.userId); $event.stopPropagation()">
+      </mat-icon>
+      <div class="image-wrapper">
+        <img [src]="getImageUrl(image.photoId)"
+             loading="lazy"
+             routerLink="/vote/{{image.userId}}" />
+      </div>
+      <div class="photo-info">
+        <span class="photo-name">{{ image.name }}</span>
+        <span class="photo-age">{{ image.age }} лет</span>
+        @if (image.distance) {
+        <span class="photo-distance">
+          <mat-icon>place</mat-icon>
+          {{ formatDistance(image.distance) }}
+        </span>
+        }
+      </div>
+    </div>
+    }
+
+    @if (isLoadingMore) {
+    <div class="loading-more">
+      <mat-spinner diameter="30"></mat-spinner>
+      <span>Загрузка...</span>
+    </div>
+    }
+  </div>
+
+  <ng-template #loadingTemplate>
+    <!--<div class="gallery-container">
+      <div class="gallery-item loading"><div class="skeleton"></div></div>
+      <div class="gallery-item loading"><div class="skeleton"></div></div>
+      <div class="gallery-item loading"><div class="skeleton"></div></div>
+      <div class="gallery-item loading"><div class="skeleton"></div></div>
+    </div>-->
+  </ng-template>
+</div>

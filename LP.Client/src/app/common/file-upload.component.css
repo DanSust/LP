@@ -1,0 +1,31 @@
+/*.ngx-file-drop__drop-zone {
+  height: 100% !important;
+  cursor: pointer;
+}
+
+.drop-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  
+}
+*/
+
+ngx-file-drop {
+  display: flex;
+  align-items: center; /* ✅ Вертикальное центрирование */
+  justify-content: center; /* Горизонтальное центрирование */
+  height: 100%;
+  min-height: 150px; /* Минимальная высота для удобства */
+  /*background: rgba(0, 0, 0, 0.5);*/ /* Полупрозрачный фон */
+  cursor: pointer;
+}
+
+/* Стили для текста */
+.drop-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  margin: 0; /* Убираем отступы */
+}

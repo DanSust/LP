@@ -1,0 +1,322 @@
+$color-primary: #557A94; /*#1a0b2e;*/
+$color-secondary: #7396AE; /*#4a1c6d;*/
+
+$color-accent: #e91e63;
+$color-blue: #03a9f4;
+
+.empty-item {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 100px;
+  margin-right: 10px;
+  
+  overflow: hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  cursor: pointer;
+}
+
+.gallery-container {
+  z-index: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 10px 20px 10px;
+  max-width: 100%;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  background: $color-primary;
+  background-attachment: fixed;
+}
+
+  .gallery-container::-webkit-scrollbar {
+    display: none;
+  }
+
+.gallery-item {
+  flex: 0 0 auto;
+  width: 150px;
+  height: 100px;
+  margin-right: 10px;
+  background-color: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+  .gallery-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  }
+
+  /* 🔥 ВЫДЕЛЕННОЕ ФОТО ПРОФИЛЯ */
+  .gallery-item.profile-photo {
+    width: 180px; /* На 30px шире */
+    height: 120px; /* На 20px выше */
+    border: 3px solid #e91e63; /* Красная рамка */
+    box-shadow: 0 0 20px rgba(233, 30, 99, 0.6); /* Светящийся эффект */
+    margin-right: 20px; /* Больше отступ */
+  }
+
+/* Бейдж "МОЁ" */
+.profile-badge {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  background: linear-gradient(45deg, #e91e63, #f06292);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+/*@keyframes pulse-badge {
+  0%, 100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+}*/
+
+/* Затемнение на фото профиля */
+.gallery-item.profile-photo::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  pointer-events: none;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.1);
+}
+
+/* Активное состояние для фото профиля */
+.gallery-item.profile-photo:active {
+  /*transform: scale(0.95);*/
+}
+
+/* Скелетоны для загрузки */
+.loading .skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 🔥 СТИЛИ ДЛЯ ЛОГОТИПА */
+.logo-item {
+  width: 140px; /* Чуть меньше профильного */
+  height: 90px;
+  background: linear-gradient(135deg, #1a0b2e, #4a1c6d); /* Фон как у сайта */
+  border: 2px solid #e91e63; /* Розовая рамка */
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/*.logo-item:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 0 25px rgba(233, 30, 99, 0.8);
+}*/
+
+.logo-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.logo-label {
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 5px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Активное состояние (при клике) */
+.logo-item:active {
+  /*transform: scale(0.95);*/
+}
+
+
+/* HEART*/
+/* В foto-scroll-component.css */
+.logo-css {
+  z-index: 1;
+  width: 160px;
+  height: 100px;
+  //background: linear-gradient(135deg, #1a0b2e, #4a1c6d);
+  //border-radius: 15px;
+  cursor: pointer;
+  //transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+
+.hearts-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+
+.heart {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  transform: translateY(-30%);
+}
+
+.heart-left {
+  color: #e91e63;
+  left: 45px;
+  filter: drop-shadow(0 0 8px rgba(233, 30, 99, 0.8));
+  animation: pulse-red 1.5s ease-in-out infinite;
+}
+
+.heart-right {
+  color: #03a9f4;
+  right: 45px;
+  filter: drop-shadow(0 0 8px rgba(3, 169, 244, 0.8));
+  animation: pulse-blue 1.8s ease-in-out infinite;
+  animation-delay: 0.8s;
+}
+
+/* 🔥 КАРДИОГРАММА поверх */
+.ecg-overlay {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 30px;
+  z-index: 10; /* НАД сердцами */
+  pointer-events: none; /* Чтобы не мешала клику */
+}
+
+/* 🔥 ТЕКСТ поверх всего */
+.logo-text {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 2px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  z-index: 20; /* САМЫЙ ВЕРХ */
+  pointer-events: none;
+}
+
+.text-co {
+  color: #03a9f4;
+}
+
+.text-pulse {
+  color: #e91e63;  
+}
+
+.text-4 {
+  color: whitesmoke;
+  font-size: 30px;
+}
+
+/* Активное состояние */
+.logo-css:active {
+  transform: scale(0.95);
+}
+
+.ecg-container {
+  position: absolute;
+  bottom: 50px;
+  left: 5%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 70px;
+  opacity: 0.8;
+  overflow: visible;
+}
+
+.ecg-line {
+  fill: none;
+  stroke: $color-accent;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+}
+
+
+/* Стилизация фона меню */
+::ng-deep .avatar-menu.mat-mdc-menu-panel {
+  width: 300px !important; /* ⬅️ ЗАМЕНИТЕ на ширину вашего .gallery-item */
+  max-width: none !important;
+  background-color: #557A94 !important;
+}
+
+::ng-deep .avatar-menu .mat-mdc-menu-content {
+  background-color: #557A94 !important;
+}
+
+/* Цвет иконок и текста */
+::ng-deep .avatar-menu .mat-mdc-menu-item {
+  color: white !important;
+}
+
+::ng-deep .avatar-menu .mat-mdc-menu-item .mat-icon {
+  color: white !important;
+}
+/* 📱 Мобильная версия: скрываем галерею полностью */
+@media (max-width: 768px) {
+  .gallery-container {
+    display: none !important;
+  }
+}

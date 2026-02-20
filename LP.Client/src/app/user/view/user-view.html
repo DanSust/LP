@@ -1,0 +1,67 @@
+
+  <div class="profile-header">
+    <h1>{{ profile?.caption || 'Профиль пользователя' }}</h1>
+    
+  </div>
+
+  <!-- Фото профиля -->
+  <!--<div class="photo-section">
+    <user-photo [userId]="profile?.userId"></user-photo>
+  </div>-->
+
+  <!-- Основная информация -->
+  <!--<div class="info-section">
+    <div class="info-item">
+      <span class="label">Имя:</span>
+      <span class="value">{{ profile?.caption }}</span>
+    </div>
+
+    <div class="info-item">
+      <span class="label">Пол:</span>
+      <span class="value">{{ profile?.sex ? 'Женский' : 'Мужской' }}</span>
+    </div>
+
+    <div class="info-item">
+      <span class="label">Возраст:</span>
+      <span class="value">{{ profile?.age }} лет</span>
+    </div>
+
+    <div class="info-item">
+      <span class="label">Город:</span>
+      <span class="value">{{ profile?.townName }}</span>
+    </div>
+
+    <div class="info-item">
+      <span class="label">Рост/Вес:</span>
+      <span class="value">{{ profile?.height }} см / {{ profile?.weight }} кг</span>
+    </div>
+
+    <div class="info-item" *ngIf="profile?.description">
+      <span class="label">О себе:</span>
+      <span class="value">{{ profile?.description }}</span>
+    </div>
+  </div>-->
+
+  <!-- Интересы -->
+  <!--<div class="interests-section" *ngIf="profile?.interests?.length">
+    <h3>Интересы</h3>
+    <mat-chip-listbox>
+      <mat-chip *ngFor="let interest of profile.interests" selected>
+        {{ interest.name }}
+      </mat-chip>
+    </mat-chip-listbox>
+  </div>-->
+
+  <!-- Статус -->
+  <!--<div class="status-section">
+    <mat-slide-toggle [checked]="profile?.isActive" disabled>
+      {{ profile?.isActive ? 'Активен' : 'На паузе' }}
+    </mat-slide-toggle>
+  </div>-->
+
+  <!-- Кнопка назад -->
+  <!--<div class="actions">
+    <button mat-button class="btn-back" (click)="goBack()">Назад</button>
+  </div>
+</div>-->
+

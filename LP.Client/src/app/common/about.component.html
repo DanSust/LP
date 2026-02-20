@@ -1,0 +1,160 @@
+<div class="about-container">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="pulse-badge">
+        <span class="heart">💓</span>
+        <span class="pulse-ring"></span>
+      </div>
+      <h1 class="hero-title">
+        <span class="gradient-text">Синхронное</span>
+        <br>
+        <span class="outline-text">Сердцебиение</span>
+      </h1>
+      <p class="hero-subtitle">
+        Не просто приложение для знакомств. Это цифровое пространство,
+        где технологии помогают случиться настоящему — тому самому совпадению,
+        когда биение ваших сердец переходит в единый ритм.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" routerLink="/vote">
+          <span>Начать поиск</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+        <button class="btn-secondary" (click)="scrollToSection('concept')">
+          Узнать больше
+        </button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="floating-card card-1">
+        <span class="floating-emoji">❤️</span>
+      </div>
+      <div class="floating-card card-2">
+        <span class="floating-emoji">💬</span>
+      </div>
+      <div class="floating-card card-3">
+        <span class="floating-emoji">⭐</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Concept Section -->
+  <section id="concept" class="concept-section">
+    <div class="section-header">
+      <span class="section-tag">Концепция</span>
+      <h2>Мы верим в магию<br>случайных встреч</h2>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card philosophy">
+        <div class="card-icon">🎯</div>
+        <h3>Наша миссия</h3>
+        <p>
+          В мире миллиардов людей существует ровно тот, кто ищет вас так же сильно,
+          как вы ищете его. Наша задача — убрать преграды, случайности и неловкости
+          первого знакомства, оставив только магию момента.
+        </p>
+        <div class="quote">
+          "Когда два человека понимают: «Это ты»"
+        </div>
+      </div>
+
+      <div class="concept-card stats-card">
+        <div class="stat-item" *ngFor="let stat of stats">
+          <div class="stat-value">
+            {{ stat.value }}<span class="suffix">{{ stat.suffix }}</span>
+          </div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works -->
+  <section class="features-section">
+    <div class="section-header light">
+      <span class="section-tag">Как это работает</span>
+      <h2>Технологии во имя чувств</h2>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card" *ngFor="let feature of features; let i = index" [style.--accent-color]="feature.color">
+        <div class="feature-number">0{{ i + 1 }}</div>
+        <div class="feature-icon">{{ feature.icon }}</div>
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.description }}</p>
+        <div class="feature-glow" [style.background]="feature.color"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rewards Section -->
+  <section class="rewards-section">
+    <div class="rewards-content">
+      <div class="section-header">
+        <span class="section-tag gold">Мотивация</span>
+        <h2>Играем всерьёз</h2>
+        <p class="section-desc">Мы поощряем смелость и искренность</p>
+      </div>
+
+      <div class="rewards-grid">
+        <div class="reward-card" *ngFor="let reward of rewards">
+          <div class="reward-icon">{{ reward.icon }}</div>
+          <h3>{{ reward.title }}</h3>
+          <p>{{ reward.description }}</p>
+        </div>
+      </div>
+
+      <div class="wedding-banner">
+        <div class="banner-content">
+          <span class="wedding-icon">💒</span>
+          <div class="banner-text">
+            <h4>Бонус для влюблённых</h4>
+            <p>Нашли друг друга здесь и поженились? Получите денежный приз!</p>
+          </div>
+        </div>
+        <div class="hearts-decoration">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="tech-section">
+    <div class="tech-content">
+      <h3>Работает на</h3>
+      <div class="tech-stack">
+        <div class="tech-item">
+          <span class="tech-name">Angular</span>
+          <span class="tech-desc">Скорость интерфейса</span>
+        </div>
+        <div class="tech-divider"></div>
+        <div class="tech-item">
+          <span class="tech-name">SignalR</span>
+          <span class="tech-desc">Мгновенные сообщения</span>
+        </div>
+        <div class="tech-divider"></div>
+        <div class="tech-item">
+          <span class="tech-name">.NET Core</span>
+          <span class="tech-desc">Надёжность сервера</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2>Ваш человек уже здесь</h2>
+      <p>Возможно, он просто пролистывает карточки в ожидании вас</p>
+      <button class="btn-cta" routerLink="/vote">
+        <span class="btn-text">Найти своё сердцебиение</span>
+        <span class="btn-shine"></span>
+      </button>
+    </div>
+  </section>
+</div>

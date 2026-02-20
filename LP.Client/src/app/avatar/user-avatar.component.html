@@ -1,0 +1,11 @@
+<div class="avatar-wrapper">
+  <div class="avatar-container">
+    <img [src]="avatarUrl()"
+         [alt]="name"
+         class="chat-avatar"
+         (error)="onImageError()">
+    <div class="status-indicator" [class.online]="isOnline()"></div>
+  </div>
+  <div class="chat-name">{{ name }}</div>
+</div>
+

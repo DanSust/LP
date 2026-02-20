@@ -1,0 +1,609 @@
+$color-primary: #557A94;
+$color-secondary: #7396AE;
+$color-accent: #e91e63;
+$color-blue: #03a9f4;
+
+// CSS-переменные как в профиле
+:root {
+  --gradient-top: #557A94;
+  --gradient-bottom: #7396AE;
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-hint: rgba(255, 255, 255, 0.38);
+  --divider-color: rgba(255, 255, 255, 0.12);
+  --surface-dark: #1e1e1e;
+  --surface-light: #2d2d2d;
+}
+
+:host {
+  --divider-color: rgba(255, 255, 255, 0.12);
+  display: block;
+  height: calc(100vh - 130px); // Занимаем всю высоту viewport
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    height: calc(100vh - 60px); // 60px - примерная высота bottom nav
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+.gallery-wrapper {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  // 🔥 ПОЛОСА СОСТОЯНИЯ
+  .status-bar {
+    flex-shrink: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(135deg, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    padding: 12px 20px;
+
+    .status-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .results-count {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        font-size: 16px;
+        font-weight: 500;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+          color: #4caf50;
+        }
+      }
+
+      .filter-toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 20px;
+        padding: 8px 16px;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255,255,255,0.25);
+          transform: translateY(-1px);
+        }
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+  }
+
+  .floating-filter-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba($color-accent, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .filters-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;        
+    margin: 0 10%;
+    flex-shrink: 0; // Не сжиматься
+    max-height: calc(100% - 60px); // Ограничить высоту фильтров
+    overflow-y: 0;
+    // Отступ сверху когда есть полоса состояния
+    &.with-status-bar {
+      margin-top: 60px;
+    }
+
+    .clear-filters-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: rgba(255, 255, 255, 0.6);
+      background: none;
+      border: none;
+      transition: color 0.3s;
+      z-index: 10;
+
+      &:hover {
+        color: $color-accent;
+      }
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+
+      .filter-label {
+        font-size: 14px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.87);
+        text-transform: uppercase;
+      }
+
+      mat-slider.age-slider {
+        width: 100% !important;
+      }
+
+      mat-form-field.interests-select {
+        width: 100% !important;
+      }
+    }
+
+    .apply-filters-btn {
+      display: flex;
+      align-self: flex-end;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 8px 16px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: fit-content;
+
+      &:hover {
+        background: rgba(255,255,255,0.25);
+        transform: translateY(-1px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      max-width: 100%;
+      padding: 10px 15px;
+    }
+  }
+}
+
+.gallery-search-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  max-width: 100%;
+  background-attachment: fixed;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  margin: 10px;
+  padding: 10px;
+  align-content: start;
+  align-items: start;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--divider-color);
+    border-radius: 3px;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    margin: 0px;
+    padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
+    margin: 0px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.gallery-item {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background-color: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  /*&:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  }*/
+
+  .image-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    &:hover img {
+      transform: scale(1.1);
+    }
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    height: 0;
+    padding-bottom: 75%; // 4:3 = 3/4 = 0.75 = 75%
+    display: block;
+    aspect-ratio: 4 / 3;
+  }
+
+  @media (max-width: 480px) {
+    height: 0;
+    padding-bottom: 75%; // 4:3 = 3/4 = 0.75 = 75%
+    display: block;
+    aspect-ratio: 4 / 3;
+  }
+}
+
+.photo-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+  color: white;
+  padding: 8px 10px;
+  pointer-events: none;
+  z-index: 1;
+
+  .photo-name {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .photo-age {
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 400;
+  }
+}
+
+// 🌍 СТИЛИ ДЛЯ ЛОКАЦИИ
+.location-group {
+  .location-mode-toggle {
+    margin-bottom: 12px;
+
+    .toggle-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: #03a9f4;
+      }
+
+      span {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+      }
+    }
+  }
+
+  .location-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .filter-label {
+      margin: 0;
+    }
+
+    .geo-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #4caf50;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: #4caf50;
+      }
+
+      span {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .location-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(244, 67, 54, 0.1);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: yellow;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    button {
+      margin-left: auto;
+      font-size: 12px;
+      padding: 0 8px;
+      height: 28px;
+    }
+  }
+  // Поле ввода города - как в профиле: БЕЛЫЙ фон, тёмный текст
+  // В блоке .city-select добавьте/измените следующие стили:
+  .city-select {
+    width: 100%;
+
+    ::ng-deep {
+      // Белый фон
+      .mat-mdc-form-field-flex {
+        background: white !important;
+        border-radius: 4px !important;
+        padding: 0 12px !important;
+        align-items: flex-start !important;
+        min-height: 48px; // Добавляем минимальную высоту
+        max-height: 48px;
+      }
+
+      .mat-mdc-text-field-wrapper {
+        background: white !important;
+        border-radius: 4px !important;
+        padding: 0 !important;
+      }
+      // Убираем линию снизу
+      .mdc-line-ripple {
+        display: none !important;
+      }
+      // Убираем нижний отступ для line-ripple
+      .mat-mdc-form-field-subscript-wrapper {
+        display: none !important;
+      }
+      // Label всегда сверху (левое верхнее положение)
+      .mat-mdc-floating-label {
+        color: rgba(0, 0, 0, 0.6) !important;
+        // Фиксированное положение сверху
+        position: absolute !important;
+        top: 8px !important; // Отступ сверху
+        left: 0 !important;
+        transform: none !important; // Убираем трансформацию
+        font-size: 12px !important; // Меньший размер
+        // Стиль для лейбла когда поле не в фокусе и не заполнено
+        &--float-above {
+          transform: none !important;
+          font-size: 12px !important;
+          color: #557A94 !important;
+          top: 8px !important;
+        }
+        // Стиль когда поле в фокусе или заполнено
+        &.mat-mdc-floating-label--float-above {
+          color: #557A94 !important;
+        }
+      }
+      // Тёмный текст
+      .mat-mdc-input-element {
+        color: rgba(0, 0, 0, 0.87) !important;
+        padding-top: 24px !important; // Отступ сверху для текста (чтобы был под лейблом)
+        padding-bottom: 10px !important;
+        height: auto !important;
+      }
+
+      .mat-mdc-input-element::placeholder {
+        color: rgba(0, 0, 0, 0.38) !important;
+      }
+      // Убираем стандартный background у fill поля
+      .mdc-text-field--filled {
+        background: white !important;
+      }
+      // Убираем hover/focus background
+      .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+        background: white !important;
+      }
+
+      .mdc-text-field--filled.mdc-text-field--invalid:not(.mdc-text-field--disabled) {
+        background: white !important;
+      }
+
+      .mdc-text-field--filled.mdc-text-field--focused {
+        background: white !important;
+      }
+      // Когда поле в фокусе, лейбл остается наверху
+      .mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+        color: #557A94 !important;
+      }
+      // Контейнер для инпута
+      .mat-mdc-form-field-infix {
+        padding: 0 !important;
+        min-height: auto !important;
+      }
+    }
+    // ... остальные стили остаются без изменений
+  }
+
+  .radius-filter {
+    margin-top: 12px;
+
+    .geo-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #4caf50;
+      margin-top: 8px;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: #4caf50;
+      }
+    }
+  }
+}
+
+.photo-info {
+  .photo-distance {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    opacity: 0.85;
+    margin-top: 4px;
+    color: #03a9f4;
+
+    mat-icon {
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+.loading .skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(0deg, $color-primary 0%, $color-secondary 100%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.loading-more {
+  grid-column: 1 / -1; // Растягиваем на все колонки
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+
+  mat-spinner {
+    margin-bottom: 10px;
+
+    ::ng-deep .mat-mdc-progress-spinner {
+      --mdc-circular-progress-active-indicator-color: #fff;
+    }
+  }
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// Стили для автодополнения - БЕЛЫЙ список как в профиле
+::ng-deep {
+  .mat-mdc-autocomplete-panel {
+    background: white !important;
+    color: black !important;
+
+    .mat-mdc-option {
+      color: black !important;
+
+      &:hover,
+      &.mat-mdc-option-active {
+        background: rgba(0, 0, 0, 0.04) !important;
+      }
+
+      &.mdc-list-item--selected {
+        background: rgba(233, 30, 99, 0.15) !important;
+        color: #e91e63 !important;
+      }
+
+      .mdc-list-item__primary-text {
+        color: black !important;
+      }
+    }
+  }
+}

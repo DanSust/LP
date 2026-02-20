@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>made 4 love</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://unpkg.com/@vkid/sdk@%3C3.0.0/dist-sdk/umd/index.js"></script>
+  <style>
+    /* Убираем отступы и белый фон НЕДО загрузки Angular */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100%;
+      height: 100%;
+    }
+
+    app-root {
+      display: block;
+      width: 65%;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: linear-gradient(to bottom, #557A94 130px, #7396AE 100%) !important;
+    }
+
+    @media (max-width: 768px) {
+      .icon-sidebar { display: none; }
+
+      app-root {
+        width: 100% !important;
+        margin-left: 0 !important;
+      }
+    }
+
+
+  </style>
+</head>
+<body>
+
+
+    <app-root></app-root>
+
+</body>
+</html>

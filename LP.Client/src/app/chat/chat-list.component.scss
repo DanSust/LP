@@ -1,0 +1,175 @@
+:host {
+  --gradient-top: #557A94;
+  --gradient-bottom: #7396AE;
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-hint: rgba(255, 255, 255, 0.38);
+  --divider-color: rgba(255, 255, 255, 0.12);
+  --surface-dark: #456f7a;
+  --surface-light: #2d2d2d;
+  display: block;
+  height: 100%;
+    min-height: 0; // Важно для корректной работы flex-родителя
+  overflow: hidden;
+}
+
+::ng-deep html body {
+  overflow: hidden;
+}
+
+.chat-list-container {
+  height: 100%;
+  min-height: 0; // Критично: позволяет контейнеру сжиматься в flex-родителе
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
+  border-right: 1px solid var(--divider-color); // Перенес сюда для консистентности
+  flex-shrink: 0;
+  color: var(--text-primary);
+  overflow: hidden; // Предотвращает двойной скролл
+  
+}
+
+.list-header {
+  flex-shrink: 0; // Запрещаем сжатие
+  height: 70px;
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--divider-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 1; // Над скроллящимся контентом
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .new-chat-btn {
+    background: var(--gradient-top);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.search-container {
+  flex-shrink: 0; // Запрещаем сжатие
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--divider-color);
+
+  .search-input {
+    width: 100%;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 20px;
+    background: var(--surface-light);
+    outline: none;
+    font-size: 14px;
+    color: var(--text-primary);
+
+    &::placeholder {
+      color: var(--text-hint);
+    }
+
+    &:focus {
+      background: var(--surface-dark);
+    }
+  }
+}
+
+.scrollable-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// ✅ ОСНОВНОЙ КОНТЕЙНЕР СКРОЛЛА
+.chats-scroll {
+  flex: 1; // Занимает доступное пространство (как .messages)
+  min-height: 0; // Критично: позволяет сжиматься для скролла
+  overflow-y: auto; // Вертикальный скролл
+  overflow-x: hidden; // Без горизонтального скролла
+  scroll-behavior: smooth;
+  padding-right: 2px;
+  overscroll-behavior: contain;
+  // Стилизация скроллбара — точь-в-точь как в chat.component
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--divider-color);
+    border-radius: 3px;
+  }
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--divider-color);
+  transition: background 0.2s;
+  flex-shrink: 0; // Запрещаем сжатие айтемов
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .chat-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+    margin-left: 10px;
+    margin-left: auto; // Прижимаем к правому краю
+
+    .message-time {
+      font-size: 12px;
+      color: var(--text-hint);
+      white-space: nowrap;
+    }
+
+    .unread-badge {
+      background: #ff4081;
+      color: white;
+      border-radius: 50%;
+      min-width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 0 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+  }
+}

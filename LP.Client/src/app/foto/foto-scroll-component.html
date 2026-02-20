@@ -1,0 +1,84 @@
+<div class="gallery-container" *ngIf="!isLoading; else loadingTemplate">
+  <!-- 🔥 ЛОГОТИП: сердца + кардиограмма + текст -->
+
+  <div class="logo-css" [routerLink]="['/']">
+    <div class="hearts-container">
+      <!-- Красное сердце (снизу) -->
+      <svg class="heart heart-left" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+      </svg>
+
+      <!-- Синее сердце (наложенное) -->
+      <svg class="heart heart-right" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+      </svg>
+
+      <!-- Кардиограмма поверх -->
+      <svg class="ecg-overlay" viewBox="0 0 140 40">
+        <path d="M0,20 L10,20 L12,5 L14,35 L16,5 L18,20 L60,20 L62,15 L64,25 L66,15 L68,20 L140,20"
+              stroke="#e91e63" stroke-width="1.5" fill="none" />
+      </svg>
+
+      <!-- Текст поверх -->
+      <div class="logo-text">
+        <span class="text-co">made</span>
+        <span class="text-4">4</span>
+        <span class="text-pulse">love</span>
+      </div>
+
+      <!-- Иконка аватара в правом нижнем углу -->
+      <notification-bell></notification-bell>
+
+
+
+        <!--<mat-menu #menu="matMenu" class="avatar-menu">
+          <button mat-menu-item routerLink="/profile">
+            <mat-icon>person</mat-icon>
+            <span>Profile</span>
+          </button>
+          <button mat-menu-item routerLink="/settings">
+            <mat-icon>settings</mat-icon>
+            <span>Settings</span>
+          </button>
+          <button mat-menu-item routerLink="/logout">
+            <mat-icon>exit_to_app</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>-->
+
+      </div>
+    </div>
+
+  
+
+  <!-- Остальные фото -->
+  @for (image of images; track image) {
+  <div class="gallery-item">
+    
+    <img src="{{baseURL}}/Photos/imagefree?id={{image.photoId}}" routerLink="/vote/{{image.userId}}"/>
+  </div>
+  }
+</div>
+
+  <ng-template #loadingTemplate>
+    <div class="gallery-container">
+      <div class="gallery-item loading">
+        <div class="skeleton"></div>
+      </div>
+      <div class="gallery-item loading">
+        <div class="skeleton"></div>
+      </div>
+      <div class="gallery-item loading">
+        <div class="skeleton"></div>
+      </div>
+      <div class="gallery-item loading">
+        <div class="skeleton"></div>
+      </div>
+      <div class="gallery-item loading">
+        <div class="skeleton"></div>
+      </div>
+      <div class="gallery-item loading">
+        <div class="skeleton"></div>
+      </div>
+    </div>
+  </ng-template>

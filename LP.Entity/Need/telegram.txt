@@ -1,0 +1,39 @@
+﻿made4love
+@made4love_bot
+8237844451:AAF2y4Se0rgm10KibEalmKqXX46zzrHny6A
+
+https://api.telegram.org/bot8237844451:AAF2y4Se0rgm10KibEalmKqXX46zzrHny6A/getMe
+{
+  "ok": true,
+  "result": {
+    "id": 8237844451,
+    "is_bot": true,
+    "first_name": "made4love",
+    "username": "made4love_bot",
+    "can_join_groups": true,
+    "can_read_all_group_messages": false,
+    "supports_inline_queries": false,
+    "can_connect_to_business": false,
+    "has_main_web_app": false,
+    "has_topics_enabled": false
+  }
+}
+
+
+t.me/PulseMatchBot_bot
+8220602308:AAHeU2MnshdzNPTnSTqraO7V_pbWo-zcNJo
+{
+  "ok": true,
+  "result": {
+    "id": 8220602308,
+    "is_bot": true,
+    "first_name": "@PulseMatchBot",
+    "username": "PulseMatchBot_bot",
+    "can_join_groups": true,
+    "can_read_all_group_messages": false,
+    "supports_inline_queries": false,
+    "can_connect_to_business": false,
+    "has_main_web_app": false,
+    "has_topics_enabled": false
+  }
+}

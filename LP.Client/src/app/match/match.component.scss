@@ -1,0 +1,306 @@
+$color-primary: #557A94;
+$color-secondary: #7396AE;
+$color-accent: #e91e63;
+$color-blue: #03a9f4;
+
+// CSS-переменные как в профиле
+:root {
+  --gradient-top: #557A94;
+  --gradient-bottom: #7396AE;
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-hint: rgba(255, 255, 255, 0.38);
+  --divider-color: rgba(255, 255, 255, 0.12);
+  --surface-dark: #1e1e1e;
+  --surface-light: #2d2d2d;
+}
+
+:host {
+  --divider-color: rgba(255, 255, 255, 0.12);
+  display: block;
+  height: calc(100vh - 130px); // Занимаем всю высоту viewport
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    height: calc(100vh - 60px); // 60px - примерная высота bottom nav
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+// 🔥 СТИЛИ ДЛЯ ВКЛАДОК
+.tabs-container {
+  display: flex;
+  background: $color-primary;
+  border-bottom: 1px solid var(--divider-color);
+  flex-shrink: 0;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 16px 10px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  &.active {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0%;
+      right: 0%;
+      height: 3px;
+      background: linear-gradient(45deg, $color-secondary, $color-blue);
+      border-radius: 2px;
+    }
+  }
+  // Мобильная адаптация
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 14px 8px;
+  }
+}
+
+.gallery-wrapper {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+
+}
+
+.gallery-match-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  max-width: 100%;
+  background-attachment: fixed;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  margin: 10px;
+  padding: 10px;
+  align-content: start;
+  align-items: start;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--divider-color);
+    border-radius: 3px;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    margin: 0px;
+    padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
+    margin: 0px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.gallery-item {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background-color: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  /*&:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  }*/
+
+  .image-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    &:hover img {
+      transform: scale(1.1);
+    }
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+
+
+  .delete-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    cursor: pointer;
+    color: grey;
+    padding: 4px;
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+
+    &:hover {
+      color: red;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  @media (max-width: 768px) {
+    height: 0;
+    padding-bottom: 75%; // 4:3 = 3/4 = 0.75 = 75%
+    display: block;
+    aspect-ratio: 4 / 3;
+  }
+
+  @media (max-width: 480px) {
+    height: 0;
+    padding-bottom: 75%; // 4:3 = 3/4 = 0.75 = 75%
+    display: block;
+    aspect-ratio: 4 / 3;
+  }
+}
+
+.photo-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+  color: white;
+  padding: 8px 10px;
+  pointer-events: none;
+  z-index: 1;
+
+  .photo-name {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .photo-age {
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 400;
+  }
+}
+
+.loading .skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(0deg, $color-primary 0%, $color-secondary 100%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.loading-more {
+  grid-column: 1 / -1; // Растягиваем на все колонки
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+
+  mat-spinner {
+    margin-bottom: 10px;
+
+    ::ng-deep .mat-mdc-progress-spinner {
+      --mdc-circular-progress-active-indicator-color: #fff;
+    }
+  }
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// Стили для автодополнения - БЕЛЫЙ список как в профиле
+::ng-deep {
+  .mat-mdc-autocomplete-panel {
+    background: white !important;
+    color: black !important;
+
+    .mat-mdc-option {
+      color: black !important;
+
+      &:hover,
+      &.mat-mdc-option-active {
+        background: rgba(0, 0, 0, 0.04) !important;
+      }
+
+      &.mdc-list-item--selected {
+        background: rgba(233, 30, 99, 0.15) !important;
+        color: #e91e63 !important;
+      }
+
+      .mdc-list-item__primary-text {
+        color: black !important;
+      }
+    }
+  }
+}

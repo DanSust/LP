@@ -1,0 +1,347 @@
+:root {
+  --gradient-top: #557A94;
+  --gradient-bottom: #7396AE;
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-hint: rgba(255, 255, 255, 0.38);
+  --divider-color: rgba(255, 255, 255, 0.12);
+  --surface-dark: #1e1e1e;
+  --surface-light: #2d2d2d;
+  background-attachment: fixed;
+}
+
+p {
+  color: white;
+}
+
+.mat-stepper-vertical, .mat-stepper-horizontal {
+  background: linear-gradient(to bottom, var(--gradient-top) 0%, var(--gradient-bottom) 100%) !important;
+}
+
+.mat-step-header {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-bottom: 1px solid var(--divider-color) !important;
+}
+
+mat-mdc-text-field-wrapper {
+  border-radius: 0px;
+}
+
+mat-form-field {
+  border-radius: 0px !important;
+  width: 50%;
+}
+
+.mat-form-field-label {
+  color: var(--text-hint) !important;
+}
+
+.mat-input-element {
+  color: var(--text-primary) !important;
+}
+
+/* ===== ЕДИНЫЙ СТИЛЬ ДЛЯ ВСЕХ КНОПОК (как .apply-filters-btn) ===== */
+.btn-step-primary,
+.btn-step-secondary,
+button[matStepperNext],
+button[matStepperPrevious],
+button[mat-button] {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(255,255,255,0.15) !important;
+  border: 1px solid rgba(255,255,255,0.3) !important;
+  border-radius: 20px !important;
+  padding: 8px 16px !important;
+  color: white !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  line-height: 1.5 !important;
+  height: auto !important;
+  min-height: 36px !important;
+
+  &:hover:not(:disabled)
+
+{
+  background: rgba(255,255,255,0.25) !important;
+  transform: translateY(-1px) !important;
+}
+
+&:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+}
+
+
+.mat-label {
+  color: white !important;
+}
+
+.interests-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.interest-group {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--divider-color);
+  border-radius: 12px;
+  padding: 12px;
+  gap: 12px;
+}
+
+.group-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  text-align: center;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+  padding: 8px 4px;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  min-width: 36px;
+}
+
+.chips-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  padding-left: 8px;
+  align-items: center;
+}
+
+mat-chip-option[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+  mat-chip-option[disabled] img {
+    filter: grayscale(100%);
+  }
+
+.interests-counter {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: right;
+}
+
+  .interests-counter.warning {
+    color: #ff6b6b;
+    font-weight: bold;
+  }
+
+.step-actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+}
+
+.step-actions button + button {
+  margin-left: 16px; /* запасной вариант */
+}
+
+.questions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.question-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+  .question-item mat-form-field {
+    flex: 1;
+  }
+
+.remove-btn {
+  margin-top: -16px;
+}
+
+.add-btn {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.questions-counter {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: right;
+}
+
+  .questions-counter.warning {
+    color: #ff6b6b;
+    font-weight: bold;
+  }
+
+.half-width {
+  width: 100%;
+  background-color: var(--surface-light);
+  padding: 10px;
+  border-radius: 0px;
+}
+
+/* ===== ДЕСКТОП > 1024px ===== */
+@media (min-width: 1024px) {
+  /* Email и Nickname в одну строку 50/50 */
+  .email-nickname-row {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    width: 100% !important;
+  }
+
+    .email-nickname-row > div {
+      flex: 1 1 50%;
+      width: auto !important;
+    }
+
+    .email-nickname-row mat-form-field {
+      width: 100% !important;
+    }
+
+  /* Three fields row на десктопе - горизонтально */
+  .three-fields-row {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    width: 100% !important;
+  }
+
+    .three-fields-row mat-form-field {
+      flex: 1;
+      width: auto !important;
+      min-width: 0;
+    }
+}
+
+/* ===== ПЛАНШЕТ 768px - 1023px ===== */
+@media (max-width: 1023px) and (min-width: 768px) {
+  /* Всё в столбик */
+  .email-nickname-row {
+    display: flex;
+    flex-direction: column;
+    width: 100% !important;
+  }
+
+    .email-nickname-row > div {
+      width: 100% !important;
+    }
+
+    .email-nickname-row mat-form-field {
+      width: 100% !important;
+    }
+
+  .three-fields-row {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 0 !important;
+  }
+
+    .three-fields-row mat-form-field {
+      width: 100% !important;
+      flex: none !important;
+      min-width: auto !important;
+    }
+
+  mat-form-field {
+    width: 100% !important;
+  }
+}
+
+/* ===== МОБИЛЬНЫЙ < 768px ===== */
+@media (max-width: 767px) {
+  mat-mdc-form-field {
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  mat-form-field {
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  mat-slider {
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  .form-container {
+    padding: 16px 8px;
+  }
+
+  .mat-slider-thumb {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .email-nickname-row {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+    .email-nickname-row > div {
+      width: 100% !important;
+    }
+
+    .email-nickname-row mat-form-field {
+      width: 100% !important;
+    }
+
+  .three-fields-row {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 0 !important;
+  }
+
+    .three-fields-row mat-form-field {
+      width: 100% !important;
+      flex: none !important;
+      min-width: auto !important;
+    }
+
+  /* На мобильных кнопки растягиваем */
+  /*.step-actions {
+    flex-direction: column;
+  }*/
+
+  /*.btn-step-primary,
+  .btn-step-secondary,
+  button[matStepperNext],
+  button[matStepperPrevious] {
+    width: 100% !important;
+    justify-content: center !important;
+  }*/
+}

@@ -1,0 +1,33 @@
+<div class="events-container">
+  <div class="events-header">
+    <h2>📢 События</h2>
+  </div>
+
+  <ng-container *ngIf="!isLoading; else loadingTemplate">
+    <mat-list *ngIf="events.length > 0; else emptyTemplate">
+      <div class="event-item" *ngFor="let event of events; let last = last">
+        <mat-list-item>
+          <div matListItemTitle class="event-title" style="color: white">{{event.title}}</div>
+          <div matListItemLine class="event-description">{{event.description}}</div>
+          <div matListItemLine class="event-date">{{ event.createdAt | date:'short' }}</div>
+        </mat-list-item>
+        <mat-divider *ngIf="!last"></mat-divider>
+      </div>
+    </mat-list>
+
+    <ng-template #emptyTemplate>
+      <div class="empty-state">
+        <mat-icon class="empty-icon">event_busy</mat-icon>
+        <p>Нет событий</p>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line"></div>
+    </div>
+  </ng-template>
+</div>

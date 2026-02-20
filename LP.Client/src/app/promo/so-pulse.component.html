@@ -1,0 +1,42 @@
+<!-- so-pulse.component.html -->
+<section class="hero">
+  <div class="hearts-container">
+    <!-- Красное сердце -->
+    <svg #heartLeft class="heart heart-left" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+    </svg>
+
+    <!-- Синее сердце -->
+    <svg #heartRight class="heart heart-right" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+    </svg>
+
+    <!-- Кардиограмма -->
+    <svg class="ecg-container" viewBox="0 0 240 70">
+      <g opacity="0.2">
+        <line x1="0" y1="35" x2="240" y2="35" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+        <line x1="0" y1="20" x2="240" y2="20" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+        <line x1="0" y1="50" x2="240" y2="50" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+      </g>
+      <path class="ecg-line" d="M0,35 L15,35 L20,10 L25,50 L30,10 L35,35 L120,35 L125,15 L130,45 L135,15 L140,35 L240,35" />
+    </svg>
+  </div>
+  <h1>Найди свою половинку</h1>
+  <div class="logo-text">
+    <span class="text-co">made</span>
+    <span class="text-4">4</span>
+    <span class="text-pulse">love</span>
+  </div>
+  <!--<h1>Сердца бьются в унисон</h1>-->
+
+  <p class="subtitle">
+    Проверяй совместимость в реальном времени. Выигрывай призы. За свадьбу — деньги.
+  </p>
+
+  <div class="cta-buttons">
+    <button class="btn-primary" (click)="onPrimaryClick()">Запустить сердцебиение</button>
+    <button class="btn-secondary" (click)="onSecondaryClick()">Смотреть демо</button>
+  </div>
+</section>
+
+<app-demo-quest *ngIf="showDemo" (demoComplete)="onDemoComplete()"></app-demo-quest>

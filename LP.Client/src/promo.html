@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoPulse - Найди свой пульс</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      width: 100%;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a0b2e 0%, #4a1c6d 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hearts-container {
+      position: relative;
+      width: 320px;
+      height: 200px;
+      margin-bottom: 60px;
+    }
+
+    .heart {
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      filter: drop-shadow(0 0 20px currentColor);
+      top: 50%;
+      left: 50%;
+    }
+
+    .heart-left {
+      color: #e91e63; /* Красное сердце */
+      transform: translate(calc(-50% - 20px), -50%);
+      z-index: 2;
+      animation: pulse-red 1.5s ease-in-out infinite;
+    }
+
+    .heart-right {
+      color: #03a9f4; /* Синее сердце */
+      transform: translate(calc(-50% + 20px), -50%);
+      z-index: 1;
+      animation: pulse-blue 1.8s ease-in-out infinite;
+      animation-delay: 0.5s; /* Синее сердце начинает с задержкой */
+    }
+
+    .heart.sync {
+      animation: pulse-sync-red 1.2s ease-in-out infinite;
+    }
+
+    .heart-right.sync {
+      animation: pulse-sync-blue 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% {
+        transform: translate(calc(-50% - 20px), -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(calc(-50% - 20px), -50%) scale(1.15);
+      }
+    }
+
+    @keyframes pulse-blue {
+      0%, 100% {
+        transform: translate(calc(-50% + 20px), -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(calc(-50% + 20px), -50%) scale(1.15);
+      }
+    }
+
+    @keyframes pulse-sync-red {
+      0%, 100% {
+        transform: translate(calc(-50% - 20px), -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(calc(-50% - 20px), -50%) scale(1.25);
+      }
+    }
+
+    @keyframes pulse-sync-blue {
+      0%, 100% {
+        transform: translate(calc(-50% + 20px), -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(calc(-50% + 20px), -50%) scale(1.25);
+      }
+    }
+
+    .ecg-container {
+      position: absolute;
+      bottom: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 240px;
+      height: 70px;
+      opacity: 0.8;
+      overflow: visible;
+    }
+
+    .ecg-line {
+      fill: none;
+      stroke: #e91e63;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 400;
+      stroke-dashoffset: 400;
+      animation: draw-ecg 1.8s ease-in-out infinite;
+    }
+
+    @keyframes draw-ecg {
+      0% {
+        stroke-dashoffset: 400;
+      }
+
+      100% {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    h1 {
+      font-family: 'Montserrat', sans-serif;
+      color: #ffffff;
+      font-size: 3.5rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 25px;
+      text-shadow: 0 0 25px rgba(233, 30, 99, 0.6);
+      max-width: 850px;
+      padding: 0 25px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      color: #e0e0e0;
+      font-size: 1.25rem;
+      text-align: center;
+      max-width: 650px;
+      padding: 0 25px;
+      line-height: 1.7;
+      font-weight: 400;
+    }
+
+    .cta-buttons {
+      margin-top: 50px;
+      display: flex;
+      gap: 25px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, #e91e63, #f06292);
+      color: white;
+      padding: 20px 45px;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 25px rgba(233, 30, 99, 0.5);
+      font-family: 'Inter', sans-serif;
+    }
+
+      .btn-primary:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 35px rgba(233, 30, 99, 0.7);
+      }
+
+    .btn-secondary {
+      background: transparent;
+      color: white;
+      padding: 20px 45px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Inter', sans-serif;
+      backdrop-filter: blur(5px);
+    }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: white;
+      }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.4rem;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+      }
+
+      .hearts-container {
+        width: 280px;
+        height: 180px;
+      }
+
+      .heart {
+        width: 70px;
+        height: 70px;
+      }
+
+      .heart-left {
+        transform: translate(calc(-50% - 15px), -50%);
+      }
+
+      .heart-right {
+        transform: translate(calc(-50% + 15px), -50%);
+      }
+
+      @keyframes pulse-red {
+        0%, 100% {
+          transform: translate(calc(-50% - 15px), -50%) scale(1);
+        }
+
+        50% {
+          transform: translate(calc(-50% - 15px), -50%) scale(1.15);
+        }
+      }
+
+      @keyframes pulse-blue {
+        0%, 100% {
+          transform: translate(calc(-50% + 20px), -50%) scale(1);
+        }
+
+        50% {
+          transform: translate(calc(-50% + 20px), -50%) scale(1.15);
+        }
+      }
+
+      @keyframes pulse-sync-red {
+        0%, 100% {
+          transform: translate(calc(-50% - 15px), -50%) scale(1);
+        }
+
+        50% {
+          transform: translate(calc(-50% - 15px), -50%) scale(1.25);
+        }
+      }
+
+      @keyframes pulse-sync-blue {
+        0%, 100% {
+          transform: translate(calc(-50% + 15px), -50%) scale(1);
+        }
+
+        50% {
+          transform: translate(calc(-50% + 15px), -50%) scale(1.25);
+        }
+      }
+
+      .ecg-container {
+        width: 200px;
+      }
+
+      .cta-buttons {
+        flex-direction: column;
+        width: 90%;
+        max-width: 300px;
+      }
+
+      .btn-primary, .btn-secondary {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hearts-container">
+      <!-- Red Heart -->
+      <svg class="heart heart-left" id="heart-left" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+      </svg>
+
+      <!-- Blue Heart -->
+      <svg class="heart heart-right" id="heart-right" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+      </svg>
+
+      <!-- ECG Line -->
+      <svg class="ecg-container" id="ecg-container" viewBox="0 0 240 70">
+        <!-- Background Grid -->
+        <g opacity="0.2">
+          <line x1="0" y1="35" x2="240" y2="35" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+          <line x1="0" y1="20" x2="240" y2="20" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+          <line x1="0" y1="50" x2="240" y2="50" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+        </g>
+
+        <!-- ECG Signal -->
+        <path class="ecg-line" id="ecg-line" d="M0,35 L15,35 L20,10 L25,50 L30,10 L35,35 L120,35 L125,15 L130,45 L135,15 L140,35 L240,35" />
+      </svg>
+    </div>
+    <h1>made4love</h1>
+  <h1>Найди свою половинку. Сердца бьются в унисон</h1>
+
+  <p class="subtitle">
+    Проверяй совместимость в реальном времени. Выигрывай призы. За свадьбу — деньги.
+  </p>
+
+  <div class="cta-buttons">
+    <button class="btn-primary">Запустить сердцебиение</button>
+    <button class="btn-secondary">Смотреть демо</button>
+  </div>
+</section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const heartLeft = document.getElementById('heart-left');
+      const heartRight = document.getElementById('heart-right');
+
+      // Сердца синхронизируются через 3 секунды
+      setTimeout(() => {
+        heartLeft.classList.add('sync');
+        heartRight.classList.add('sync');
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

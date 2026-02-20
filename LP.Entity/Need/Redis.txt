@@ -1,0 +1,2 @@
+﻿docker run -d -p 6379:6379 --name redis-chat redis:alpine
+docker restart redis-container

@@ -1,0 +1,141 @@
+<div class="gallery-wrapper">
+  <!-- 🔥 ПЛАВАЮЩАЯ ИКОНКА ФИЛЬТРА -->
+  @if (!showFilters) {
+  <div class="status-bar">
+    <div class="status-content">
+      <div class="results-count">
+        <mat-icon>people</mat-icon>
+        <span>Найдено: {{allImages.length}} {{getPeopleWord(allImages.length)}}</span>
+      </div>
+      <button class="filter-toggle-btn" (click)="toggleFilters()" title="Показать фильтры">
+        <mat-icon>filter_list</mat-icon>
+        <span>Фильтры</span>
+      </button>
+    </div>
+  </div>
+  }
+
+  <!-- 🔥 ФИЛЬТРЫ -->
+  @if (showFilters) {
+  <div class="filters-container">
+    <!-- 🌍 ВЫБОР ЛОКАЦИИ -->
+    <div class="filter-group location-group">
+      <!--<div class="location-header">
+        @if (useGeolocation && currentPosition) {
+        <div class="geo-status">
+          <mat-icon class="success">check_circle</mat-icon>
+          <span>{{ currentPosition.latitude.toFixed(4) }}, {{ currentPosition.longitude.toFixed(4) }}</span>
+        </div>
+        }
+      </div>-->
+
+      <!-- Ошибка геолокации -->
+      @if (locationError) {
+      <div class="location-error">
+        <mat-icon>error</mat-icon>
+        <span>{{ locationError }}</span>
+        <button mat-button color="accent" (click)="requestGeolocation()">Повторить</button>
+      </div>
+      }
+
+      <!-- Выбор города с автодополнением -->
+      <mat-form-field appearance="fill" class="city-select">
+        @if (useGeolocation && currentPosition) {
+        <mat-label>{{ currentPosition.latitude.toFixed(4) }}, {{ currentPosition.longitude.toFixed(4) }}</mat-label>
+        } @else {
+        <mat-label>Город</mat-label>
+        }
+        <input type="text"
+               placeholder="Введите город"
+               aria-label="Город"
+               matInput
+               [formControl]="cityControl"
+               [matAutocomplete]="auto">
+        <button mat-icon-button matSuffix
+                (click)="$event.stopPropagation(); onGeolocationClick()"
+                [disabled]="isLocating"
+                class="geo-btn"
+                title="Определить моё местоположение">
+          @if (isLocating) {
+          <mat-spinner diameter="18"></mat-spinner>
+          } @else {
+          <mat-icon [class.active]="useGeolocation">my_location</mat-icon>
+          }
+        </button>
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCityFn" (optionSelected)="onCitySelected($event)">
+          @for (city of filteredCities | async; track city.id) {
+          <mat-option [value]="city">{{ city.name }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Радиус поиска (только для геолокации) -->
+      @if (useGeolocation && currentPosition) {
+      <div class="radius-filter">
+        <label class="filter-label">Радиус: {{radiusKm}} км</label>
+        <mat-slider min="1" max="200" step="5" discrete class="age-slider">
+          <input matSliderThumb [(ngModel)]="radiusKm" (dragEnd)="onFilterChange()">
+        </mat-slider>
+      </div>
+      }
+    </div>
+
+    <!-- Фильтр по возрасту -->
+    <div class="filter-group">
+      <label class="filter-label">Возраст: {{ageMin}} - {{ageMax}} лет</label>
+      <mat-slider min="18" max="80" discrete class="age-slider">
+        <input matSliderStartThumb [(ngModel)]="ageMin" (input)="onFilterChange()">
+        <input matSliderEndThumb [(ngModel)]="ageMax" (input)="onFilterChange()">
+      </mat-slider>
+    </div>
+
+    <!-- Кнопка применения -->
+    <button class="apply-filters-btn" (click)="applyFilters()" color="accent">
+      <mat-icon>search</mat-icon>
+      Искать
+    </button>
+  </div>
+  }
+  <!-- 🔥 ГАЛЕРЕЯ -->
+  <div class="gallery-search-container" #galleryContainer>
+    @for (image of allImages; track image.userId) {
+    <div class="gallery-item">
+      <div class="image-wrapper">
+        <img [src]="image.imageUrl" routerLink="/vote/{{image.userId}}" />
+      </div>
+      <div class="photo-info">
+        <span class="photo-name">{{ image.name }}</span>
+        <span class="photo-age">{{ image.age }} лет</span>
+        @if (image.distance) {
+        <span class="photo-distance">
+          <mat-icon>place</mat-icon>
+          {{ formatDistance(image.distance) }}
+        </span>
+        }
+        <div class="interests-tags">
+          @for (interest of image.interests; track interest) {
+          <span class="interest-tag">{{interest}}</span>
+          }
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Индикатор загрузки дополнительных данных -->
+    @if (isLoadingMore) {
+    <div class="loading-more">
+      <mat-spinner diameter="30"></mat-spinner>
+      <span>Загрузка...</span>
+    </div>
+    }
+  </div>
+
+  <ng-template #loadingTemplate>
+    <!--<div class="gallery-container">
+      <div class="gallery-item loading"><div class="skeleton"></div></div>
+      <div class="gallery-item loading"><div class="skeleton"></div></div>
+      <div class="gallery-item loading"><div class="skeleton"></div></div>
+      <div class="gallery-item loading"><div class="skeleton"></div></div>
+    </div>-->
+  </ng-template>
+</div>

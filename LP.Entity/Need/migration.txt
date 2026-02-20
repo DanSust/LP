@@ -1,0 +1,10 @@
+﻿dotnet ef migrations add InitialCreate --project LP.Entity --startup-project LP.Server --context ApplicationContext
+dotnet ef database update --project LP.Entity --startup-project LP.Server --context ApplicationContext
+
+dotnet ef migrations remove --project LP.Entity --force --startup-project LP.Server --context ApplicationContext
+--dotnet ef migrations remove
+
+dotnet ef database drop --project LP.Entity --force --startup-project LP.Server --context ApplicationContext
+
+
+dotnet ef migrations add InitialCreate --baseline --project LP.Entity --startup-project LP.Server --context ApplicationContext

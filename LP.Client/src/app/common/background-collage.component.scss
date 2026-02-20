@@ -1,0 +1,34 @@
+.background-collage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 6px;
+  filter: blur(1px);
+
+  .collage-photo {
+    background-size: cover;
+    background-position: center;
+    opacity: 0.6;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, rgba(255,105,180,0.1), rgba(138,43,226,0.1));
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .background-collage,
+  .overlay {
+    display: none !important;
+  }
+}

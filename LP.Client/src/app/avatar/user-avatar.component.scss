@@ -1,0 +1,39 @@
+.avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Расстояние между аватаром и именем */
+}
+
+.avatar-container {
+  position: relative;
+  flex-shrink: 0; /* Не сжимать аватар */
+}
+
+.chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: block;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: gray;
+  border: 2px solid white;
+}
+
+.status-indicator.online {
+  background-color: #4ade80; /* Зеленый */
+}
+
+.chat-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  white-space: nowrap; /* Имя в одну строку */
+}

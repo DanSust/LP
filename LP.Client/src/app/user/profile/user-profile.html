@@ -1,0 +1,247 @@
+<form [formGroup]="form">
+  <mat-stepper orientation="vertical" linear>
+    <mat-step label="Персональня информация">
+      <br />
+      <div class="email-nickname-row">
+        <div>
+          <mat-form-field >
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="Email" placeholder="eMail" required>
+            <mat-error *ngIf="form.get('Email')?.hasError('required')">
+              This field is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div>
+          <mat-form-field>
+            <mat-label>Ник</mat-label>
+            <input matInput formControlName="Caption" placeholder="Display Name" required>
+            <mat-error *ngIf="form.get('Caption')?.hasError('required')">
+              This field is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="three-fields-row" style="display: flex; gap: 16px; ">
+        <mat-form-field style="flex: 1; width: auto !important; min-width: 0;">
+          <mat-label>пол</mat-label>
+          <mat-select formControlName="Sex">
+            <mat-option value="0">male</mat-option>
+            <mat-option value="1">female</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field style="flex: 1; width: auto !important; min-width: 0;">
+          <mat-label>др</mat-label>
+          <input matInput formControlName="Birthday" [matDatepicker]="datepicker" />
+          <mat-datepicker-toggle matIconSuffix [for]="datepicker"></mat-datepicker-toggle>
+          <mat-datepicker #datepicker>
+            <mat-datepicker-actions>
+              <!--<button matButton matDatepickerCancel>Cancel</button>-->
+              <button matButton="elevated" matDatepickerApply>Применить</button>
+            </mat-datepicker-actions>
+          </mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field style="flex: 1; width: auto !important; min-width: 0;">
+          <mat-label>отношения</mat-label>
+          <mat-select formControlName="Aim">
+            <mat-option value="0">свободные</mat-option>
+            <mat-option value="1">решу позже</mat-option>
+            <mat-option value="2">серьёзные</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </div>
+      <div>
+        <!-- Ошибка геолокации -->
+        @if (locationError) {
+        <div class="location-error" style="color: #f44336; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+          <mat-icon>error</mat-icon>
+          <span>{{ locationError }}</span>
+          <button mat-button color="warn" (click)="requestGeolocation()" type="button">Повторить</button>
+        </div>
+        }
+
+        <mat-form-field style="width: 100%;">
+          @if (useGeolocation && currentPosition) {
+          <mat-label>{{ currentPosition.latitude.toFixed(4) }}, {{ currentPosition.longitude.toFixed(4) }}</mat-label>
+          } @else {
+          <mat-label>Город</mat-label>
+          }
+          <input type="text"
+                 placeholder="Введите город"
+                 aria-label="Town"
+                 matInput
+                 required
+                 formControlName="TownName"
+                 [matAutocomplete]="auto">
+          <button mat-icon-button
+                  matSuffix
+                  type="button"
+                  (click)="$event.stopPropagation(); onGeolocationClick()"
+                  [disabled]="isLocating"
+                  title="Определить моё местоположение">
+            @if (isLocating) {
+            <mat-spinner diameter="18"></mat-spinner>
+            } @else {
+            <mat-icon [class.active]="useGeolocation" [style.color]="useGeolocation ? '#4caf50' : ''">my_location</mat-icon>
+            }
+          </button>
+          <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCityFn" (optionSelected)="onCitySelected($event)">
+            @for (city of filteredTowns | async; track city.id) {
+            <mat-option [value]="city">{{ city.name }}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      <div>
+        <mat-label class="mat-label">ищу в возрасте от {{ageFrom.value}} до {{ageTo.value}}</mat-label><br>
+        <mat-slider min="18" max="100" style="width: 50%">
+          <input matSliderStartThumb formControlName="AgeFrom" #ageFrom>
+          <input matSliderEndThumb formControlName="AgeTo" #ageTo>
+        </mat-slider>
+      </div>
+      <div>
+        <mat-label class="mat-label">мой вес {{sliderW.value}}</mat-label><br>
+        <mat-slider min="1" max="250" step="1" [discrete]="1" style="width: 50%">
+          <input formControlName="Weight" matSliderThumb #sliderW>
+        </mat-slider>
+        <!--<label class="example-value-label">{{sliderW.value}}</label>-->
+      </div>
+      <div>
+        <mat-label class="mat-label">я ростом {{sliderH.value}}</mat-label><br>
+        <mat-slider min="1" max="250" step="1" [discrete]="1" style="width: 50%">
+          <input formControlName="Height" matSliderThumb #sliderH>
+        </mat-slider>
+        <!--<label class="example-value-label">{{sliderH.value}}</label>-->
+      </div>
+
+      <div class="step-actions">
+        
+        <button mat-button matStepperNext>Далее</button>
+        
+      </div>
+
+    </mat-step>
+
+    <mat-step label="Опишите себя (Что бы вы хотели рассказать о себе)">
+      <br>
+      <mat-form-field style="width: 100%">
+        <mat-label>...</mat-label>
+        <textarea matInput placeholder="Свободно о себе..., Кого я хочу найти ..., Автопортрет..." formControlName="Description"></textarea>
+      </mat-form-field>
+      <br>
+      <div class="step-actions">
+        <button mat-button matStepperPrevious>Назад</button>
+        <button mat-button matStepperNext>Далее</button>
+      </div>
+    </mat-step>
+
+    <mat-step label="Интересы">
+      <mat-chip-listbox multiple
+                        (change)="onSelectionChange($event)"
+                        [value]="getSelectedInterestIds()"
+                        class="interests-container">
+
+        @for (group of interestGroups; track group.id) {
+        <div class="interest-group">
+          <h3 class="group-title">{{ group.name }}</h3>
+          <div class="chips-wrapper">
+            @for (item of getInterestsByGroup(group.id); track item.id) {
+            <mat-chip-option [value]="item.id"
+                             [selected]="item.selected"
+                             [disabled]="selectedInterestsCount >= maxInterests && !item.selected">
+              <img matChipAvatar src="assets{{item.path}}" alt="{{item.name}}" />
+              {{item.name}}
+            </mat-chip-option>
+            }
+          </div>
+        </div>
+        }
+      </mat-chip-listbox>
+
+      <div class="step-actions">
+        <button mat-button matStepperPrevious>Назад</button>
+        <button mat-button matStepperNext>Далее</button>
+      </div>
+    </mat-step>
+
+    <!-- Вставьте этот шаг после "Interests" и перед "Photos" -->
+    <mat-step label="Вопросы для партнера">
+
+      <div class="questions-counter" [class.warning]="questionsFormArray.length >= maxQuestions">
+        Вопросы: {{questionsFormArray.length}} / {{maxQuestions}}
+      </div>
+
+      <div class="questions-container" formArrayName="questions">
+        <!-- ✅ Используем индекс i для formGroupName -->
+        @for (questionGroup of questionsFormArray.controls; track getQuestionId($index); let i = $index) {
+        <div class="question-item" [formGroupName]="i">
+          <mat-form-field class="full-width">
+            <!-- ✅ formControlName должен совпадать с именем поля в FormBuilder -->
+            <input matInput
+                   formControlName="question"
+                   placeholder="Задайте вопрос">
+          </mat-form-field>
+
+          @if (questionsFormArray.length > 1) {
+          <button mat-icon-button
+                  color="warn"
+                  (click)="removeQuestion(i)"
+                  class="remove-btn">
+            <mat-icon>delete</mat-icon>
+          </button>
+          }
+        </div>
+        }
+
+        @if (questionsFormArray.length < maxQuestions) {
+        <button mat-button
+                color="primary"
+                (click)="addQuestion()"
+                class="add-btn">
+          <mat-icon>add</mat-icon>
+          Добавить
+        </button>
+        }
+      </div>
+
+      <div class="step-actions">
+        <button mat-button matStepperPrevious>Назад</button>
+        <button mat-button matStepperNext>Далее</button>
+      </div>
+    </mat-step>
+
+    <mat-step label="Фотографии">
+      <user-photo></user-photo>
+      <div class="step-actions">
+        <button mat-button matStepperPrevious>Назад</button>
+        <button mat-button matStepperNext>Далее</button>
+      </div>
+    </mat-step>
+
+    <mat-step label="Настройки">
+      <p><mat-slide-toggle formControlName="IsActive" (change)="pause()" style="color: white"> {{ form.get('IsActive')?.value ? 'Профиль активный' : 'Профиль на паузе' }}</mat-slide-toggle></p>
+      <p><mat-slide-toggle formControlName="SendEmail" style="color: white"> {{ form.get('SendEmail')?.value ? 'Присылать уведомления на Email' : 'Не присылать уведомления' }}</mat-slide-toggle></p>
+      <p><mat-slide-toggle formControlName="WithPhoto" style="color: white">Патнеры только с фото</mat-slide-toggle></p>
+      <p><mat-slide-toggle formControlName="WithLikes" style="color: white">Писать только при взаимных лайках</mat-slide-toggle></p>
+      <div class="step-actions">
+        <button mat-button matStepperPrevious>Назад</button>
+        <button mat-button matStepperNext>Далее</button>
+      </div>
+    </mat-step>
+
+    <mat-step label="Финиш">
+      @if (isSaving) {
+      <mat-spinner diameter="20"></mat-spinner>
+      }
+      @else {
+      <div class="step-actions">
+        <button mat-button matStepperPrevious>Назад</button>
+        <button mat-button [disabled]="form.invalid" (click)="save()">Сохранить</button>
+      </div>
+      }
+    </mat-step>
+  </mat-stepper>
+</form>
