@@ -1,0 +1,17 @@
+{
+  "/Photos/**": {
+    "target": "https://localhost:7010",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/api": {
+    "target": "https://127.0.0.1:7010",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "headers": {
+      "Connection": "keep-alive"
+    }
+  }
+}

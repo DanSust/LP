@@ -28,6 +28,15 @@ class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        var imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img");
+        Directory.CreateDirectory(imgPath);
+
+        imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img", "scroll");
+        Directory.CreateDirectory(imgPath);
+
+        imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img", "back");
+        Directory.CreateDirectory(imgPath);
+
         // Add services to the container.
         builder.Services.AddStackExchangeRedisCache(options =>
         {
