@@ -141,30 +141,28 @@ mat-chip-option {
   background: rgba(255, 255, 255, 0.1) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   color: white !important;
-  .mdc-evolution-chip__text-label
-{
-  font-weight: 100 !important;
+}
+
+mat-chip-option .mdc-evolution-chip__text-label {
   color: white !important;
-}
-  .mat-mdc-chip-action-label {
-    font-weight: 100 !important;
-  }
+  font-weight: 300 !important; /* обычное состояние — тонкий шрифт */
+  transition: font-weight 0.2s ease;
 }
 
-/* Галочка выбранного чипа - белая и жирная */
-::ng-deep mat-chip-option.mat-mdc-chip-selected .mdc-evolution-chip__checkmark-path {
-  stroke-width: 3px !important;
+mat-chip-option[selected] .mdc-evolution-chip__text-label,
+.mat-mdc-chip-selected .mdc-evolution-chip__text-label {
+  font-weight: 600 !important; /* жирный при выборе */
 }
 
-/* Увеличенная галочка */
-::ng-deep mat-chip-option.mat-mdc-chip-selected .mdc-evolution-chip__checkmark-svg {
-  transform: scale(1.2) !important;
+.mat-mdc-chip-selected .mdc-evolution-chip__checkmark {
+  color: white !important;
 }
 
 
 mat-chip-option[disabled] {
   opacity: 0.4;
   cursor: not-allowed;
+
 }
 
   mat-chip-option[disabled] img {
