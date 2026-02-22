@@ -70,13 +70,13 @@ export class UserProfile implements OnInit {
 
   interestGroups = [
     { id: 1, name: 'Спорт' },
-    { id: 2, name: 'культура' },
+    { id: 2, name: 'Культура' },
     { id: 3, name: 'Музыка' },
     { id: 4, name: 'Еда ' },
-    { id: 5, name: 'природа' },
+    { id: 5, name: 'Природа' },
     { id: 6, name: 'Игры ' },
-    { id: 7, name: 'обучение' },
-    { id: 8, name: 'активность' }
+    { id: 7, name: 'Обучение' },
+    { id: 8, name: 'Активность' }
   ];
 
   userQuestions: QuestionsDTO[] = [];

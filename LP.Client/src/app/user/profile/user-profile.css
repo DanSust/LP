@@ -63,7 +63,6 @@ button[mat-button] {
   line-height: 1.5 !important;
   height: auto !important;
   min-height: 36px !important;
-
   &:hover:not(:disabled)
 
 {
@@ -137,6 +136,32 @@ mat-icon {
   align-items: center;
 }
 
+
+mat-chip-option {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  .mdc-evolution-chip__text-label
+{
+  font-weight: 100 !important;
+  color: white !important;
+}
+  .mat-mdc-chip-action-label {
+    font-weight: 100 !important;
+  }
+}
+
+/* Галочка выбранного чипа - белая и жирная */
+::ng-deep mat-chip-option.mat-mdc-chip-selected .mdc-evolution-chip__checkmark-path {
+  stroke-width: 3px !important;
+}
+
+/* Увеличенная галочка */
+::ng-deep mat-chip-option.mat-mdc-chip-selected .mdc-evolution-chip__checkmark-svg {
+  transform: scale(1.2) !important;
+}
+
+
 mat-chip-option[disabled] {
   opacity: 0.4;
   cursor: not-allowed;
@@ -164,9 +189,9 @@ mat-chip-option[disabled] {
   gap: 12px;
 }
 
-.step-actions button + button {
-  margin-left: 16px; /* запасной вариант */
-}
+  .step-actions button + button {
+    margin-left: 16px; /* запасной вариант */
+  }
 
 .questions-container {
   display: flex;
