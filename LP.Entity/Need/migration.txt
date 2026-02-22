@@ -8,3 +8,5 @@ dotnet ef database drop --project LP.Entity --force --startup-project LP.Server 
 
 
 dotnet ef migrations add InitialCreate --baseline --project LP.Entity --startup-project LP.Server --context ApplicationContext
+
+dotnet ef migrations add FixMessageTypeColumn --project LP.Entity --startup-project LP.Server --context ApplicationContext --output-dir Migrations

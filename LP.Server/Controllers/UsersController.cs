@@ -73,6 +73,7 @@ namespace LP.Server.Controllers
                     x.Aim,
                     x.SendEmail,
                     x.WithPhoto,
+                    x.WithEmail,
                     x.WithLikes,
                     x.CityId
                 })
@@ -145,6 +146,7 @@ namespace LP.Server.Controllers
                     AgeTo = 80,
                     SendEmail = true,
                     WithPhoto = true,
+                    WithEmail = true,
                     WithLikes = false,
                     Aim = Aim.aimLater
                 };
@@ -177,6 +179,7 @@ namespace LP.Server.Controllers
                     Aim = profile != null ? profile.Aim : Aim.aimLater,
                     SendEmail = profile != null ? profile.SendEmail : true,
                     WithPhoto = profile != null ? profile.WithPhoto : true,
+                    WithEmail = profile != null ? profile.WithEmail : true,
                     WithLikes = profile != null ? profile.WithLikes : false,
                     interests = interests 
                 })

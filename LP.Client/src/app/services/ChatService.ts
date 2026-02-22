@@ -212,6 +212,13 @@ export class ChatService {
 
   otherUser = computed(() => {
     const chatId = this.activeChatId();
+    const chat = this.chats().find(c => c.id === chatId);
+    if (!chat) return undefined;
+    return {
+      userId: chat.userId,
+      name: chat.name,
+      avatar: chat.avatar
+    };
     return this.messages().find(msg => msg.chatId === chatId && msg.userId !== this.userId);
   });
 

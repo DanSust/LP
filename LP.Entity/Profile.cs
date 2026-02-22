@@ -22,5 +22,6 @@ public class Profile: BaseEntity
     public Aim Aim { get; set; } = Aim.aimLater;
     public bool SendEmail { get; set; } = true;
     public bool WithPhoto { get; set; } = true;
+    public bool WithEmail { get; set; } = true;
     public bool WithLikes { get; set; } = false;
 }

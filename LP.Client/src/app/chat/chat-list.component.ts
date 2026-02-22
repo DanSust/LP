@@ -39,7 +39,9 @@ export class ChatListComponent {
   }
 
   selectChat(chat: Chat): void {
-    console.log('selectChat ' + chat.userId);
+    console.log('selectChat called, chat.id:', chat.id, 'chat:', chat);
+    console.log('Current URL before navigate:', this.router.url);
+
     this.chatService.activeChatId.set(chat.id);
     this.chatService.activeUserId.set(chat.userId);
     this.chatService.markChatAsRead(chat.id);
@@ -48,7 +50,10 @@ export class ChatListComponent {
     //  this.showMobileMenu = false;
     //}
 
-    this.router.navigate(['/chat', chat.id]);
+    this.router.navigate(['/chat', chat.id]).then(success => {
+      console.log('Navigation success:', success);
+      console.log('Current URL after navigate:', this.router.url);
+    });
   }
 
   toggleMobileMenu(): void {

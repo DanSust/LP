@@ -245,6 +245,10 @@ namespace LP.Server.Controllers
         {
             var userId = UserId;
 
+            var currentUserProfile = await _context.Profiles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
             var shownIds = await _context.Votes
                 .AsNoTracking()
                 .Where(s => s.Owner == userId)
@@ -252,18 +256,24 @@ namespace LP.Server.Controllers
                 .ToListAsync();
             shownIds.Add(userId);
 
-            // 1. Случайные пользователи
-            //var randomIds = await _context.Database
-            //    .SqlQueryRaw<Guid>($@"
-            //SELECT TOP 1 Id 
-            //FROM Users 
-            //WHERE Id != '{userId}' AND Username != 'admin'
-            //ORDER BY CHECKSUM(NEWID())")
-            //    .ToListAsync();
-
-            var randomIds = await _context.Users
+            // Базовый запрос
+            var query = _context.Users
                 .AsNoTracking()
-                .Where(x => x.Username != "admin" && !shownIds.Contains(x.Id))
+                .Where(x => x.Username != "admin" && !shownIds.Contains(x.Id) && x.IsPaused == false);
+
+            // Если у текущего пользователя стоит WithEmail - фильтруем только с подтвержденным Email
+            if (currentUserProfile?.WithEmail == true)
+            {
+                query = query.Where(x => x.EmailConfirmation != null && x.EmailConfirmation.IsConfirmed);
+            }
+
+            // Если у текущего пользователя стоит WithPhoto - фильтруем только тех, у кого есть фото
+            if (currentUserProfile?.WithPhoto == true)
+            {
+                query = query.Where(x => _context.Photos.Any(p => p.User.Id == x.Id));
+            }
+
+            var randomIds = await query
                 .OrderBy(u => EF.Functions.Random())
                 .Take(count)
                 .Select(x => x.Id)

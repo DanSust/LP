@@ -119,6 +119,7 @@ export class ChatView implements OnInit, OnDestroy {
   }
 
   onAvatarClick(): void {
+    console.log('onAvatarClick()', this.chatService.otherUser()?.userId);
     const otherUserId = this.chatService.otherUser()?.userId;
     if (otherUserId) {
       console.log('otherUserId', otherUserId);

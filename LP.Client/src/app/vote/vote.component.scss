@@ -247,13 +247,16 @@
   }
 
   .back-btn {
+    width: 40px !important;
+    height: 40px !important;
     position: absolute !important;
-    top: 10px !important;
+    bottom: 30px !important;
     right: 10px !important;
     left: auto !important;
     z-index: 1000001 !important;
     background: transparent !important;
     border: none !important;
+    cursor: pointer !important;
   }
 
   .close-btn {
@@ -264,7 +267,7 @@
     z-index: 1000001 !important;
     background: transparent !important;
     border: 0px !important;
-    border-radius: 50% !important;    
+    border-radius: 50% !important;
     width: 40px !important;
     height: 40px !important;
     display: flex !important;
@@ -276,9 +279,9 @@
 
   mat-icon {
     color: white !important;
-    font-size: 24px;
-    width: 24px;
-    height: 24px;
+    font-size: 34px;
+    width: 34px;
+    height: 34px;
   }
 }
 

@@ -224,7 +224,8 @@
     <mat-step label="Настройки">
       <p><mat-slide-toggle formControlName="IsActive" (change)="pause()" style="color: white"> {{ form.get('IsActive')?.value ? 'Профиль активный' : 'Профиль на паузе' }}</mat-slide-toggle></p>
       <p><mat-slide-toggle formControlName="SendEmail" style="color: white"> {{ form.get('SendEmail')?.value ? 'Присылать уведомления на Email' : 'Не присылать уведомления' }}</mat-slide-toggle></p>
-      <p><mat-slide-toggle formControlName="WithPhoto" style="color: white">Патнеры только с фото</mat-slide-toggle></p>
+      <p><mat-slide-toggle formControlName="WithPhoto" style="color: white">Партнеры только с фото</mat-slide-toggle></p>
+      <p><mat-slide-toggle formControlName="WithEmail" style="color: white">Только подтвержденные email</mat-slide-toggle></p>
       <p><mat-slide-toggle formControlName="WithLikes" style="color: white">Писать только при взаимных лайках</mat-slide-toggle></p>
       <div class="step-actions">
         <button mat-button matStepperPrevious>Назад</button>

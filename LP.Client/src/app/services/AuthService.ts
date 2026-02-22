@@ -64,6 +64,11 @@ export class AuthService {
     //return of({ success: true }).pipe(delay(1000));
     return this.http.post<any>(this.baseUrl + '/api/auth/login', { username: email, password }, { withCredentials: true })
       .pipe(tap(response => {
+        const userId = response.userId || response.id;
+        if (userId) {
+          localStorage.setItem('userId', userId);
+          this.userIdSubject.next(userId);
+        }
         this.router.navigate(['/profile']);
       }
       ));

@@ -10,6 +10,7 @@ export interface Profile {
   appearance?: string;
   lifestyle?: string;
   zodiac?: string;
+  hasMutualLike?: boolean;
   photoUrls?: { id: string; path: string }[]; // Массив объектов
   interests?: { id: string; name: string; path: string }[];  // Массив объектов  
 }

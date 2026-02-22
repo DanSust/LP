@@ -141,7 +141,7 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
         next: () => {
           this.isLoading = false;
           console.log('Успешный вход');
-          this.router.navigate(['/profile']);
+          setTimeout(() => this.router.navigate(['/profile']), 500);          
         },
         error: (error) => {
           this.isLoading = false;
