@@ -73,7 +73,7 @@
       @if (useGeolocation && currentPosition) {
       <div class="radius-filter">
         <label class="filter-label">Радиус: {{radiusKm}} км</label>
-        <mat-slider min="1" max="200" step="5" discrete class="age-slider">
+        <mat-slider min="1" max="500" step="5" [discrete]="1" style="min-width: 100%" >
           <input matSliderThumb [(ngModel)]="radiusKm" (dragEnd)="onFilterChange()">
         </mat-slider>
       </div>
@@ -83,7 +83,7 @@
     <!-- Фильтр по возрасту -->
     <div class="filter-group">
       <label class="filter-label">Возраст: {{ageMin}} - {{ageMax}} лет</label>
-      <mat-slider min="18" max="80" discrete class="age-slider">
+      <mat-slider min="18" max="80" [discrete]="1">
         <input matSliderStartThumb [(ngModel)]="ageMin" (input)="onFilterChange()">
         <input matSliderEndThumb [(ngModel)]="ageMax" (input)="onFilterChange()">
       </mat-slider>

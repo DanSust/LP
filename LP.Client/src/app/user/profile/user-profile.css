@@ -49,6 +49,36 @@ mat-form-field {
   color: var(--text-primary) !important;
 }
 
+/* ===== СТИЛИ ДЛЯ СЛАЙДЕРОВ (цвет #03a9f4) ===== */
+/* Активная часть трека (значимая/заполненная) */
+.mat-mdc-slider .mdc-slider__track--active_fill {
+  background-color: #03a9f4 !important;
+  border-color: #03a9f4 !important;
+}
+
+/* Неактивная часть трека (пустая) — светлее/прозрачнее */
+.mat-mdc-slider .mdc-slider__track--inactive {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Ползунок (thumb) — тот же цвет */
+.mat-mdc-slider .mdc-slider__thumb-knob {
+  background-color: #03a9f4 !important;
+  border-color: #03a9f4 !important;
+}
+
+/* Иконка активного шага (цифра в кружке) */
+.mat-step-icon.mat-step-icon-selected,
+.mat-step-icon.mat-step-icon-state-edit {
+  background-color: cornflowerblue !important;
+  color: white !important;
+}
+
+/* Активный трек (когда включено) */
+.mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked .mdc-switch__track::after {
+  background-color: #03a9f4 !important;
+}
+
 /* ===== ЕДИНЫЙ СТИЛЬ ДЛЯ ВСЕХ КНОПОК (как .apply-filters-btn) ===== */
 .btn-step-primary,
 .btn-step-secondary,

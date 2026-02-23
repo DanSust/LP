@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, HostListener, ElementRef, AfterViewInit, OnDestroy, ViewChild, ChangeDetectorRef, viewChild } from '@angular/core';
+import { Component, Inject, OnInit, HostListener, ElementRef, AfterViewInit, OnDestroy, ViewChild, ChangeDetectorRef, viewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -46,6 +46,7 @@ interface SearchFilters {
 @Component({
   selector: 'search-component',
   standalone: true,
+  encapsulation: ViewEncapsulation.None,
   imports: [
     CommonModule,
     RouterLink,
