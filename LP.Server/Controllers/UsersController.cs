@@ -145,6 +145,7 @@ namespace LP.Server.Controllers
                     AgeFrom = 18,
                     AgeTo = 80,
                     SendEmail = true,
+                    SendTelegram = true,
                     WithPhoto = true,
                     WithEmail = true,
                     WithLikes = false,
@@ -168,6 +169,7 @@ namespace LP.Server.Controllers
                     Caption = x.Caption,
                     Sex = x.Sex,
                     IsPaused = x.IsPaused,
+                    Provider = x.Provider,
                     Birthday = x.Birthday != null ? x.Birthday : DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
                     Description = profile != null ? profile.Description : null,
                     Weight = profile != null ? profile.Weight : 80,
@@ -178,6 +180,7 @@ namespace LP.Server.Controllers
                     townName = town != null ? town.Name : "",
                     Aim = profile != null ? profile.Aim : Aim.aimLater,
                     SendEmail = profile != null ? profile.SendEmail : true,
+                    SendETelegram = profile != null ? profile.SendTelegram : true,
                     WithPhoto = profile != null ? profile.WithPhoto : true,
                     WithEmail = profile != null ? profile.WithEmail : true,
                     WithLikes = profile != null ? profile.WithLikes : false,
@@ -289,6 +292,7 @@ namespace LP.Server.Controllers
             profile.AgeFrom = model.GetProperty("AgeFrom").GetInt16();
             profile.AgeTo = model.GetProperty("AgeTo").GetInt16();
             profile.SendEmail = model.GetProperty("SendEmail").GetBoolean();
+            profile.SendTelegram = model.GetProperty("SendTelegram").GetBoolean();
             profile.WithPhoto = model.GetProperty("WithPhoto").GetBoolean();
             profile.WithLikes = model.GetProperty("WithLikes").GetBoolean();
             profile.Aim = Enum.Parse<Aim>(model.GetProperty("Aim").GetString());

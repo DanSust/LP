@@ -23,6 +23,15 @@ p {
   border-bottom: 1px solid var(--divider-color) !important;
 }
 
+.mat-step-text-label {
+  color: wheat;
+  font-size: medium;
+}
+
+.mdc-label {
+  color: white;
+}
+
 mat-mdc-text-field-wrapper {
   border-radius: 0px;
 }
@@ -151,7 +160,7 @@ mat-chip-option .mdc-evolution-chip__text-label {
 
 mat-chip-option[selected] .mdc-evolution-chip__text-label,
 .mat-mdc-chip-selected .mdc-evolution-chip__text-label {
-  font-weight: 600 !important; /* жирный при выборе */
+  font-weight: 500 !important; /* жирный при выборе */
 }
 
 .mat-mdc-chip-selected .mdc-evolution-chip__checkmark {

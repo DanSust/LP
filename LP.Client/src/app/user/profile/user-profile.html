@@ -1,15 +1,22 @@
 <form [formGroup]="form">
   <mat-stepper orientation="vertical" linear>
-    <mat-step label="Персональня информация">
+    <mat-step label="Персональная информация">
       <br />
       <div class="email-nickname-row">
         <div>
-          <mat-form-field >
+          <mat-form-field>
             <mat-label>Email</mat-label>
             <input matInput formControlName="Email" placeholder="eMail" required>
-            <mat-error *ngIf="form.get('Email')?.hasError('required')">
-              This field is required
-            </mat-error>
+            <button mat-icon-button
+                    matSuffix
+                    (click)="$event.stopPropagation(); onEmailClick()"
+                    type="button"
+                    title="Подтвердить почту">
+              <mat-icon>mark_email_read</mat-icon>
+            </button>
+              <mat-error *ngIf="form.get('Email')?.hasError('required')">
+                заполните это поле
+              </mat-error>
           </mat-form-field>
         </div>
         <div>
@@ -17,7 +24,7 @@
             <mat-label>Ник</mat-label>
             <input matInput formControlName="Caption" placeholder="Display Name" required>
             <mat-error *ngIf="form.get('Caption')?.hasError('required')">
-              This field is required
+              заполните это поле
             </mat-error>
           </mat-form-field>
         </div>
@@ -125,7 +132,7 @@
 
     </mat-step>
 
-    <mat-step label="Опишите себя (Что бы вы хотели рассказать о себе)">
+    <mat-step label="Что бы вы хотели рассказать о себе">
       <br>
       <mat-form-field style="width: 100%">
         <mat-label>...</mat-label>
@@ -223,7 +230,8 @@
 
     <mat-step label="Настройки">
       <p><mat-slide-toggle formControlName="IsActive" (change)="pause()" style="color: white"> {{ form.get('IsActive')?.value ? 'Профиль активный' : 'Профиль на паузе' }}</mat-slide-toggle></p>
-      <p><mat-slide-toggle formControlName="SendEmail" style="color: white"> {{ form.get('SendEmail')?.value ? 'Присылать уведомления на Email' : 'Не присылать уведомления' }}</mat-slide-toggle></p>
+      <p><mat-slide-toggle formControlName="SendEmail" style="color: white"> {{ form.get('SendEmail')?.value ? 'Уведомления на Email' : 'Не присылать на Email' }}</mat-slide-toggle></p>
+      <p><mat-slide-toggle formControlName="SendTelegram" style="color: white"> {{ form.get('SendTelegram')?.value ? 'Уведомления на Telegram' : 'Не присылать на Telegram' }}</mat-slide-toggle></p>
       <p><mat-slide-toggle formControlName="WithPhoto" style="color: white">Партнеры только с фото</mat-slide-toggle></p>
       <p><mat-slide-toggle formControlName="WithEmail" style="color: white">Только подтвержденные email</mat-slide-toggle></p>
       <p><mat-slide-toggle formControlName="WithLikes" style="color: white">Писать только при взаимных лайках</mat-slide-toggle></p>

@@ -63,6 +63,7 @@ export class UserProfile implements OnInit {
   filteredTowns: Observable<TownDTO[]> = of([]);
   isSaving: boolean = false;
   response: string = "";
+  provider: string = "google";
 
   maxInterests = 10;
   selectedInterestsCount = 0;
@@ -103,6 +104,7 @@ export class UserProfile implements OnInit {
       Sex: '0',
       IsActive: true,
       SendEmail: true,
+      SendTelegram: true,
       WithPhoto: true,
       WithEmail: true,
       WithLikes: false,
@@ -156,7 +158,7 @@ export class UserProfile implements OnInit {
           });
         }
 
-        console.log(u);
+        this.provider = u.provider;        
 
         this.form.patchValue({
           Email: u.email,
@@ -164,6 +166,7 @@ export class UserProfile implements OnInit {
           Sex: u.sex ? '1' : '0',
           IsActive: u.isPaused ? false : true,
           SendEmail: u.sendEmail ? false : true,
+          SendTelegram: u.sendTelegram ? false : true,
           WithPhotos: u.withPhotos ? false : true,
           WithEmail: u.withEmail ? false : true,
           WithLikes: u.withLikes ? false : true,
@@ -216,6 +219,10 @@ export class UserProfile implements OnInit {
 
   displayCityFn(city: TownDTO | string | null): string {
     return typeof city === 'string' ? city : city?.name || '';
+  }
+
+  onEmailClick(): void {
+    this.toast.show('На вашу почту отправлено письмо');
   }
 
   onCitySelected(event: MatAutocompleteSelectedEvent): void {
