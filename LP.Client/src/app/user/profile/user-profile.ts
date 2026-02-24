@@ -20,7 +20,7 @@ import { UserPhoto } from '../user-photo/user-photo';
 import { Observable } from 'rxjs/internal/Observable';
 import { startWith } from 'rxjs/internal/operators/startWith';
 import { map } from 'rxjs/internal/operators/map';
-import { catchError, of } from 'rxjs';
+import { catchError, firstValueFrom, of } from 'rxjs';
 import { ToastService } from '../../common/toast.service';
 import { generateGUID } from '../../common/GUID';
 import { MatIconModule } from '@angular/material/icon';
@@ -124,35 +124,54 @@ export class UserProfile implements OnInit {
     });  
   }
 
-  ngOnInit() {               // вызывается после конструктора    
-    this.http.get<{ userId: string }>(this.base + '/Users/cookies')
-      .subscribe(u => { console.log(u.userId) });
+  ngOnInit() {
+    // 🔥 Этап 1: Параллельная загрузка независимых данных (cookies, interests, cities)
+    const cookies$ = this.http.get<{ userId: string }>(this.base + '/Users/cookies');
+    const interests$ = this.http.get<InterestDTO[]>(this.base + '/Interests/list');
+    const cities$ = this.http.get<TownDTO[]>(this.base + '/City/list', { withCredentials: true });
 
-    this.http.get<InterestDTO[]>(this.base + '/Interests/list') // Ensure it's an array
-      .subscribe(result => { this.interests = result; this.updateSelectedCount(); });
-
-    this.http.get<TownDTO[]>(this.base + '/City/list', { withCredentials: true })
-      .subscribe(u => {
-        this.towns = u;
+    Promise.all([
+      firstValueFrom(cookies$),
+      firstValueFrom(interests$),
+      firstValueFrom(cities$)
+    ])
+      .then(([cookiesResult, interestsResult, citiesResult]) => {
+        // ✅ Сохраняем результаты первой волны
+        console.log(cookiesResult.userId);
+        this.interests = interestsResult;
+        this.updateSelectedCount();
+        this.towns = citiesResult;
         this.setupCityAutocomplete();
 
+        // 🔥 Этап 2: Параллельная загрузка зависимых данных (questions, user info)
+        const questions$ = this.http.get<QuestionsDTO[]>(
+          this.base + '/Questions/list',
+          { withCredentials: true }
+        );
+        const userInfo$ = this.http.get<any>(
+          this.base + '/Users/info/',
+          { withCredentials: true }
+        );
 
-    this.http.get<QuestionsDTO[]>(this.base + '/Questions/list', { withCredentials: true })
-      .subscribe(questions => {
+        return Promise.all([
+          firstValueFrom(questions$),
+          firstValueFrom(userInfo$)
+        ]);
+      })
+      .then(([questions, userInfo]) => {
+        // ✅ Обрабатываем вопросы
         while (this.questionsFormArray.length !== 0) {
           this.questionsFormArray.removeAt(0);
         }
-        
+
         if (questions && questions.length > 0) {
           questions.forEach(q => this.addQuestion(q));
         } else {
           this.addQuestion(); // Add empty question
         }
-      });
 
-    this.http.get<any>(this.base + '/Users/info/', { withCredentials: true })
-      .subscribe(u => {
-        const town = this.towns.find(t => t.id === u.townId);
+        // ✅ Обрабатываем данные пользователя
+        const town = this.towns.find(t => t.id === userInfo.townId);
 
         if (town) {
           this.form.patchValue({
@@ -161,44 +180,47 @@ export class UserProfile implements OnInit {
           });
         }
 
-        this.provider = u.provider;
-        this.isConfirmed = u.isConfirmed;
+        this.provider = userInfo.provider;
+        this.isConfirmed = userInfo.isConfirmed;
 
         this.form.patchValue({
-          Email: u.email,
-          Caption: u.caption,
-          Sex: u.sex ? '1' : '0',
-          IsActive: u.isPaused ? false : true,
-          SendEmail: u.sendEmail ? false : true,
-          SendTelegram: u.sendTelegram ? false : true,
-          WithPhotos: u.withPhotos ? false : true,
-          WithEmail: u.withEmail ? false : true,
-          WithLikes: u.withLikes ? false : true,
-          Birthday: u.birthday,
-          Weight: u.weight || 60,
-          Height: u.height || 170,
-          Description: u.description || '',
-          //TownName: town || '',
-          //Town: [this.towns],
-          AgeFrom: u.ageFrom || 18,
-          AgeTo: u.ageTo || 100,
-          Aim: u.aim !== undefined ? String(u.aim) : '1'
+          Email: userInfo.email,
+          Caption: userInfo.caption,
+          Sex: userInfo.sex ? '1' : '0',
+          IsActive: userInfo.isPaused ? false : true,
+          SendEmail: userInfo.sendEmail ? false : true,
+          SendTelegram: userInfo.sendTelegram ? false : true,
+          WithPhotos: userInfo.withPhotos ? false : true,
+          WithEmail: userInfo.withEmail ? false : true,
+          WithLikes: userInfo.withLikes ? false : true,
+          Birthday: userInfo.birthday,
+          Weight: userInfo.weight || 60,
+          Height: userInfo.height || 170,
+          Description: userInfo.description || '',
+          AgeFrom: userInfo.ageFrom || 18,
+          AgeTo: userInfo.ageTo || 100,
+          Aim: userInfo.aim !== undefined ? String(userInfo.aim) : '1'
         });
 
+        // ✅ Сбрасываем и устанавливаем интересы
         for (const item of this.interests) {
           item.selected = false;
-        }        
-        for (const item of u.interests) {         
+        }
+
+        for (const item of userInfo.interests) {
           const fitem = this.interests.find(iitem => iitem.id === item.id);
           if (fitem) {
-            fitem.selected = true;            
+            fitem.selected = true;
           }
-        } 
-        //const inter = this.interests.find(t => t.id === u.intersts[0]);
-      });    
-    });
+        }
+      })
+      .catch(error => {
+        console.error('Failed to load profile data:', error);
+        this.toast.show('Ошибка загрузки данных профиля');
+      });
 
-    this.filteredTowns = this.form.controls["TownName"].valueChanges.pipe(    
+    // 🔥 Autocomplete остается reactive (не блокирует загрузку)
+    this.filteredTowns = this.form.controls["TownName"].valueChanges.pipe(
       startWith(''),
       map(value => this._filterTowns(value || ''))
     );

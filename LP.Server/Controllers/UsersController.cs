@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -133,10 +134,49 @@ namespace LP.Server.Controllers
         [Authorize]
         public async Task<IActionResult> Details()
         {
-            var profile = await _context.Profiles.FirstOrDefaultAsync(x => x.UserId == UserId);
-            if (profile== null)
+            var userData = await _context.Users
+                .AsNoTracking()
+                .Where(x => x.Id == UserId)
+                .Select(x => new
+                {
+                    User = x,
+                    Profile = _context.Profiles.FirstOrDefault(p => p.UserId == x.Id),
+                    TownId = _context.Profiles
+                        .Where(p => p.UserId == x.Id)
+                        .Select(p => p.CityId)
+                        .FirstOrDefault(),
+                    TownName = _context.Cities
+                        .Where(c => c.Id == _context.Profiles
+                            .Where(p => p.UserId == x.Id)
+                            .Select(p => p.CityId)
+                            .FirstOrDefault())
+                        .Select(c => c.Name)
+                        .FirstOrDefault(),
+                    Interests = _context.UserInterests
+                        .Where(ui => ui.User.Id == x.Id)
+                        .OrderBy(ui => ui.Order)
+                        .Select(ui => new
+                        {
+                            ui.Interest.Id,
+                            ui.Interest.Name,
+                            ui.Interest.Path,
+                            ui.Interest.Group
+                        })
+                        .ToList(),
+                    IsConfirmed = _context.EmailConfirmations
+                        .Any(ec => ec.UserId == x.Id && ec.IsConfirmed)
+                })
+                .FirstOrDefaultAsync();
+
+            if (userData?.User == null)
             {
-                profile = new Profile()
+                return NotFound();
+            }
+
+            // Создаем профиль если отсутствует (ленивая инициализация)
+            if (userData.Profile == null)
+            {
+                var newProfile = new Profile
                 {
                     UserId = UserId,
                     Description = "",
@@ -149,54 +189,61 @@ namespace LP.Server.Controllers
                     WithPhoto = true,
                     WithEmail = true,
                     WithLikes = false,
-                    Aim = Aim.aimLater
+                    Aim = Aim.aimLater,
+                    CityId = default
                 };
-                _context.Profiles.Add(profile);
+
+                _context.Profiles.Add(newProfile);
                 await _context.SaveChangesAsync();
-            }
-            var town = profile.CityId != default
-                ? await _context.Cities.FirstOrDefaultAsync(x => x.Id == profile.CityId)
-                : null;
-            var interests = await _context.UserInterests
-                .Where(x => x.User.Id == UserId)
-                .Include(x=>x.Interest)
-                .Select(x=>x.Interest).ToListAsync();
-            var emailConfirmation = await _context.EmailConfirmations
-                .FirstOrDefaultAsync(x => x.UserId == UserId);
-            var user = await _context.Users
-                .Select(x => new
-                {
-                    Id = x.Id,
-                    Email = x.Email,
-                    Caption = x.Caption,
-                    Sex = x.Sex,
-                    IsPaused = x.IsPaused,
-                    Provider = x.Provider,
-                    IsConfirmed = emailConfirmation != null ? emailConfirmation.IsConfirmed : false,
-                    Birthday = x.Birthday != null ? x.Birthday : DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                    Description = profile != null ? profile.Description : null,
-                    Weight = profile != null ? profile.Weight : 80,
-                    Height = profile != null ? profile.Height : 180,
-                    AgeFrom = profile != null ? profile.AgeFrom : 18,
-                    AgeTo = profile != null ? profile.AgeTo : 80,
-                    townId = town != null ? town.Id : Guid.Empty,
-                    townName = town != null ? town.Name : "",
-                    Aim = profile != null ? profile.Aim : Aim.aimLater,
-                    SendEmail = profile != null ? profile.SendEmail : true,
-                    SendETelegram = profile != null ? profile.SendTelegram : true,
-                    WithPhoto = profile != null ? profile.WithPhoto : true,
-                    WithEmail = profile != null ? profile.WithEmail : true,
-                    WithLikes = profile != null ? profile.WithLikes : false,
-                    interests = interests 
-                })
-                .FirstOrDefaultAsync(x => x.Id == UserId);
 
-            if (user == null)
+                // Инвалидируем кеш и возвращаем заново
+                return await Details();
+            }
+            
+
+            // 🔥 Исправлено: DateOnly не nullable, проверяем через == default
+            var birthday = userData.User.Birthday == default
+                ? DateOnly.FromDateTime(DateTime.Now.AddYears(-20))
+                : userData.User.Birthday;
+
+            // Формируем ответ
+            var result = new
             {
-                return NotFound();
-            }
+                Id = userData.User.Id,
+                Email = userData.User.Email,
+                Caption = userData.User.Caption,
+                Sex = userData.User.Sex,
+                IsPaused = userData.User.IsPaused,
+                Provider = userData.User.Provider,
+                IsConfirmed = userData.IsConfirmed,
+                Birthday = birthday,
+                Description = userData.Profile.Description,
+                Weight = userData.Profile.Weight,
+                Height = userData.Profile.Height,
+                AgeFrom = userData.Profile.AgeFrom,
+                AgeTo = userData.Profile.AgeTo,
+                townId = userData.TownId,
+                townName = userData.TownName ?? "",
+                Aim = userData.Profile.Aim,
+                SendEmail = userData.Profile.SendEmail,
+                SendTelegram = userData.Profile.SendTelegram,
+                WithPhoto = userData.Profile.WithPhoto,
+                WithEmail = userData.Profile.WithEmail,
+                WithLikes = userData.Profile.WithLikes,
+                interests = userData.Interests
+            };
 
-            return Ok(user);
+            // Сохраняем в кеш на 5 минут
+            //await _cache.SetStringAsync(
+            //    cacheKey,
+            //    JsonSerializer.Serialize(result),
+            //    new DistributedCacheEntryOptions
+            //    {
+            //        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            //    }
+            //);
+
+            return Ok(result);
         }
 
         // GET: Users/Create
