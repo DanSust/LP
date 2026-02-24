@@ -161,6 +161,8 @@ namespace LP.Server.Controllers
                 .Where(x => x.User.Id == UserId)
                 .Include(x=>x.Interest)
                 .Select(x=>x.Interest).ToListAsync();
+            var emailConfirmation = await _context.EmailConfirmations
+                .FirstOrDefaultAsync(x => x.UserId == UserId);
             var user = await _context.Users
                 .Select(x => new
                 {
@@ -170,6 +172,7 @@ namespace LP.Server.Controllers
                     Sex = x.Sex,
                     IsPaused = x.IsPaused,
                     Provider = x.Provider,
+                    IsConfirmed = emailConfirmation != null ? emailConfirmation.IsConfirmed : false,
                     Birthday = x.Birthday != null ? x.Birthday : DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
                     Description = profile != null ? profile.Description : null,
                     Weight = profile != null ? profile.Weight : 80,
@@ -270,6 +273,7 @@ namespace LP.Server.Controllers
             
             if (user != null)
             {
+                user.Email = model.GetProperty("Email").ToString();
                 user.Caption = model.GetProperty("Caption").ToString();
                 user.Sex = model.GetProperty("Sex").ToString().ToBool();
                 user.Birthday = DateOnly.FromDateTime(model.GetProperty("Birthday").GetDateTime());

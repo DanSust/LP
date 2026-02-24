@@ -5,18 +5,25 @@
       <div class="email-nickname-row">
         <div>
           <mat-form-field>
-            <mat-label>Email</mat-label>
+            <mat-label>{{ isConfirmed ? 'Email подтвержден' : 'Подтвердить почту' }}</mat-label>
             <input matInput formControlName="Email" placeholder="eMail" required>
             <button mat-icon-button
                     matSuffix
                     (click)="$event.stopPropagation(); onEmailClick()"
                     type="button"
-                    title="Подтвердить почту">
+                    [title]="isConfirmed ? 'Email подтверждён' : 'Подтвердить почту'">
+              <!-- Бейдж подтверждения -->
+              @if (isConfirmed) {
+              
+                <mat-icon style="color: #4caf50; font-size: 18px; width: 18px; height: 18px;">verified</mat-icon>
+              
+              } @else {
               <mat-icon>mark_email_read</mat-icon>
+              }
             </button>
-              <mat-error *ngIf="form.get('Email')?.hasError('required')">
-                заполните это поле
-              </mat-error>
+            <mat-error *ngIf="form.get('Email')?.hasError('required')">
+              заполните это поле
+            </mat-error>
           </mat-form-field>
         </div>
         <div>

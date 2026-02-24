@@ -26,6 +26,7 @@ import { generateGUID } from '../../common/GUID';
 import { MatIconModule } from '@angular/material/icon';
 import { City, NearestCityResponse } from './../../Interfaces/CityLocation';
 import { LocationService, LocationCoords } from './../../services/LocationService';
+import { SplashScreenComponent } from '../../splash/splash.component';
 
 @Component({
   selector: 'user-profile',
@@ -52,7 +53,8 @@ import { LocationService, LocationCoords } from './../../services/LocationServic
     MatSliderModule,
     MatChipsModule,
     MatAutocompleteModule,
-    UserPhoto
+    UserPhoto,
+    SplashScreenComponent
   ]
 })
 
@@ -64,6 +66,7 @@ export class UserProfile implements OnInit {
   isSaving: boolean = false;
   response: string = "";
   provider: string = "google";
+  isConfirmed = false;
 
   maxInterests = 10;
   selectedInterestsCount = 0;
@@ -158,7 +161,8 @@ export class UserProfile implements OnInit {
           });
         }
 
-        this.provider = u.provider;        
+        this.provider = u.provider;
+        this.isConfirmed = u.isConfirmed;
 
         this.form.patchValue({
           Email: u.email,
@@ -222,6 +226,11 @@ export class UserProfile implements OnInit {
   }
 
   onEmailClick(): void {
+    if (this.isConfirmed) {
+      this.toast.show('Email уже подтверждён');
+      return;
+    }
+
     this.toast.show('На вашу почту отправлено письмо');
   }
 

@@ -107,6 +107,11 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private restoreState(state: PageState): void {
+    if (!state || !state.images || !Array.isArray(state.images)) {
+      console.warn('Invalid state received, loading fresh data');
+      this.loadImages(true);
+      return;
+    }
     this.isRestoringState = true;
 
     // Восстанавливаем пагинацию

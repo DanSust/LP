@@ -6,12 +6,13 @@
   height: 70px;
   background: var(--gradient-top); // Фиолетовый фон с прозрачностью
   backdrop-filter: blur(5px);
-  border-top: 1px solid #557A94; 
+  border-top: 1px solid #557A94;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  /*z-index: 1000;*/
+  z-index: 1000;
   padding-bottom: env(safe-area-inset-bottom); // Для iPhone с динамическим островом
+  isolation: isolate;
   // 🔥 СКРЫВАЕМ на десктопе
   @media (min-width: 769px) {
     display: none !important;

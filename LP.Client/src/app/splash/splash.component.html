@@ -1,0 +1,25 @@
+<div class="splash" [class.fade-out]="!visible()">
+  <div class="content">
+    <div class="logo">
+      <span class="made">made</span>
+      <span class="four">4</span>
+      <span class="love">love</span>
+    </div>
+
+    <div class="hearts">
+      <span class="heart">💗</span>
+      <span class="heart">💙</span>
+    </div>
+
+    @if (showProgress()) {
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="fill" [style.width.%]="progress()"></div>
+      </div>
+      <span class="percent">{{ progress() | number:'1.0-0' }}%</span>
+    </div>
+    }
+
+    <p class="text">{{ text() }}</p>
+  </div>
+</div>
