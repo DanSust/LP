@@ -46,73 +46,68 @@ namespace LP.Server.Controllers
         [HttpGet("view")]
         public async Task<IActionResult> View([FromQuery] Guid id)
         {
-            // Основные данные пользователя
-            var user = await _context.Users
+            // 🔥 ОДИН запрос вместо 4-х
+            var userData = await _context.Users
+                .AsNoTracking()
+                .Where(x => x.Id == id)
                 .Select(x => new
                 {
-                    x.Id,
-                    x.Caption,
-                    x.Sex,
-                    x.IsPaused,
-                    x.Birthday
-                })
-                .FirstOrDefaultAsync(x => x.Id == id);
-
-            if (user == null)
-                return NotFound();
-
-            // Профиль отдельно
-            var profile = await _context.Profiles
-                .Where(x => x.UserId == id)
-                .Select(x => new
-                {
-                    x.Description,
-                    x.Weight,
-                    x.Height,
-                    x.AgeFrom,
-                    x.AgeTo,
-                    x.Aim,
-                    x.SendEmail,
-                    x.WithPhoto,
-                    x.WithEmail,
-                    x.WithLikes,
-                    x.CityId
+                    User = x,
+                    Profile = _context.Profiles
+                        .Where(p => p.UserId == x.Id)
+                        .Select(p => new
+                        {
+                            p.Description,
+                            p.Weight,
+                            p.Height,
+                            p.AgeFrom,
+                            p.AgeTo,
+                            p.Aim,
+                            p.SendEmail,
+                            p.WithPhoto,
+                            p.WithEmail,
+                            p.WithLikes,
+                            p.CityId
+                        })
+                        .FirstOrDefault(),
+                    CityName = _context.Cities
+                        .Where(c => c.Id == _context.Profiles
+                            .Where(p => p.UserId == x.Id)
+                            .Select(p => p.CityId)
+                            .FirstOrDefault())
+                        .Select(c => c.Name)
+                        .FirstOrDefault(),
+                    Interests = _context.UserInterests
+                        .Where(ui => ui.User.Id == id)
+                        .OrderBy(ui => ui.Order)
+                        .Select(ui => new
+                        {
+                            ui.Interest.Id,
+                            ui.Interest.Name,
+                            ui.Interest.Path,
+                            ui.Interest.Group
+                        })
+                        .ToList()
                 })
                 .FirstOrDefaultAsync();
 
-            // Название города отдельно (если профиль есть)
-            string? cityName = null;
-            if (profile != null)
+            if (userData?.User == null)
             {
-                cityName = await _context.Cities
-                    .Where(x => x.Id == profile.CityId)
-                    .Select(x => x.Name)
-                    .FirstOrDefaultAsync();
+                return NotFound();
             }
 
-            // Интересы отдельно
-            var interests = await _context.UserInterests
-                .Where(x => x.User.Id == id)
-                .OrderBy(x => x.Order)
-                .Select(x => new
-                {
-                    x.Interest.Id,
-                    x.Interest.Name,
-                    x.Interest.Path,
-                    x.Interest.Group,
-                    x.Order
-                })
-                .ToListAsync();
+            // 🔥 Профиль может отсутствовать - создаем дефолтный "пустой"
+            var profile = userData.Profile;
 
-            // Сборка результата
             var result = new
             {
-                user.Id,
-                user.Caption,
-                user.Sex,
-                user.IsPaused,
-                user.Birthday,
-                // Profile (прямо в корне, null если нет)
+                userData.User.Id,
+                userData.User.Caption,
+                userData.User.Sex,
+                userData.User.IsPaused,
+                userData.User.Birthday,
+
+                // Profile данные (или дефолты)
                 Description = profile?.Description,
                 Weight = profile?.Weight,
                 Height = profile?.Height,
@@ -121,10 +116,10 @@ namespace LP.Server.Controllers
                 Aim = profile?.Aim,
                 WithLikes = profile?.WithLikes ?? false,
                 CityId = profile?.CityId,
-                CityName = cityName,
+                CityName = userData.CityName, // 🔥 Уже строка или null
 
-                // Interests (массив в корне)
-                Interests = interests
+                // Interests
+                Interests = userData.Interests
             };
 
             return Ok(result);
