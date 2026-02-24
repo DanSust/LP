@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LP.Chat", "LP.Chat\LP.Chat.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LP.TelegramAuthBot", "LP.Telegram\LP.TelegramAuthBot.csproj", "{35031DE2-690F-498B-BDD4-2FA916074F0A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LP.Borus", "LP.Borus\LP.Borus.csproj", "{A5D7B8E1-0C89-4C0A-806F-5E40B0E38920}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{35031DE2-690F-498B-BDD4-2FA916074F0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35031DE2-690F-498B-BDD4-2FA916074F0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35031DE2-690F-498B-BDD4-2FA916074F0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5D7B8E1-0C89-4C0A-806F-5E40B0E38920}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5D7B8E1-0C89-4C0A-806F-5E40B0E38920}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5D7B8E1-0C89-4C0A-806F-5E40B0E38920}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5D7B8E1-0C89-4C0A-806F-5E40B0E38920}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
