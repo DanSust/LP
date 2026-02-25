@@ -13,41 +13,37 @@ namespace LP.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class CityController : ControllerBase
+    public class CityController : RedisController
     {
         private readonly ApplicationContext _context;
-        private readonly IDistributedCache _cache;
-        public CityController(ApplicationContext context, IDistributedCache cache)
+        private const string CITIES_CACHE_KEY = "cities:all";
+
+        public CityController(ApplicationContext context, IDistributedCache cache) : base(cache) 
         {
             _context = context;
-            _cache = cache;
         }
 
         [AllowAnonymous]
         [HttpGet("list")]
         public async Task<IActionResult> List()
         {
-            var cachedCities = await _cache.GetStringAsync("cities:all");
-            if (cachedCities != null)
+            try
             {
-                return Ok(JsonSerializer.Deserialize<List<City>>(cachedCities));
+                // Используем безопасный метод получения из кеша
+                var cities = await GetFromCacheSafeAsync(
+                    CITIES_CACHE_KEY,
+                    async () => await _context.Cities.OrderBy(x => x.Name).ToListAsync(),
+                    TimeSpan.FromHours(24)
+                );
+
+                return Ok(cities);
             }
-
-            var cities = await _context.Cities.OrderBy(x => x.Name).ToListAsync();
-
-            // Сохраняем в кеш на 10 минут
-            var cacheOptions = new DistributedCacheEntryOptions
+            catch (Exception ex)
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
-            };
-
-            await _cache.SetStringAsync(
-                "cities:all",
-                JsonSerializer.Serialize(cities),
-                cacheOptions
-            );
-
-            return Ok(cities);
+                // Логируем ошибку и возвращаем данные напрямую из БД
+                var cities = await _context.Cities.OrderBy(x => x.Name).ToListAsync();
+                return Ok(cities);
+            }
         }
 
         [AllowAnonymous]

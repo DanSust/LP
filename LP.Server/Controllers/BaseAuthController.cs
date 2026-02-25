@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using LP.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using System.Security.Claims;
 
 namespace LP.Server.Controllers
@@ -28,4 +30,5 @@ namespace LP.Server.Controllers
             return userIdClaim?.Value ?? Guid.Empty.ToString(); //throw new UnauthorizedAccessException("User ID not found in claims");
         }
     }
+    
 }
