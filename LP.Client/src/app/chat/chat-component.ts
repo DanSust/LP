@@ -63,7 +63,7 @@ export class ChatView implements OnInit, OnDestroy {
   private router = inject(Router);
   private location = inject(Location);
   private subscription: Subscription | undefined;
-
+  
   showMenu = signal(false);
   showEmojiPicker = signal(false);
   quotedMessage = signal<Message | null>(null);

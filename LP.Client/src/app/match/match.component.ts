@@ -12,7 +12,7 @@ import { formatDistance, getPeopleWord } from './../common/usefull.utils';
 import { PageStateService } from './../services/PageStateService';
 import { PageState } from './../Interfaces/PageState';
 
-type TabType = 'mutual' | 'viewed' | 'likesMe';
+type TabType = 'mutual' | 'viewed' | 'likesMe' | 'iLike';
 
 interface PaginationState {
   currentPage: number;
@@ -52,7 +52,8 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
   private paginationMap: Map<TabType, PaginationState> = new Map([
     ['mutual', { currentPage: 1, hasMore: true, isLoading: false }],
     ['viewed', { currentPage: 1, hasMore: true, isLoading: false }],
-    ['likesMe', { currentPage: 1, hasMore: true, isLoading: false }]    
+    ['likesMe', { currentPage: 1, hasMore: true, isLoading: false }],
+    ['iLike', { currentPage: 1, hasMore: true, isLoading: false }]    
   ]);
 
   private isRestoringState = false;
@@ -235,7 +236,7 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         },
         error: (err) => {
-          console.error('Failed to load images:', err);
+          //console.error('Failed to load images:', err);
           if (isInitialLoad) {
             this.isLoading = false;
           } else {

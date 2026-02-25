@@ -52,6 +52,8 @@ export class ProfileService {
             return;
           }
 
+          //console.warn(response);
+
           const newProfiles: Profile[] = response.map((p: any) => ({
             id: p.id,
             name: p.name,
@@ -62,7 +64,8 @@ export class ProfileService {
             })) || [],
             interests: p.interests?.map((interest: any) => ({
               id: interest.id,
-              name: interest.name
+              name: interest.name,
+              path: interest.path
             })) || []
           }));
 
@@ -122,11 +125,12 @@ export class ProfileService {
     this.loadMoreProfiles(count);
   }
 
-  removeTopProfile(like: boolean = true) {
+  removeTopProfile(like: boolean = true, needRemove: boolean = true) {
     const currentProfile = this.profiles()[0];
     const lk = like ? 'like' : 'dislike';
 
-    this.profiles.update(profiles => profiles.slice(1));    
+    if (needRemove)
+      this.profiles.update(profiles => profiles.slice(1));    
     
     this.http.post<any>(this.baseUrl + '/Votes/' + lk + '/' + currentProfile.id, null, { withCredentials: true })
       .subscribe({

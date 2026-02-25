@@ -78,6 +78,7 @@ export class AuthService {
     console.log('=== LOGOUT START ===');
     console.log('Cookies before logout:', document.cookie);
     console.log('localStorage userId:', localStorage.getItem('userId'));
+    localStorage.removeItem('userId');
     this.http.get<any>(this.baseUrl + '/api/auth/logout', { withCredentials: true })
       .subscribe(() => {
         localStorage.removeItem('userId');        

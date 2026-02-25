@@ -1,8 +1,11 @@
 ﻿using LP.Entity;
+using LP.Server.Services.ImageProcessing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace LP.Server.Controllers
 {
@@ -12,11 +15,13 @@ namespace LP.Server.Controllers
     {
         private readonly ApplicationContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IImageProcessingService _imageService;
 
-        public PhotosController(IWebHostEnvironment env, ApplicationContext context) 
+        public PhotosController(IWebHostEnvironment env, ApplicationContext context, IImageProcessingService imageService) 
         {
             _env = env;
             _context = context;
+            _imageService = imageService;
         }
 
         [Authorize]
@@ -178,10 +183,16 @@ namespace LP.Server.Controllers
             await using var stream = new FileStream(imgPath, FileMode.Create);
             await file.CopyToAsync(stream);
 
+            
+
             // 🔥 Проверяем, является ли это первым фото пользователя
             var userPhotoCount = await _context.Photos.CountAsync(x => x.User.Id == UserId);
             if (userPhotoCount == 0)
             {
+                using var ms = new MemoryStream();
+                await file.CopyToAsync(ms);
+                var icon = await _imageService.CreateSquareIconAndSaveAsync(ms.ToArray(), Path.Combine(userPath, "avatar.jpg"));
+
                 var photoMain = new PhotoMain() { PhotoId = _id, User = _user };
                 _context.PhotoMain.Add(photoMain);
 
@@ -269,7 +280,17 @@ namespace LP.Server.Controllers
             string imgPath = Path.Combine(_env.ContentRootPath, "..", "img", UserId.ToString(), id.ToString());
             if (System.IO.File.Exists(imgPath)) System.IO.File.Delete(imgPath);
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
 
             return Ok(id);
         }

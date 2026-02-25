@@ -121,14 +121,13 @@
           <div class="detail-item">
             
             <span class="detail-value">
-              <span class="detail-label">🎯</span>  
-              
+              <span class="detail-label">🎯</span>
               @for (interest of profile.interests; track interest.id; let last = $last) {
               <span class="interest-tag">
                 <img [src]="'assets' + interest.path" [alt]="interest.name" class="interest-icon" />
                 {{ interest.name }}
               </span>
-              
+
               }
             </span>
           </div>

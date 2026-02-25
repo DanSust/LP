@@ -158,6 +158,14 @@ namespace LP.Server.Controllers
         //    }
         //}
 
+        private class MatchDto
+        {
+            public Guid UserId { get; set; }
+            public Guid MatchedUserId { get; set; }
+            public string MatchType { get; set; } = null!;
+            public DateTime? LikeDate { get; set; }
+        }
+
         [Authorize]
         [HttpGet("match")]
         public async Task<IActionResult> GetMatches(
@@ -171,12 +179,23 @@ namespace LP.Server.Controllers
             if (pageSize < 1 || pageSize > 100) pageSize = 20;
 
             // Передаем category в функцию, не используем Where после
-            var sql = "SELECT * FROM dbo.GetUserMatches({0}, {1}) ORDER BY LastAdded DESC";
+            //var sql = "SELECT * FROM dbo.GetUserMatches({0}, {1}) ORDER BY LastAdded DESC";
 
-            var allMatches = await _context.MatchResults
-                .FromSqlRaw(sql, userId, category ?? (object)DBNull.Value)
-                .AsNoTracking()
-                .ToListAsync();
+            //var allMatches = await _context.MatchResults
+            //    .FromSqlRaw(sql, userId, category ?? (object)DBNull.Value)
+            //    .AsNoTracking()
+            //    .ToListAsync();
+            List<MatchDto> allMatches = null;
+            try
+            {
+                allMatches = await _context.Database
+                    .SqlQueryRaw<MatchDto>("SELECT * FROM dbo.GetUserMatches({0}, {1}) ORDER BY LikeDate DESC", userId, category)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Ошибка при поиске: " + ex.Message });
+            }
 
             var totalCount = allMatches.Count;
 
@@ -219,7 +238,7 @@ namespace LP.Server.Controllers
                 {
                     photoId = user?.PhotoId != Guid.Empty ? user?.PhotoId.ToString() : null,
                     userId = m.UserId,
-                    category = m.Category,
+                    category = m.MatchType,
                     name = user?.Caption,
                     age = user?.Birthday != null
                         ? today.Year - user.Birthday.Year - (today.DayOfYear < user.Birthday.DayOfYear ? 1 : 0)
@@ -262,16 +281,21 @@ namespace LP.Server.Controllers
                 .Where(x => x.Username != "admin" && !shownIds.Contains(x.Id) && x.IsPaused == false);
 
             // Если у текущего пользователя стоит WithEmail - фильтруем только с подтвержденным Email
-            if (currentUserProfile?.WithEmail == true)
-            {
-                query = query.Where(x => x.EmailConfirmation != null && x.EmailConfirmation.IsConfirmed);
-            }
+            //if (currentUserProfile?.WithEmail == true)
+            //{
+            //    query = query.Where(x => x.EmailConfirmation != null && x.EmailConfirmation.IsConfirmed);
+            //}
 
-            // Если у текущего пользователя стоит WithPhoto - фильтруем только тех, у кого есть фото
-            if (currentUserProfile?.WithPhoto == true)
-            {
-                query = query.Where(x => _context.Photos.Any(p => p.User.Id == x.Id));
-            }
+            //// Если у текущего пользователя стоит WithPhoto - фильтруем только тех, у кого есть фото
+            //if (currentUserProfile?.WithPhoto == true)
+            //{
+            //    query = query.Where(x => _context.Photos.Any(p => p.User.Id == x.Id));
+            //}
+
+
+            var debugView = query.Expression.ToString();
+            var sql = query.ToQueryString();
+            
 
             var randomIds = await query
                 .OrderBy(u => EF.Functions.Random())
@@ -309,7 +333,7 @@ namespace LP.Server.Controllers
             // 4. Интересы (третий запрос)
             var interests = await _context.UserInterests
                 .Where(ui => userIdList.Contains(ui.User.Id))
-                .Select(ui => new { UserId = ui.User.Id, ui.Interest.Id, ui.Interest.Name })
+                .Select(ui => new { UserId = ui.User.Id, ui.Interest.Id, ui.Interest.Name, ui.Interest.Path })
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -320,7 +344,7 @@ namespace LP.Server.Controllers
                 Name = u.Caption,
                 City = u.CityName,
                 Photos = photos.Where(p => p.UserId == u.Id).Select(p => new { p.Id, p.Path }).ToList(),
-                Interests = interests.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name }).ToList()
+                Interests = interests.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name, i.Path }).ToList()
             }).ToList();
 
             return Ok(result);

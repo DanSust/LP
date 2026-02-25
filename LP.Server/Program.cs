@@ -6,6 +6,7 @@ using LP.Entity.Store;
 using LP.Server.Extensions;
 using LP.Server.OAuth;
 using LP.Server.Services;
+using LP.Server.Services.ImageProcessing;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -49,6 +50,7 @@ class Program
 
         builder.Services.AddDeepSeekClient(builder.Configuration["DeepSeek:Key"]);
         builder.Services.Configure<SmtpConfig>(builder.Configuration.GetSection("Smtp"));
+        builder.Services.AddImageProcessingServices(builder.Configuration);
 
         var connection = builder.Configuration.GetConnectionString("DefaultConnection");
         builder.Services.AddDbContext<ApplicationContext>(

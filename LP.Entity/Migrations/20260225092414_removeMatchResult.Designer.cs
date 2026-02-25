@@ -4,6 +4,7 @@ using LP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LP.Entity.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20260225092414_removeMatchResult")]
+    partial class removeMatchResult
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -462,15 +465,9 @@ namespace LP.Entity.Migrations
 
                     b.HasKey("Owner", "Like");
 
-                    b.HasIndex("Like", "IsLike");
-
-                    b.HasIndex("Like", "IsViewed");
-
                     b.HasIndex("Like", "Owner");
 
                     b.HasIndex("Owner", "Like");
-
-                    b.HasIndex("Like", "IsLike", "IsViewed");
 
                     b.ToTable("Votes");
                 });

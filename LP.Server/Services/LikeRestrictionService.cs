@@ -40,7 +40,7 @@ namespace LP.Server.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == recipientId);
             
-            if (recipientProfile.WithLikes)
+            if (!recipientProfile.WithLikes)
                 return true;
 
             // Иначе нужен взаимный лайк

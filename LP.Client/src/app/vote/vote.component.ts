@@ -315,7 +315,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   // === SWIPE LOGIC ===
 
-  performSwipe(direction: 'left' | 'right'): void {    
+  performSwipe(direction: 'left' | 'right', needSwipe: boolean = true): void {    
     const profile = this.profiles()[0];
     if (!profile) return;
     
@@ -328,7 +328,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     });
 
     // 2. Удаляем из списка - следующий профиль становится profiles()[0]
-    this.profileService.removeTopProfile(direction === 'right');
+    this.profileService.removeTopProfile(direction === 'right', needSwipe);
 
     // 3. Запускаем анимацию вылета
     this.isAnimating.set(true);
@@ -374,11 +374,11 @@ export class VoteComponent implements OnInit, AfterViewInit {
   // === ACTIONS ===
 
   onLikeClick(): void {
-    this.performSwipe('right');
+    this.performSwipe('right', !this.cameFromSearch());
   }
 
   onDislikeClick(): void {
-    this.performSwipe('left');
+    this.performSwipe('left', !this.cameFromSearch());
   }
 
   onChatClick(id: string): void {

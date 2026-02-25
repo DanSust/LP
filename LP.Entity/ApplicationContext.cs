@@ -19,7 +19,6 @@
         public DbSet<Vote> Votes { get; set; } = null!;
         public DbSet<Event> Events { get; set; } = null!;
         public DbSet<Reject> Rejects { get; set; } = null!;
-        public DbSet<MatchResult> MatchResults { get; set; } = null!;
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
         {
@@ -53,16 +52,14 @@
             {
                 builder.HasIndex(v => new {v.Owner, v.Like});
                 builder.HasIndex(v => new { v.Like, v.Owner });
+                builder.HasIndex(v => new { v.Like, v.IsLike });
+                builder.HasIndex(v => new { v.Like, v.IsViewed });
+                builder.HasIndex(v => new { v.Like, v.IsLike, v.IsViewed });
             });
 
             md.Entity<Message>(builder =>
             {
                 builder.HasIndex(v => new {v.ChatId, v.Time }).IsDescending(false, false);
-            });
-
-            md.Entity<MatchResult>(entity =>
-            {
-                entity.HasNoKey();
             });
 
             md.Entity<Reject>(entity =>

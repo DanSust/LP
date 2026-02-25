@@ -162,6 +162,16 @@ export class ChatService {
       });
   }
 
+  clearChatData(chatId: string): void {
+    // Очищаем только сообщения конкретного чата из Set'ов
+    const messagesInChat = this.messages().filter(m => m.chatId === chatId);
+
+    for (const msg of messagesInChat) {
+      this.messageIds.delete(msg.id);
+      this.readReceiptsSent.delete(msg.id);
+    }
+  }
+
   deleteChat(chatId: string): void {    
     this.http.get<any>(`${this.base}/Chats/delete/${chatId}`, { withCredentials: true }).
       subscribe({
@@ -187,7 +197,8 @@ export class ChatService {
   }
 
   loadMessages(chatId: string): void {
-    this.clearMessages();
+    this.clearChatData(chatId); // Очищаем данные старого чата
+    this.clearMessages(); // Очищаем messages
     this.http.get<any[]>(`${this.base}/Chats/${chatId}`, { withCredentials: true })
       .subscribe({
         next: (messages) => {
