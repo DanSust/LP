@@ -1,8 +1,9 @@
 ﻿// ImageProcessingService.Core/Services/ImageProcessingService.cs
 using LP.Server.Services.ImageProcessing;
-using Microsoft.AspNetCore.Http;
+using Openize.Heic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Openize.Heic.Decoder;
 using SkiaSharp;
 using System.Diagnostics;
 
@@ -21,43 +22,134 @@ public class ImageProcessingService : IImageProcessingService
         _configuration = configuration.Value;
     }
 
+    private bool IsHeicFile(byte[] data)
+    {
+        if (data.Length < 12) return false;
+
+        // HEIC файлы начинаются с сигнатуры "ftyp" + "heic" или "heix" и т.д.
+        // Проверяем наличие ftyp и соответствующих кодов
+        string header = System.Text.Encoding.ASCII.GetString(data, 4, 8);
+        return header.Contains("ftyp") &&
+               (header.Contains("heic") || header.Contains("heix") ||
+                header.Contains("hevc") || header.Contains("hevx"));
+    }
+
+    private SKBitmap ConvertHeicToSkBitmap(byte[] heicData)
+    {
+        using var ms = new MemoryStream(heicData);
+
+        // Загружаем HEIC изображение через Openize
+        var heicImage = HeicImage.Load(ms);
+
+        // Получаем пиксели в формате ARGB32
+        int[] pixels = heicImage.GetInt32Array(Openize.Heic.Decoder.PixelFormat.Argb32);
+        int width = (int)heicImage.Width;
+        int height = (int)heicImage.Height;
+
+        // Создаем SKBitmap и заполняем пикселями
+        var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+
+        // Важно: SKBitmap ожидает BGRA, а у нас ARGB - нужно конвертировать
+        unsafe
+        {
+            byte* ptr = (byte*)bitmap.GetPixels();
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                int pixel = pixels[i];
+                // ARGB to BGRA
+                byte a = (byte)((pixel >> 24) & 0xFF);
+                byte r = (byte)((pixel >> 16) & 0xFF);
+                byte g = (byte)((pixel >> 8) & 0xFF);
+                byte b = (byte)(pixel & 0xFF);
+
+                ptr[i * 4] = b;      // Blue
+                ptr[i * 4 + 1] = g;  // Green
+                ptr[i * 4 + 2] = r;  // Red
+                ptr[i * 4 + 3] = a;  // Alpha
+            }
+        }
+
+        return bitmap;
+    }
+
+    private byte[] ProcessBitmap(SKBitmap bitmap, int size, ImageProcessingOptions options)
+    {
+        // Здесь ваша существующая логика обработки (Crop, Pad, Stretch)
+        // ... (как было в предыдущих примерах)
+
+        // В конце сохраняем
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = EncodeImage(image, options.OutputFormat, options.Quality);
+        return data.ToArray();
+    }
+
     /// <inheritdoc />
     public async Task<byte[]> CreateSquareIconAsync(
         byte[] imageData,
         int size = 42,
         ImageProcessingOptions options = null)
     {
-        options ??= new ImageProcessingOptions();
+        //options ??= new ImageProcessingOptions();
 
-        var stopwatch = Stopwatch.StartNew();
+        //var stopwatch = Stopwatch.StartNew();
+
+        //try
+        //{
+        //    using var ms = new MemoryStream(imageData);
+        //    using var stream = new SKManagedStream(ms);
+        //    using var bitmap = SKBitmap.Decode(stream);
+
+        //    if (bitmap == null)
+        //        throw new ArgumentException("Не удалось декодировать изображение");
+
+        //    var result = options.CropMode switch
+        //    {
+        //        CropMode.Center => CropToSquare(bitmap, size, options),
+        //        CropMode.Pad => PadToSquare(bitmap, size, options),
+        //        CropMode.Stretch => StretchToSquare(bitmap, size, options),
+        //        _ => CropToSquare(bitmap, size, options)
+        //    };
+
+        //    _logger.LogInformation(
+        //        "Иконка создана за {ElapsedMs}мс, размер: {Size} байт",
+        //        stopwatch.ElapsedMilliseconds,
+        //        result.Length);
+
+        //    return result;
+        //}
+        //catch (Exception ex)
+        //{
+        //    _logger.LogError(ex, "Ошибка при создании иконки");
+        //    throw;
+        //}
+        options ??= new ImageProcessingOptions();
 
         try
         {
+            // Пробуем сначала как обычное изображение (JPEG, PNG)
             using var ms = new MemoryStream(imageData);
-            using var stream = new SKManagedStream(ms);
-            using var bitmap = SKBitmap.Decode(stream);
 
-            if (bitmap == null)
-                throw new ArgumentException("Не удалось декодировать изображение");
-
-            var result = options.CropMode switch
+            // Проверяем, не HEIC ли это
+            if (IsHeicFile(imageData))
             {
-                CropMode.Center => CropToSquare(bitmap, size, options),
-                CropMode.Pad => PadToSquare(bitmap, size, options),
-                CropMode.Stretch => StretchToSquare(bitmap, size, options),
-                _ => CropToSquare(bitmap, size, options)
-            };
+                // Конвертируем HEIC в SKBitmap
+                using var bitmap = ConvertHeicToSkBitmap(imageData);
+                return ProcessBitmap(bitmap, size, options);
+            }
+            else
+            {
+                // Обычная обработка через SkiaSharp
+                using var stream = new SKManagedStream(ms);
+                using var bitmap = SKBitmap.Decode(stream);
+                if (bitmap == null)
+                    throw new ArgumentException("Не удалось декодировать изображение");
 
-            _logger.LogInformation(
-                "Иконка создана за {ElapsedMs}мс, размер: {Size} байт",
-                stopwatch.ElapsedMilliseconds,
-                result.Length);
-
-            return result;
+                return ProcessBitmap(bitmap, size, options);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при создании иконки");
+            _logger.LogError(ex, "Ошибка при обработке изображения");
             throw;
         }
     }
