@@ -100,6 +100,7 @@ namespace LP.Server.Controllers
 
         [AllowAnonymous]
         [HttpGet("back/{name}")]
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         public IActionResult GetImageBack(string name)
         {
             string imgPath = Path.Combine(_env.ContentRootPath, "..", "img\\back", name);
@@ -114,6 +115,11 @@ namespace LP.Server.Controllers
                 ".gif" => "image/gif",
                 _ => "application/octet-stream"
             };
+
+            // Добавляем заголовки для кеширования
+            Response.Headers.Add("Cache-Control", "public, max-age=86400");
+            Response.Headers.Add("Expires", DateTime.UtcNow.AddDays(1).ToString("R"));
+
             return PhysicalFile(imgPath, mimeType, enableRangeProcessing: true);
         }
 
