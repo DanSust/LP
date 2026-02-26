@@ -7,7 +7,7 @@ namespace LP.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public abstract class RedisController : ControllerBase
+    public abstract class RedisController : BaseAuthController
     {
         protected readonly IDistributedCache _cache;
         private bool? _redisAvailable;

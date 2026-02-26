@@ -11,36 +11,61 @@ namespace LP.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class EventsController : BaseAuthController
+    public class EventsController : RedisController
     {
+        private const string EVENTS_CACHE_KEY = "events:list";
         private readonly ApplicationContext _context;
-        private readonly IDistributedCache _cache;
-        public EventsController(ApplicationContext context, IDistributedCache cache)
+        
+        public EventsController(ApplicationContext context, IDistributedCache cache) : base(cache)
         {
             _context = context;
-            _cache = cache;
         }
 
         [Authorize]
         [HttpGet("list")]
         public async Task<ActionResult> List()
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == UserId);
-
-            // 🔥 Кешируем только список событий (общий для всех)
-            var cacheKey = "events:list";
-            var cached = await _cache.GetStringAsync(cacheKey);
-
-            List<EventListItemDto> events;
-
-            if (!string.IsNullOrEmpty(cached))
+            try
             {
-                events = JsonSerializer.Deserialize<List<EventListItemDto>>(cached);
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == UserId);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                // Используем безопасный метод получения из кеша
+                var events = await GetFromCacheSafeAsync(
+                    EVENTS_CACHE_KEY,
+                    async () =>
+                    {
+                        return await _context.Events
+                            .Where(x => x.CreatedAt >= DateTime.UtcNow.AddMonths(-1))
+                            .Select(item => new EventListItemDto
+                            {
+                                IsNew = item.CreatedAt >= user.EventsSeen ? 1 : 0,
+                                Title = item.Title,
+                                Description = item.Description,
+                                CreatedAt = item.CreatedAt
+                            })
+                            .OrderByDescending(x => x.CreatedAt)
+                            .ToListAsync();
+                    },
+                    TimeSpan.FromDays(1)
+                );
+
+                return Ok(events);
             }
-            else
+            catch (Exception ex)
             {
+                // Fallback: получаем данные напрямую из БД
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == UserId);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
 
-                events = await _context.Events.Where(x => x.CreatedAt >= DateTime.UtcNow.AddMonths(-1))
+                var events = await _context.Events
+                    .Where(x => x.CreatedAt >= DateTime.UtcNow.AddMonths(-1))
                     .Select(item => new EventListItemDto
                     {
                         IsNew = item.CreatedAt >= user.EventsSeen ? 1 : 0,
@@ -51,17 +76,8 @@ namespace LP.Server.Controllers
                     .OrderByDescending(x => x.CreatedAt)
                     .ToListAsync();
 
-                await _cache.SetStringAsync(
-                    cacheKey,
-                    JsonSerializer.Serialize(events),
-                    new DistributedCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
-                    }
-                );
+                return Ok(events);
             }
-
-            return Ok(events);
         }
 
         [Authorize]

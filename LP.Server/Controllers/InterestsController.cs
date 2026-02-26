@@ -12,45 +12,46 @@ namespace LP.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class InterestsController : ControllerBase
+    public class InterestsController : RedisController
     {
+        private const string INTERESTS_CACHE_KEY = "interests:all";
         private readonly ApplicationContext _context;
-        private readonly IDistributedCache _cache;
-        public InterestsController(ApplicationContext context, IDistributedCache cache)
+        
+        public InterestsController(ApplicationContext context, IDistributedCache cache): base(cache)
         {
             _context = context;
-            _cache = cache;
         }
 
         [AllowAnonymous]
         [HttpGet("list")]
         public async Task<IActionResult> List()
         {
-            var cachedList = await _cache.GetStringAsync("interests:all");
-            if (cachedList != null)
+            try
             {
-                return Ok(JsonSerializer.Deserialize<List<Interest>>(cachedList));
+                // Используем безопасный метод получения из кеша
+                var interests = await GetFromCacheSafeAsync(
+                    INTERESTS_CACHE_KEY,
+                    async () => await _context.Interests
+                        .IgnoreQueryFilters()
+                        .OrderBy(x => x.Group)
+                        .ThenBy(x => x.Name)
+                        .ToListAsync(),
+                    TimeSpan.FromHours(24)
+                );
+
+                return Ok(interests);
             }
-
-            var list = await _context.Interests
-                .IgnoreQueryFilters()
-                .OrderBy(x => x.Group)
-                .ThenBy(x => x.Name)
-                .ToListAsync();
-
-            // Сохраняем в кеш на 
-            var cacheOptions = new DistributedCacheEntryOptions
+            catch (Exception ex)
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
-            };
+                // Fallback: получаем данные напрямую из БД
+                var interests = await _context.Interests
+                    .IgnoreQueryFilters()
+                    .OrderBy(x => x.Group)
+                    .ThenBy(x => x.Name)
+                    .ToListAsync();
 
-            await _cache.SetStringAsync(
-                "interests:all",
-                JsonSerializer.Serialize(list),
-                cacheOptions
-            );
-
-            return Ok(list);
+                return Ok(interests);
+            }
         }
     }
 }
