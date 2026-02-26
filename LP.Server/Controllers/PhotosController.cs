@@ -116,15 +116,12 @@ namespace LP.Server.Controllers
                 _ => "application/octet-stream"
             };
 
-            // Добавляем заголовки для кеширования
-            Response.Headers.Add("Cache-Control", "public, max-age=86400");
-            Response.Headers.Add("Expires", DateTime.UtcNow.AddDays(1).ToString("R"));
-
             return PhysicalFile(imgPath, mimeType, enableRangeProcessing: true);
         }
 
         [AllowAnonymous]
         [HttpGet("scroll")]
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
         public async Task<IActionResult> GetImages()
         {
             string imgPath = Path.Combine(_env.ContentRootPath, "..", "img\\scroll");
