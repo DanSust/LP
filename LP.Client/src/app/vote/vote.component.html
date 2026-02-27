@@ -1,4 +1,4 @@
-<div class="card-stack">
+<div class="card-stack" #activePhotoContainer>
 
   <!-- Нет профилей -->
   @if (profiles().length === 0 && !exitingProfile()) {
@@ -24,15 +24,36 @@
     </div>
   </div>
   }
-
   <!-- === ТЕКУЩИЙ ПРОФИЛЬ (активный для свайпа) === -->
   @if (profiles()[0]; as profile) {
+  <!-- Кнопки -->
+
+  <div class="card-actions" [class.hidden]="isFullscreen()">
+    <button class="action-btn dislike-btn"
+            (click)="onDislikeClick(); $event.stopPropagation()"
+            [disabled]="isAnimating()">
+      ✕
+    </button>
+    <button class="action-btn more-btn"
+            (click)="onChatClick(profile.id); $event.stopPropagation()">
+      ⋯
+    </button>
+    <button class="action-btn like-btn"
+            (click)="onLikeClick(); $event.stopPropagation()"
+            [disabled]="isAnimating()">
+      ❤️
+    </button>
+    <!--<button class="action-btn favorite-btn"
+                (click)="onFavoriteClick(profile.id); $event.stopPropagation()"
+                [disabled]="isAnimating()">⭐
+    </button>-->
+  </div>
   <div class="card active-card"
        [style.z-index]="10"
        [class.dragging]="isDragging()">
     <div class="card-content">
 
-      <div class="photo-wrapper" #activePhotoContainer
+      <div class="photo-wrapper" 
            [class.fullscreen]="isFullscreen()"
            [style.transform]="getCurrentTransform()"
            [style.transition]="isDragging() ? 'none' : 'transform 0.3s ease-out'"
@@ -77,30 +98,8 @@
           }
         </div>
         }
-
-        <!-- Кнопки -->
-
-        <div class="card-actions">
-          <button class="action-btn dislike-btn"
-                  (click)="onDislikeClick(); $event.stopPropagation()"
-                  [disabled]="isAnimating()">
-            ✕
-          </button>
-          <button class="action-btn more-btn"
-                  (click)="onChatClick(profile.id); $event.stopPropagation()">
-            ⋯
-          </button>
-          <button class="action-btn like-btn"
-                  (click)="onLikeClick(); $event.stopPropagation()"
-                  [disabled]="isAnimating()">
-            ❤️
-          </button>
-          <!--<button class="action-btn favorite-btn"
-                      (click)="onFavoriteClick(profile.id); $event.stopPropagation()"
-                      [disabled]="isAnimating()">⭐
-          </button>-->
-        </div>
-         @if (cameFromSearch() && !isFullscreen()) {
+        
+        @if (cameFromSearch() && !isFullscreen()) {
         <button class="back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
           <mat-icon>reply</mat-icon>
         </button>
@@ -119,7 +118,7 @@
 
           @if (profile.interests && profile.interests.length > 0) {
           <div class="detail-item">
-            
+
             <span class="detail-value">
               <span class="detail-label">🎯</span>
               @for (interest of profile.interests; track interest.id; let last = $last) {
@@ -174,14 +173,17 @@
       </div>
 
       <!-- Заглушка кнопок для сохранения layout -->
-      <div class="card-actions dummy-actions">
+      <!--<div class="card-actions dummy-actions">
         <button class="action-btn" disabled>✕</button>
         <button class="action-btn" disabled>⋯</button>
         <button class="action-btn" disabled>❤️</button>
         <button class="action-btn" disabled>⭐</button>
-      </div>
+      </div>-->
+
     </div>
+
   </div>
   }
+
 
 </div>

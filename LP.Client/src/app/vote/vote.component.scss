@@ -52,7 +52,7 @@
   overflow: hidden;
   min-height: 0;
   cursor: grab;
-  transition: box-shadow 0.2s;
+  //transition: box-shadow 0.2s;
   display: flex;
   flex-direction: column;
 
@@ -105,7 +105,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  transform: scale(0.95);
+  /*transform: scale(0.95);*/
   opacity: 0;
   filter: brightness(0.7);
 
@@ -145,7 +145,7 @@
   }
 
   .card-photo {
-    will-change: transform;
+    //will-change: transform;
   }
 }
 
@@ -157,7 +157,7 @@
     position: absolute;
     width: 100%;
     height: 100%;
-  }
+  }  
 }
 
 .card-content {
@@ -202,11 +202,11 @@
     margin: 0 !important;
     padding: 0 !important;
     isolation: isolate !important; // Новый stacking context
-
-
+        
     .card-photo {
       width: 100vw !important;
-      height: calc(100vh - 130px) !important; // Авто высота чтобы не растягивалось
+      //height: calc(100vh - 130px) !important; // Авто высота чтобы не растягивалось
+      height: 100vh !important;
       object-fit: contain !important;
       object-position: center !important;
       transform: none !important;
@@ -289,7 +289,7 @@
 @keyframes fullscreenIn {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    //transform: scale(0.9);
   }
 
   to {
@@ -308,8 +308,9 @@
 
     &:active .card-photo,
     &:focus-within .card-photo {
-      padding: 80px 10px 100px; // Больше отступов для мобильных
+      //padding: 80px 10px 100px; // Больше отступов для мобильных
     }
+
     // На мобильных стрелки всегда видны в fullscreen
     &:active,
     &:focus-within {
@@ -429,7 +430,7 @@
   }
 
   &:active {
-    transform: translateY(-50%) scale(0.95);
+    //transform: translateY(-50%) scale(0.95);
   }
 
   &.arrow-left {
@@ -483,7 +484,7 @@
 .card-actions {
   position: absolute;
   bottom: 20px; // <-- Фиксированный отступ от низа карточки
-  left: 50%;
+  left: 40%;
   transform: translateX(-50%);
   display: flex;
   gap: 30px;
@@ -500,7 +501,7 @@
     background: transparent;
 
     &:active {
-      transform: scale(0.95);
+      //transform: scale(0.95);
     }
 
     &.dislike-btn {
@@ -508,7 +509,7 @@
     }
 
     &.more-btn {
-      color: #0095ff;
+      color: antiquewhite;
     }
 
     &.like-btn {
@@ -519,6 +520,13 @@
       color: #ffd700;
       font-size: 24px;
     }
+  }
+
+  &.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 }
 
@@ -660,7 +668,7 @@
 }
 
 .detail-label {
-  font-weight: 600;
+  font-weight: 500;
   opacity: 1;
   display: flex;
   align-items: center;

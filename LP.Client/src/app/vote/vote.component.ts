@@ -10,7 +10,7 @@ import {
   ElementRef,
   AfterViewInit
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ProfileService } from './vote.service';
 import { Profile } from './vote.model';
@@ -65,6 +65,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
   isClick = signal(false);
 
   toggleFullscreen(): void {
+    console.log('toggleFullscreen');
     this.isFullscreen.update(v => !v);
   }
 
@@ -81,7 +82,8 @@ export class VoteComponent implements OnInit, AfterViewInit {
     private router: Router,
     private route: ActivatedRoute,
     private toast: ToastService,
-    private navService: NavigationService
+    private navService: NavigationService,
+    private location: Location
   ) {
     this.userId = this.route.snapshot.paramMap.get('id') ?? undefined;
 
@@ -100,43 +102,95 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
     if (this.userId) {
       this.profileService.loadProfile(this.userId);
-      this.cameFromSearch.set(this.navService.cameFrom('/search'));
+      this.cameFromSearch.set(this.navService.cameFrom('/search') || this.navService.cameFrom('/match'));
     } else {
       this.profileService.loadProfiles();
     }
   }
 
   ngAfterViewInit(): void {
-    //console.warn(this.userId);
+    this.waitForElement();
+    console.warn(this.userId);
     if (!this.userId) {
       this.setupSwipeGestures();
     }
     //this.setupPhotoClick();
   }
 
-  goBackToSearch(): void {
-    this.router.navigate(['/search']);
+  private waitForElement(): void {
+    const checkInterval = setInterval(() => {
+      if (this.photoContainer?.nativeElement) {
+        console.log('Element found');
+        clearInterval(checkInterval);
+        this.setupSwipeGestures();
+      }
+    }, 100);
+
+    // Очищаем интервал через 5 секунд, чтобы не было утечки
+    setTimeout(() => clearInterval(checkInterval), 5000);
   }
+
+  goBackToSearch(): void {
+    //this.router.navigate(['/search']);
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/search']);
+    }
+  }
+
+  private readonly DRAG_ACTIVATION_THRESHOLD = 40;  // пикселей — обычно 8–20
+
+  
+  private startY = 0;
+  private hasExceededThreshold = false;
 
   // === SWIPE GESTURES ===
   private setupSwipeGestures(): void {
+    const isFinePointer = window.matchMedia('(pointer: fine)').matches;
+
     const element = this.photoContainer?.nativeElement;
-    
     if (!element) return;
 
     const startDrag = (x: number) => {
+      if (isFinePointer) {        
+        return;
+      }
+
+      const isFull = this.isFullscreen();
+      
+      if (isFull) return;
       if (this.isAnimating() || this.profiles().length < 2) return;
       this.isDragging.set(true);
       this.dragDelta.set(0);
       this.startX = x;
+
+      console.log('startDrag');
     };
 
     const moveDrag = (x: number) => {
-      if (!this.isDragging()) return;
-      this.dragDelta.set(x - this.startX);
+      if (isFinePointer) {        
+        return;
+      }
+      if (this.isFullscreen()) return;
+      
+      if (this.isAnimating()) return;
+
+      const deltaX = x - this.startX;
+
+      if (!this.hasExceededThreshold) {
+        if (Math.abs(deltaX) < this.DRAG_ACTIVATION_THRESHOLD) {
+          return;
+        }
+        this.hasExceededThreshold = true;
+        this.isDragging.set(true);
+      }
+
+      this.dragDelta.set(deltaX);
     };
 
     const endDrag = () => {
+      if (this.isFullscreen()) return;
       if (!this.isDragging()) return;
 
       const delta = this.dragDelta();
@@ -150,6 +204,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
         // Возврат с анимацией
         this.dragDelta.set(0);
       }
+      this.hasExceededThreshold = false;
     };
 
     // Touch
@@ -318,6 +373,8 @@ export class VoteComponent implements OnInit, AfterViewInit {
   performSwipe(direction: 'left' | 'right', needSwipe: boolean = true): void {    
     const profile = this.profiles()[0];
     if (!profile) return;
+
+    console.log('needSwipe ', needSwipe);
     
     // 1. ЗАМОРАЖИВАЕМ текущий профиль для анимации вылета
     this.exitingProfile.set({
