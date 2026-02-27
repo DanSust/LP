@@ -100,7 +100,7 @@ namespace LP.Server.Controllers
 
         [AllowAnonymous]
         [HttpGet("back/{name}")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
+        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         public IActionResult GetImageBack(string name)
         {
             string imgPath = Path.Combine(_env.ContentRootPath, "..", "img\\back", name);
