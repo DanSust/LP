@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, InjectionToken, inject } from '@angular/core';
-import { CanActivateFn, provideRouter, Router, Routes } from '@angular/router';
+import { CanActivateFn, provideRouter, Router, Routes, withExperimentalAutoCleanupInjectors } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import localeRu from '@angular/common/locales/ru';
@@ -102,6 +102,6 @@ export const appConfig: ApplicationConfig = {
     { provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),    
-    provideRouter(appRoutes)
+    provideRouter(appRoutes, withExperimentalAutoCleanupInjectors())
   ]
 };

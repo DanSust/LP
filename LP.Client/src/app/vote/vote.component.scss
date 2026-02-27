@@ -106,11 +106,29 @@
   width: 100%;
   height: 100%;
   /*transform: scale(0.95);*/
-  opacity: 0;
+  opacity: 0.7;
   filter: brightness(0.7);
+  z-index: 1;
+
+  .card-content {
+    height: 100%;
+  }
+
+  .photo-wrapper {
+    height: 100%;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
   .details-wrapper {
-    opacity: 0.5;
+    display: none; // Скрываем детали для подложки
   }
 }
 
@@ -609,46 +627,73 @@
       height: 100%;
       object-fit: cover;
     }
-  }
+    // Добавляем стили для back-btn в мобильной версии
+    .back-btn {
+      position: fixed !important;
+      bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+      right: 20px !important;
+      left: auto !important;
+      top: auto !important;
+      width: 60px !important;
+      height: 60px !important;
+      z-index: 1000 !important;
+      background: transparent !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
 
-  .details-wrapper {
-    flex: 1 1 auto;
-    width: 100%;
-    max-height: calc(40vh);
-    min-height: 0;
-    padding: 20px 15px 100px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-  // <-- Для мобильных: центрируем и прижимаем к низу viewport
-  .card-actions {
-    position: fixed; // <-- Фиксируем относительно viewport
-    left: 50%;
-    bottom: calc(90px + env(safe-area-inset-bottom, 0px));
-    transform: translateX(-50%);
-    gap: 25px;
+      mat-icon {
+        color: white !important;
+        font-size: 30px !important;
+        width: 30px !important;
+        height: 30px !important;
+      }
 
-    .action-btn {
-      width: 60px;
-      height: 60px;
-      font-size: 24px;
+      &:hover {
+        background: rgba(0, 0, 0, 0.7) !important;
+      }
     }
   }
 
-  .photo-indicators {
-    top: 15px;
-  }
+    .details-wrapper {
+      flex: 1 1 auto;
+      width: 100%;
+      max-height: calc(40vh);
+      min-height: 0;
+      padding: 20px 15px 100px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    // <-- Для мобильных: центрируем и прижимаем к низу viewport
+    .card-actions {
+      position: fixed; // <-- Фиксируем относительно viewport
+      left: 50%;
+      bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      gap: 25px;
 
-  .profile-details h3 {
-    font-size: 24px;
-  }
+      .action-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+      }
+    }
 
-  .detail-item {
-    font-size: 14px;
-    margin-bottom: 12px;
+    .photo-indicators {
+      top: 15px;
+    }
+
+    .profile-details h3 {
+      font-size: 24px;
+    }
+
+    .detail-item {
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
   }
-}
 
 .profile-details {
   h3 {

@@ -122,7 +122,8 @@ export class VoteComponent implements OnInit, AfterViewInit {
       if (this.photoContainer?.nativeElement) {
         console.log('Element found');
         clearInterval(checkInterval);
-        this.setupSwipeGestures();
+        if (!this.userId) 
+          this.setupSwipeGestures();
       }
     }, 100);
 
@@ -147,6 +148,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   // === SWIPE GESTURES ===
   private setupSwipeGestures(): void {
+    console.log('setupSwipeGestures');
     const isFinePointer = window.matchMedia('(pointer: fine)').matches;
 
     const element = this.photoContainer?.nativeElement;
@@ -165,7 +167,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
       this.dragDelta.set(0);
       this.startX = x;
 
-      console.log('startDrag');
+      
     };
 
     const moveDrag = (x: number) => {
