@@ -233,6 +233,10 @@ export class ChatService {
     return this.messages().find(msg => msg.chatId === chatId && msg.userId !== this.userId);
   });
 
+  public activeChat = computed(() =>
+    this.chats().find(c => c.id === this.activeChatId()) || null
+  );
+
   async sendMessage(text: string): Promise<void> {
     if (!this.connectionManager.isConnected()) {
       console.error('❌ Not connected');

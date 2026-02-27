@@ -37,13 +37,13 @@
   }
   // Активное состояние
   &.active {
-    color: #e91e63; // Розовый активный
+    color: antiquewhite; 
 
     .nav-icon {
-      transform: translateY(-5px);
+      transform: translateY(-3px);
 
       .material-icons {
-        filter: drop-shadow(0 0 8px rgba(233, 30, 99, 0.7));
+        filter: drop-shadow(0 0 8px rgba(233, 30, 99, 0.5));
       }
     }
 

@@ -20,7 +20,6 @@
       <div class="chat-item"
            [class.active]="chat.id === activeChatId()"
            (click)="selectChat(chat)">
-
         <app-user-avatar [userId]="chat.userId"
                          [name]="chat.name">
         </app-user-avatar>

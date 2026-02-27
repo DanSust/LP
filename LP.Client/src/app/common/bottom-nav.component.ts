@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
+import { ChatService } from '../services/ChatService';
 
 interface NavItem {
   label: string;
@@ -20,16 +21,18 @@ interface NavItem {
 })
 export class BottomNavComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private chatService = inject(ChatService);
 
   activeRoute = '/';
+  totalUnreadCount = computed(() => this.chatService.unreadMessageCount());
 
-  navItems: NavItem[] = [
+  navItems = computed<NavItem[]>(() => [
     { label: 'Поиск', icon: 'search', route: '/search' },
-    { label: 'Симпатии', icon: 'favorite', route: '/vote', badge: 3 },
+    { label: 'Симпатии', icon: 'favorite', route: '/vote'  },
     { label: 'Знакомства', icon: 'people', route: '/match' },
-    { label: 'Чат', icon: 'chat', route: '/chat', badge: 7 },
+    { label: 'Чат', icon: 'chat', route: '/chat', badge: this.totalUnreadCount() },
     { label: 'Профиль', icon: 'person', route: '/profile' }
-  ];
+  ]);
 
   constructor(private router: Router) { }
 

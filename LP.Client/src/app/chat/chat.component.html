@@ -8,10 +8,9 @@
 
   <div class="chat-header">
     <!--<img class="participant-avatar" [src]="otherParticipantAvatar() || 'assets/default-avatar.svg'" alt="Avatar">-->
-    <app-user-avatar
-      [userId]="(chatService.otherUser()?.userId) ?? ''"
-      (click)="onAvatarClick()"
-      style="cursor: pointer">
+    <app-user-avatar [userId]="chatService.activeChat()?.userId ?? ''"
+                     (click)="onAvatarClick()"
+                     style="cursor: pointer">
     </app-user-avatar>
     <span class="participant-name">{{ participantName() }}</span>
 
@@ -39,7 +38,7 @@
         </button>
       </mat-menu>
     </div>
-</div>
+  </div>
 
   <!-- ПРЕВЬЮ ЦИТАТЫ НАД ПОЛЕМ ВВОДА -->
   @if (quotedMessage()) {
