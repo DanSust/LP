@@ -19,7 +19,6 @@ $color-text-secondary: #e0e0e0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #808080;
   z-index: -1;
 }
 
@@ -29,14 +28,14 @@ $color-text-secondary: #e0e0e0;
   padding: 0;
   width: 100%;
   min-height: 100vh;
-  background: #808080; // Дублируем для надежности
+  position: relative;
 }
 
 .hero {
   scrollbar-width: none;
   min-width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
+  //background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;

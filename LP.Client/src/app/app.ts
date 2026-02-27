@@ -40,7 +40,7 @@ export class App implements OnInit, OnDestroy {
   protected title = 'tmp-standalone';
   caption = 'made4love';
   userId: string | null = null;
-  isLoading = true;
+  isLoading = false;
 
   // === НАСТРОЙКИ РЕЖИМА РАЗРАБОТКИ ===
   isDevelopmentMode = true; // ← Поставьте false чтобы включить основной сайт

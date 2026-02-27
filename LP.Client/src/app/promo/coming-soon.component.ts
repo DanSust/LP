@@ -1,11 +1,12 @@
 // coming-soon.component.ts
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { BackCollageComponent } from './../common/background-collage.component';
 
 @Component({
   selector: 'app-coming-soon',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BackCollageComponent],
   templateUrl: './coming-soon.component.html',
   styleUrls: ['./coming-soon.component.scss']
 })

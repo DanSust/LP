@@ -236,12 +236,12 @@
     </mat-step>
 
     <mat-step label="Настройки">
-      <p><mat-slide-toggle formControlName="IsActive" (change)="pause()" style="color: white"> {{ form.get('IsActive')?.value ? 'Профиль активный' : 'Профиль на паузе' }}</mat-slide-toggle></p>
-      <p><mat-slide-toggle formControlName="SendEmail" style="color: white"> {{ form.get('SendEmail')?.value ? 'Уведомления на Email' : 'Не присылать на Email' }}</mat-slide-toggle></p>
-      <p><mat-slide-toggle formControlName="SendTelegram" style="color: white"> {{ form.get('SendTelegram')?.value ? 'Уведомления на Telegram' : 'Не присылать на Telegram' }}</mat-slide-toggle></p>
-      <p><mat-slide-toggle formControlName="WithPhoto" style="color: white">Партнеры только с фото</mat-slide-toggle></p>
-      <p><mat-slide-toggle formControlName="WithEmail" style="color: white">Только подтвержденные email</mat-slide-toggle></p>
-      <p><mat-slide-toggle formControlName="WithLikes" style="color: white">Писать только при взаимных лайках</mat-slide-toggle></p>
+      <p style="padding: 8px 0px;"><mat-slide-toggle formControlName="IsActive" (change)="pause()" style="color: white"> {{ form.get('IsActive')?.value ? 'Профиль активный' : 'Профиль на паузе' }}</mat-slide-toggle></p>
+      <p style="padding: 8px 0px;"><mat-slide-toggle formControlName="SendEmail" style="color: white"> {{ form.get('SendEmail')?.value ? 'Уведомления на Email' : 'Не присылать на Email' }}</mat-slide-toggle></p>
+      <p style="padding: 8px 0px;"><mat-slide-toggle formControlName="SendTelegram" style="color: white"> {{ form.get('SendTelegram')?.value ? 'Уведомления на Telegram' : 'Не присылать на Telegram' }}</mat-slide-toggle></p>
+      <p style="padding: 8px 0px;"><mat-slide-toggle formControlName="WithPhoto" style="color: white">Партнеры только с фото</mat-slide-toggle></p>
+      <p style="padding: 8px 0px;"><mat-slide-toggle formControlName="WithEmail" style="color: white">Только подтвержденные email</mat-slide-toggle></p>
+      <p style="padding: 8px 0px;"><mat-slide-toggle formControlName="WithLikes" style="color: white">Писать только при взаимных лайках</mat-slide-toggle></p>
       <div class="step-actions">
         <button mat-button matStepperPrevious>Назад</button>
         <button mat-button matStepperNext>Далее</button>
