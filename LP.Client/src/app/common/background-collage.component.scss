@@ -9,7 +9,7 @@
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 6px;
-  filter: blur(1px);
+  filter: blur(0.5px);
 
   .collage-photo {
     background-size: cover;
