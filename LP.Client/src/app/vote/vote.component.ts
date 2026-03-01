@@ -420,7 +420,8 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   // === SWIPE LOGIC ===
 
-  performSwipe(direction: 'left' | 'right', needSwipe: boolean = true): void {    
+  performSwipe(direction: 'left' | 'right', needSwipe: boolean = true): void {
+    if (this.isDragging()) return;
     const profile = this.profiles()[0];
     if (!profile) return;
 

@@ -1,12 +1,12 @@
+<!-- bottom-nav.component.html -->
 <nav class="bottom-nav" *ngIf="true">
   <div *ngFor="let item of navItems()"
        class="nav-item"
        [class.active]="!isMenuItem(item) && isActive(item.route)"
-       [class.menu-item]="isMenuItem(item)"
-       (click)="onItemClick(item, $event)">
+       [class.menu-item]="isMenuItem(item)">
 
     <!-- Обычная иконка -->
-    <div class="nav-icon" *ngIf="!isMenuItem(item)">
+    <div class="nav-icon" *ngIf="!isMenuItem(item)" (click)="onItemClick(item, $event)">
       <span class="material-icons">{{ item.icon }}</span>
       <span class="badge"
             *ngIf="item.badge && item.badge > 0"
@@ -15,8 +15,10 @@
       </span>
     </div>
 
-    <!-- Троеточие с меню -->
-    <div class="nav-icon" *ngIf="isMenuItem(item)" (click)="$event.stopPropagation()">
+    <!-- Троеточие с меню - используем mousedown вместо click -->
+    <div class="nav-icon menu-wrapper"
+         *ngIf="isMenuItem(item)"
+         (mousedown)="$event.stopPropagation()">
       <button mat-icon-button
               [matMenuTriggerFor]="moreMenu"
               class="more-btn">
@@ -26,10 +28,14 @@
   </div>
 </nav>
 
-<mat-menu #moreMenu="matMenu" xPosition="before">
+<mat-menu #moreMenu="matMenu" class="bottom-nav-menu" xPosition="before">
   <button mat-menu-item (click)="onAbout()">
     <mat-icon>info</mat-icon>
     <span>О сайте</span>
+  </button>
+  <button mat-menu-item (click)="onNews()">
+    <mat-icon>feed</mat-icon>
+    <span>Новости</span>
   </button>
   <button mat-menu-item (click)="onLogout()">
     <mat-icon>logout</mat-icon>

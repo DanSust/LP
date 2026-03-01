@@ -19,6 +19,14 @@
   }
 }
 
+.menu-wrapper {
+  pointer-events: none; // Отключаем события на родителе
+
+  button {
+    pointer-events: auto; // Включаем только на кнопке
+  }
+}
+
 .nav-item {
   flex: 1;
   display: flex;
@@ -120,22 +128,33 @@
   }
 }
 
-::ng-deep .bottom-nav-menu {
-  background: var(--gradient-top) !important;
-  border: 1px solid #557A94;
-  border-radius: 12px !important;
+// Стили меню как в чате — унифицированные
+::ng-deep .bottom-nav-menu.mat-mdc-menu-panel {
+  min-width: 200px !important;
+  background: #557A94 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
 
-  .mat-mdc-menu-content {
-    background: transparent !important;
-  }
+::ng-deep .bottom-nav-menu .mat-mdc-menu-content {
+  background: #557A94 !important;
+  padding: 0 !important;
+}
 
-  .mat-mdc-menu-item {
-    color: rgba(255, 255, 255, 0.87) !important;
+::ng-deep .bottom-nav-menu .mat-mdc-menu-item {
+  color: #fff !important;
+  font-size: 14px !important;
+  height: 48px !important;
+  padding: 0 16px !important;
+}
 
-    .mat-icon {
-      color: antiquewhite !important;
-    }
-  }
+::ng-deep .bottom-nav-menu .mat-mdc-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+::ng-deep .bottom-nav-menu .mat-mdc-menu-item mat-icon {
+  color: #fff !important;
+  margin-right: 12px !important;
 }
 
 @keyframes badge-pop {

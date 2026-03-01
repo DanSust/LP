@@ -7,6 +7,7 @@ import { ChatService } from '../services/ChatService';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../services/AuthService';
 
 interface NavItem {
   label: string;
@@ -43,7 +44,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     { label: 'Ещё', icon: 'more_vert', route: '' }
   ]);
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private authService: AuthService) { }
 
   ngOnInit(): void {
     // Отслеживаем текущий роут для активной кнопки
@@ -85,8 +86,11 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     this.router.navigate(['/about']);
   }
 
+  onNews(): void {
+    this.router.navigate(['/events']);
+  }
+
   onLogout(): void {
-    console.log('Выход');
-    this.router.navigate(['/login']);
+    this.authService.logout();    
   }
 }
