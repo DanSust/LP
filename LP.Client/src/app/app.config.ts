@@ -36,6 +36,7 @@ const appRoutes: Routes = [
   { path: "location", component: UserLocationComponent },
   { path: "soon", component: ComingSoonComponent },
   { path: "profile", component: UserProfile, canActivate: [AuthGuard] },
+  { path: "vote", component: VoteComponent, canActivate: [AuthGuard] },
   { path: "vote/:id", component: VoteComponent, canActivate: [AuthGuard] },
   //{ path: "chat/:id", component: ChatView, canActivate: [AuthGuard] },
   { path: 'chat',
@@ -46,8 +47,7 @@ const appRoutes: Routes = [
       { path: ':id', component: ChatView }
     ]
   },
-  { path: "authcallback", component: AuthCallbackComponent },
-  { path: "vote", component: VoteComponent, canActivate: [AuthGuard] },
+  { path: "authcallback", component: AuthCallbackComponent },  
   { path: "match", component: MatchComponent, canActivate: [AuthGuard] },
   { path: "search", component: SearchComponent, canActivate: [AuthGuard] },
   { path: "events", component: EventsViewComponent, canActivate: [AuthGuard] },

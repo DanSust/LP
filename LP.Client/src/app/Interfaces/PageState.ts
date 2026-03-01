@@ -13,6 +13,7 @@ export interface PageState {
     currentPage: number;
     hasMore: boolean;
   };
+  sortGUID: string;
   scrollPosition: number;
   showFilters: boolean;
   timestamp: number;

@@ -94,13 +94,14 @@ namespace Borus
                 };
 
                 // Добавляем 1-5 фото из Picsum (бесплатный сервис случайных фото)
-                var photoCount = faker.Random.Int(1, 5);
+                var photoCount = faker.Random.Int(1, 1);
                 var photos = new List<Photo>();
 
                 for (int p = 0; p < photoCount; p++)
                 {
                     var photoId = Guid.NewGuid();
-                    var photoUrl = $"https://picsum.photos/seed/{user.Id}-{p}/400/600";
+                    //var photoUrl = $"https://picsum.photos/seed/{user.Id}-{p}/400/600";
+                    var photoUrl = $"https://thispersondoesnotexist.com/?t={Guid.NewGuid()}";
 
                     // Скачиваем и сохраняем локально (опционально)
                     var localPath = await DownloadPhotoAsync(photoUrl, user.Id, photoId);

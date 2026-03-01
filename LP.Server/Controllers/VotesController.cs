@@ -361,6 +361,7 @@ namespace LP.Server.Controllers
             public int RadiusKm { get; set; } = 50;
             public int Page { get; set; } = 1;
             public int PageSize { get; set; } = 20;
+            public Guid SortGuid { get; set; }
         }
 
         [Authorize]
@@ -419,6 +420,7 @@ namespace LP.Server.Controllers
                             Profile = up.Profile,
                             City = c
                         })
+                    
                     .AsQueryable();
 
                 // Грубый гео-фильтр
@@ -445,7 +447,7 @@ namespace LP.Server.Controllers
 
                 // Загружаем данные с пагинацией
                 var data = await query
-                    .OrderBy(x => x.User.Caption) // Можно изменить на нужный порядок
+                    .OrderBy(x => filters.SortGuid) // Можно изменить на нужный порядок
                     .Skip(skip)
                     .Take(take)
                     .Select(x => new

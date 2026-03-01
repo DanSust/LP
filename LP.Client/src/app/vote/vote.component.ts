@@ -21,6 +21,7 @@ import { ChatService } from '../services/ChatService';
 import { ToastService } from '../common/toast.service';
 import { NavigationService } from '../services/NavigationService';
 import { getAgeWord } from './../common/usefull.utils';
+import { Subscription } from 'rxjs';
 
 interface ExitingProfile {
   id: string;
@@ -85,6 +86,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     private navService: NavigationService,
     private location: Location
   ) {
+    console.log('🏗️ VoteComponent создан');
     this.userId = this.route.snapshot.paramMap.get('id') ?? undefined;
 
     effect(() => {
@@ -97,15 +99,30 @@ export class VoteComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private routeSub?: Subscription;
   ngOnInit(): void {   
-    //console.warn(this.navService.getPreviousUrl(), this.cameFromSearch(), this.userId);
+    // 🔥 Подписываемся на изменения параметров маршрута
+    this.routeSub = this.route.paramMap.subscribe(params => {
+      const newUserId = params.get('id') ?? undefined;
+      console.log('Route params changed:', newUserId);
 
-    if (this.userId) {
-      this.profileService.loadProfile(this.userId);
-      this.cameFromSearch.set(this.navService.cameFrom('/search') || this.navService.cameFrom('/match'));
-    } else {
-      this.profileService.loadProfiles();
-    }
+      this.userId = newUserId;
+      this.currentPhotoIndex.set(0);
+      this.isFullscreen.set(false);
+      this.dragDelta.set(0);
+      this.isDragging.set(false);
+
+      if (this.userId) {
+        this.profileService.loadProfile(this.userId);
+        this.cameFromSearch.set(this.navService.cameFrom('/search') || this.navService.cameFrom('/match'));
+      } else {
+        this.profileService.loadProfiles();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();    
   }
 
   ngAfterViewInit(): void {

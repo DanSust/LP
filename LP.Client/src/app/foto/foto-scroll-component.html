@@ -54,8 +54,11 @@
   <!-- Остальные фото -->
   @for (image of images; track image) {
   <div class="gallery-item">
-    
-    <img src="{{baseURL}}/Photos/imagefree?id={{image.photoId}}" routerLink="/vote/{{image.userId}}"/>
+    <img
+      src="{{baseURL}}/Photos/imagefree?id={{image.photoId}}"
+      routerLink="/vote/{{image.userId}}"
+      (click)="onImageClick(image)"
+      />
   </div>
   }
 </div>

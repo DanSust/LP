@@ -56,7 +56,7 @@ export class FotoScrollComponent {
       });
   }
 
-  onClick(item: string) {
+  onImageClick(item: string) {
     console.log(item);
   }
 

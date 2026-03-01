@@ -23,8 +23,9 @@ import { City, NearestCityResponse } from './../Interfaces/CityLocation';
 import { ImageData } from './../Interfaces/ImageData';
 import { PageState } from '../Interfaces/PageState';
 
-import { catchError, map, Observable, of, startWith } from 'rxjs';
+import { catchError, generate, map, Observable, of, startWith } from 'rxjs';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { generateGUID } from '../common/GUID';
 
 interface Interest {
   id: string;
@@ -41,6 +42,7 @@ interface SearchFilters {
   radiusKm: number;
   page?: number;
   pageSize?: number;
+  sortGUID?: string;
 }
 
 @Component({
@@ -103,6 +105,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   // Пагинация
   currentPage: number = 1;
   pageSize: number = 20; // Количество элементов на странице
+  sortGUID: string = generateGUID();
   hasMore: boolean = true; // Есть ли еще данные для загрузки
 
   // Дебаунс для скролла
@@ -136,17 +139,21 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.restoreState(savedState);
     } else {
       // Обычная инициализация
+      this.sortGUID = generateGUID();
       this.isLoading = true; // 🔥 Явно устанавливаем
       this.loadCities();
       this.setupCityAutocomplete();
     }
   }
 
+  private onWindowScrollBound = this.onWindowScroll.bind(this);
+
   ngAfterViewInit(): void {
     if (this.shouldRestoreScroll) {
       this.restoreScrollPosition();
     }
     this.attachScrollListener();
+    window.addEventListener('scroll', this.onWindowScrollBound);
   }
 
   ngOnDestroy(): void {
@@ -159,10 +166,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     clearTimeout(this.scrollDebounceTimer);
+    window.removeEventListener('scroll', this.onWindowScrollBound);
   }
 
   getImageUrl(photoId: string | null | undefined): string {
-    console.log(`${this.baseUrl}/Photos/image/${photoId}`);
+    //console.log(`${this.baseUrl}/Photos/image/${photoId}`);
     if (!photoId || photoId === '00000000-0000-0000-0000-000000000000') {
       return 'assets/default-avatar.svg';//this.defaultAvatarUrl;
     }
@@ -184,7 +192,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     // Восстанавливаем пагинацию
     this.currentPage = state.pagination.currentPage;
     this.hasMore = state.pagination.hasMore;
-    this.savedScrollPosition = state.scrollPosition; 
+    this.savedScrollPosition = state.scrollPosition;
+    this.sortGUID = state.sortGUID || generateGUID();
     
     // Восстанавливаем изображения
     this.allImages = [...state.images];
@@ -207,13 +216,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.availableCities.length === 0) {
       this.loadCities();
     }
-
-    this.shouldRestoreScroll = true;
+    
     this.isRestoringState = false;    
   }
 
   private restoreScrollPosition(): void {
     if (!this.shouldRestoreScroll) return;
+
+    window.scrollTo(0, this.savedScrollPosition);
 
     // 🔥 Пробуем получить контейнер разными способами
     let container = this.galleryContainerRef()?.nativeElement;
@@ -223,12 +233,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (container) {
-      container.scrollTop = this.savedScrollPosition;      
-
       // 🔥 Проверяем, действительно ли установилось
       setTimeout(() => {
+        container.scrollTop = this.savedScrollPosition;      
         console.log('Actual scrollTop after restore:', container.scrollTop);
-      }, 50);
+      }, 100);
 
       this.shouldRestoreScroll = false;
     } else {
@@ -239,8 +248,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   // 🔥 Метод сохранения состояния
   private saveStateBeforeLeave(): void {    
     const container = this.galleryContainerRef()?.nativeElement;    
-    const scrollPosition = container?.scrollTop || 0;
-    
+    //const scrollPosition = container?.scrollTop || 0;
+
+    //console.log('saveStateBeforeLeave-', this.currentScrollPosition);
 
     const currentCityValue = this.cityControl.value;
     const cityName = typeof currentCityValue === 'string'
@@ -261,23 +271,43 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
         currentPage: this.currentPage,
         hasMore: this.hasMore
       },
+      sortGUID: this.sortGUID,
       scrollPosition: this.currentScrollPosition,
       showFilters: this.showFilters,
       timestamp: Date.now(),
       category: ''
     });
   }
-
+  
   // Метод для подписки на скролл после загрузки данных
   private attachScrollListener(): void {
     setTimeout(() => {
-      const galleryContainer = this.galleryContainerRef()?.nativeElement;
-      if (galleryContainer) {        
-        galleryContainer.addEventListener('scroll', this.onGalleryScroll.bind(this));
-      } else {
-        console.log('Gallery container not found');
+      // Предпочтительный вариант — самый внешний скроллируемый контейнер
+      let scrollContainer = this.galleryContainerRef()?.nativeElement?.closest('.gallery-wrapper') as HTMLElement;
+
+      // Если не нашли — fallback на сам gallery-search-container
+      if (!scrollContainer?.scrollHeight) {
+        scrollContainer = this.galleryContainerRef()?.nativeElement;
       }
-    }, 0);
+
+      // Последний fallback — window
+      if (!scrollContainer) {
+        console.warn("Не найден скроллируемый контейнер → используем window");
+        window.addEventListener('scroll', this.onWindowScroll.bind(this));
+        return;
+      }
+
+      // Удаляем старый слушатель, если был
+      if (this.scrollListener) {
+        scrollContainer.removeEventListener('scroll', this.scrollListener);
+      }
+
+      this.scrollListener = this.onGalleryScroll.bind(this);
+      scrollContainer.addEventListener('scroll', this.scrollListener);
+
+      //console.log("Слушатель скролла успешно привязан к →", scrollContainer.className || scrollContainer.tagName);
+
+    }, 50); // небольшой таймаут помогает при сложных layout'ах
   }
 
   setupCityAutocomplete(): void {
@@ -372,7 +402,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       useGeolocation: this.useGeolocation,
       radiusKm: this.radiusKm,
       page: this.currentPage,
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
+      sortGUID: this.sortGUID
     };
 
     if (this.useGeolocation && this.currentPosition) {
@@ -429,8 +460,10 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
+//  @HostListener('window:scroll')
+  onWindowScroll(): void {    
+    this.currentScrollPosition = window.scrollY || document.documentElement.scrollTop;
+    //console.log('🔥 onWindowScroll сработал! ', this.currentScrollPosition);
     if (this.showFilters) return;
     // Используем дебаунс для оптимизации
     clearTimeout(this.scrollDebounceTimer);
@@ -440,9 +473,17 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onGalleryScroll(): void {
+    console.log('🔥 onGalleryScroll сработал!', {
+      showFilters: this.showFilters,
+      isLoadingMore: this.isLoadingMore,
+      hasMore: this.hasMore,
+      scrollTop: this.galleryContainerRef()?.nativeElement?.closest('.gallery-wrapper')?.scrollTop || '—'
+    });
+
     const container = this.galleryContainerRef()?.nativeElement;
     if (container) {
       this.currentScrollPosition = container.scrollTop;
+      console.log('onGalleryScroll - ', this.currentScrollPosition);
     }
 
     if (this.showFilters || this.isLoadingMore || !this.hasMore) return;

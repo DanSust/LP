@@ -4,12 +4,14 @@ import { Observable, BehaviorSubject, of, delay, tap } from 'rxjs';
 import { API_BASE_URL } from './../app.config';
 import { getZodiacSign  } from './../common/usefull.utils';
 import { Profile } from './vote.model';
+import { ToastService } from '../common/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
  
   constructor(
-    private http: HttpClient,    
+    private http: HttpClient,
+    private toast: ToastService,
     @Inject(API_BASE_URL) private baseUrl: string
   ) { }
 
@@ -82,8 +84,9 @@ export class ProfileService {
       });
   }
 
-  loadProfile(id: string) {    
-    this.http.get<any>(`${this.baseUrl}/users/view?id=${id}`, { withCredentials: true })
+  loadProfile(id: string) {
+    console.log('loadProfile ', id);
+    this.http.get<any>(`${this.baseUrl}/Users/view?id=${id}`, { withCredentials: true })
       .subscribe({
         next: (response) => {
           console.log(response);
@@ -104,8 +107,9 @@ export class ProfileService {
             // Остальные поля могут быть пустыми для публичного профиля
           };
           this.profiles.set([profile]);
-          this.http.get<any[]>(`${this.baseUrl}/photos/user?id=${id}`, { withCredentials: true })
+          this.http.get<any[]>(`${this.baseUrl}/Photos/user?id=${id}`, { withCredentials: true })
             .subscribe(img => {
+              console.warn(img);
               profile.photoUrls = img.map(photo => ({
                 id: photo.id,
                 path: `${this.baseUrl}/Photos/image/${photo.id}`
@@ -116,6 +120,7 @@ export class ProfileService {
         },
         error: (error) => {
           console.error('Failed to load profile:', error);
+          this.toast.error('Пользователь не найден');
           
         }
       });

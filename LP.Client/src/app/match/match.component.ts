@@ -11,6 +11,7 @@ import { ImageData } from './../Interfaces/ImageData';
 import { formatDistance, getPeopleWord } from './../common/usefull.utils';
 import { PageStateService } from './../services/PageStateService';
 import { PageState } from './../Interfaces/PageState';
+import { generateGUID } from '../common/GUID';
 
 type TabType = 'mutual' | 'viewed' | 'likesMe' | 'iLike';
 
@@ -43,6 +44,7 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   currentPage: number = 1;
   pageSize: number = 20; // Количество элементов на странице
+  sortGUID: string = '';
   hasMore: boolean = true; // Есть ли еще данные для загрузки
 
   private scrollDebounceTimer: any;
@@ -76,6 +78,7 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.restoreState(savedState);
     } else {
       // Обычная инициализация
+      this.sortGUID = generateGUID();
       this.isLoading = true; // 🔥 Явно устанавливаем
       this.setActiveTab('mutual');
     }
@@ -123,12 +126,12 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Восстанавливаем изображения
     this.allImages = [...state.images];
-    this.isLoading = false;
-        
+    this.isLoading = false;        
     
     // Отмечаем, что нужно восстановить скролл    
     this.shouldRestoreScroll = true;
     this.isRestoringState = false;
+    this.sortGUID = state.sortGUID;
   }
 
   private restoreScrollPosition(): void {
@@ -174,6 +177,7 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
         currentPage: this.currentPage,
         hasMore: this.hasMore
       },
+      sortGUID: this.sortGUID,
       scrollPosition: this.currentScrollPosition,
       showFilters: false,
       timestamp: Date.now(),
