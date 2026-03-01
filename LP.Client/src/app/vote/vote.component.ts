@@ -106,6 +106,8 @@ export class VoteComponent implements OnInit, AfterViewInit {
       const newUserId = params.get('id') ?? undefined;
       console.log('Route params changed:', newUserId);
 
+      this.resetState();
+
       this.userId = newUserId;
       this.currentPhotoIndex.set(0);
       this.isFullscreen.set(false);
@@ -122,7 +124,20 @@ export class VoteComponent implements OnInit, AfterViewInit {
   }
 
   ngOnDestroy(): void {
-    this.routeSub?.unsubscribe();    
+    this.routeSub?.unsubscribe();
+
+    // Отменяем все подписки через AbortController
+    //this.abortController.abort();
+
+    // Очищаем все сигналы
+    this.resetState();
+
+    // Дополнительно удаляем все обработчики с элемента, если он еще существует
+    if (this.photoContainer?.nativeElement) {
+      const element = this.photoContainer.nativeElement;
+      const clone = element.cloneNode(false);
+      element.parentNode?.replaceChild(clone, element);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -132,6 +147,22 @@ export class VoteComponent implements OnInit, AfterViewInit {
       this.setupSwipeGestures();
     }
     //this.setupPhotoClick();
+  }
+
+  private resetState(): void {
+    // Сброс всех сигналов состояния
+    this.currentPhotoIndex.set(0);
+    this.isFullscreen.set(false);
+    this.dragDelta.set(0);
+    this.isDragging.set(false);
+    this.exitingProfile.set(null);
+    this.isAnimating.set(false);
+    this.exitDelta.set(0);
+    this.imageLoaded.set(false);
+    this.hasExceededThreshold = false;
+
+    // Очистка профилей — ключевой момент!
+    this.profileService.clearProfiles();
   }
 
   private waitForElement(): void {

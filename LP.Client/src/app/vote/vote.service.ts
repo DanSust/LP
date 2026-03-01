@@ -31,6 +31,12 @@ export class ProfileService {
     return age;
   }
 
+  public clearProfiles(): void {
+    this.profiles.set([]);
+    this.buffer = [];
+    this.lastLoadEmpty = false;
+  }
+
   private lastLoadEmpty = false;
   // Динамическая подгрузка профилей
   loadMoreProfiles(count: number = 5) {

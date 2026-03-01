@@ -102,6 +102,42 @@
   animation: badge-pop 0.5s ease;
 }
 
+.menu-item {
+  .more-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+::ng-deep .bottom-nav-menu {
+  background: var(--gradient-top) !important;
+  border: 1px solid #557A94;
+  border-radius: 12px !important;
+
+  .mat-mdc-menu-content {
+    background: transparent !important;
+  }
+
+  .mat-mdc-menu-item {
+    color: rgba(255, 255, 255, 0.87) !important;
+
+    .mat-icon {
+      color: antiquewhite !important;
+    }
+  }
+}
+
 @keyframes badge-pop {
   0% {
     transform: scale(0);

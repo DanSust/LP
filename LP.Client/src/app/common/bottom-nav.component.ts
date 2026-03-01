@@ -4,6 +4,9 @@ import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 import { ChatService } from '../services/ChatService';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
 
 interface NavItem {
   label: string;
@@ -15,7 +18,12 @@ interface NavItem {
 @Component({
   selector: 'app-bottom-nav',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatMenuModule,
+    MatButtonModule,
+    MatIconModule],
   templateUrl: './bottom-nav.component.html',
   styleUrls: ['./bottom-nav.component.scss']
 })
@@ -27,11 +35,12 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   totalUnreadCount = computed(() => this.chatService.unreadMessageCount());
 
   navItems = computed<NavItem[]>(() => [
-    { label: 'Поиск', icon: 'search', route: '/search' },
-    { label: 'Симпатии', icon: 'favorite', route: '/vote'  },
     { label: 'Знакомства', icon: 'people', route: '/match' },
+    { label: 'Поиск', icon: 'search', route: '/search' },
+    { label: 'Симпатии', icon: 'favorite', route: '/vote'  },    
     { label: 'Чат', icon: 'chat', route: '/chat', badge: this.totalUnreadCount() },
-    { label: 'Профиль', icon: 'person', route: '/profile' }
+    { label: 'Профиль', icon: 'person', route: '/profile' },
+    { label: 'Ещё', icon: 'more_vert', route: '' }
   ]);
 
   constructor(private router: Router) { }
@@ -58,8 +67,26 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     return this.activeRoute.startsWith(route);
   }
 
-  onNavClick(item: NavItem): void {
-    // Можно добавить аналитику или логику перед переходом
-    console.log('Переход на:', item.route);
+  onItemClick(item: NavItem, event: Event): void {
+    console.log('onItemClick', item);
+    if (this.isMenuItem(item)) {
+      event.stopPropagation();
+      return;
+    }
+    this.router.navigate([item.route]);
+  }
+
+  // Проверка — это элемент меню или обычная навигация
+  isMenuItem(item: NavItem): boolean {
+    return item.route === '';
+  }
+
+  onAbout(): void {
+    this.router.navigate(['/about']);
+  }
+
+  onLogout(): void {
+    console.log('Выход');
+    this.router.navigate(['/login']);
   }
 }

@@ -1,15 +1,13 @@
 <nav class="bottom-nav" *ngIf="true">
-  <!-- Уберите *ngIf в продакшене -->
   <div *ngFor="let item of navItems()"
        class="nav-item"
-       [class.active]="isActive(item.route)"
-       [routerLink]="item.route"
-       (click)="onNavClick(item)">
-    <!-- Иконка -->
-    <div class="nav-icon">
-      <span class="material-icons">{{ item.icon }}</span>
+       [class.active]="!isMenuItem(item) && isActive(item.route)"
+       [class.menu-item]="isMenuItem(item)"
+       (click)="onItemClick(item, $event)">
 
-      <!-- Badge (уведомления) -->
+    <!-- Обычная иконка -->
+    <div class="nav-icon" *ngIf="!isMenuItem(item)">
+      <span class="material-icons">{{ item.icon }}</span>
       <span class="badge"
             *ngIf="item.badge && item.badge > 0"
             [class.badge-pulse]="item.badge > 3">
@@ -17,7 +15,24 @@
       </span>
     </div>
 
-    <!-- Текст -->
-    <!--<span class="nav-label">{{ item.label }}</span>-->
+    <!-- Троеточие с меню -->
+    <div class="nav-icon" *ngIf="isMenuItem(item)" (click)="$event.stopPropagation()">
+      <button mat-icon-button
+              [matMenuTriggerFor]="moreMenu"
+              class="more-btn">
+        <span class="material-icons">{{ item.icon }}</span>
+      </button>
+    </div>
   </div>
 </nav>
+
+<mat-menu #moreMenu="matMenu" xPosition="before">
+  <button mat-menu-item (click)="onAbout()">
+    <mat-icon>info</mat-icon>
+    <span>О сайте</span>
+  </button>
+  <button mat-menu-item (click)="onLogout()">
+    <mat-icon>logout</mat-icon>
+    <span>Выход</span>
+  </button>
+</mat-menu>
