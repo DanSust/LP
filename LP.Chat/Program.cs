@@ -22,7 +22,7 @@ try
     });
 
     // ✅ Redis Configuration
-    var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "redis:6379";
     // ✅ Добавляем fallback, если Redis не доступен
     builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     {

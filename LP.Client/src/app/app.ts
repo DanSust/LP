@@ -43,7 +43,7 @@ export class App implements OnInit, OnDestroy {
   isLoading = false;
 
   // === НАСТРОЙКИ РЕЖИМА РАЗРАБОТКИ ===
-  isDevelopmentMode = true; // ← Поставьте false чтобы включить основной сайт
+  isDevelopmentMode = false; // ← Поставьте false чтобы включить основной сайт
   launchDate = new Date(2026, 2, 8); // 8 марта 2026
   // ===================================
 

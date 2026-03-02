@@ -1,5 +1,5 @@
 <form [formGroup]="form">
-  <mat-stepper orientation="vertical" linear>
+  <mat-stepper orientation="vertical" >
     <mat-step label="Персональная информация">
       <br />
       <div class="email-nickname-row">
@@ -181,20 +181,20 @@
       </div>
     </mat-step>
 
-    <!-- Вставьте этот шаг после "Interests" и перед "Photos" -->
-    <mat-step label="Вопросы для партнера">
+    
+    <!--<mat-step label="Вопросы для партнера">
 
       <div class="questions-counter" [class.warning]="questionsFormArray.length >= maxQuestions">
         Вопросы: {{questionsFormArray.length}} / {{maxQuestions}}
       </div>
 
-      <div class="questions-container" formArrayName="questions">
+      <div class="questions-container" formArrayName="questions">-->
         <!-- ✅ Используем индекс i для formGroupName -->
-        @for (questionGroup of questionsFormArray.controls; track getQuestionId($index); let i = $index) {
+        <!--@for (questionGroup of questionsFormArray.controls; track getQuestionId($index); let i = $index) {
         <div class="question-item" [formGroupName]="i">
-          <mat-form-field class="full-width">
+          <mat-form-field class="full-width">-->
             <!-- ✅ formControlName должен совпадать с именем поля в FormBuilder -->
-            <input matInput
+            <!--<input matInput
                    formControlName="question"
                    placeholder="Задайте вопрос">
           </mat-form-field>
@@ -225,7 +225,7 @@
         <button mat-button matStepperPrevious>Назад</button>
         <button mat-button matStepperNext>Далее</button>
       </div>
-    </mat-step>
+    </mat-step>-->
 
     <mat-step label="Фотографии">
       <user-photo></user-photo>

@@ -67,6 +67,7 @@ export class UserProfile implements OnInit {
   response: string = "";
   provider: string = "google";
   isConfirmed = false;
+  currentStep = 3;
 
   maxInterests = 10;
   selectedInterestsCount = 0;

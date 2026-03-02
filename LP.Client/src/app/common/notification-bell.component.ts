@@ -23,8 +23,7 @@ export class NotificationBellComponent implements OnInit {
   ngOnInit(): void {
     this.http.get<EventsDTO[]>(this.base + '/Events/list', { withCredentials: true })
       .subscribe(u => {
-        this.isMuted = !u.some(x => x.isNew === 1);
-        console.log(u);
+        this.isMuted = !u.some(x => x.isNew === 1);        
       });
   }
 

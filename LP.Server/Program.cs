@@ -17,6 +17,7 @@ using Microsoft.DotNet.Scaffolding.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Http.Logging;
+using StackExchange.Redis;
 
 
 
@@ -39,9 +40,23 @@ class Program
         Directory.CreateDirectory(imgPath);
 
         // Add services to the container.
+        //builder.Services.AddStackExchangeRedisCache(options =>
+        //{
+        //    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+        //    options.InstanceName = "LP_";
+        //});
+        
+        builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            var config = builder.Configuration.GetConnectionString(builder.Environment.IsDevelopment()?"RedisLocal":"Redis");
+            return ConnectionMultiplexer.Connect(config);
+        });
         builder.Services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = builder.Configuration.GetConnectionString("Redis");
+            options.ConnectionMultiplexerFactory = () =>
+                Task.FromResult(builder.Services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IConnectionMultiplexer>());
             options.InstanceName = "LP_";
         });
 
