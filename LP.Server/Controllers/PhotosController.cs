@@ -100,11 +100,23 @@ namespace LP.Server.Controllers
 
         [AllowAnonymous]
         [HttpGet("back/{name}")]
-        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         public IActionResult GetImageBack(string name)
         {
-            string imgPath = Path.Combine(_env.ContentRootPath, "..", "img\\back", name);
-            if (!System.IO.File.Exists(imgPath))
+            var possiblePaths = new[]
+            {
+                // Для Docker (если монтируешь volume)
+                Path.Combine(_env.ContentRootPath, "img", "back", name),
+                // Для Docker (если рядом с .dll)
+                Path.Combine(_env.WebRootPath, "img", "back", name),
+                // Твой текущий вариант (для локальной разработки)
+                Path.Combine(_env.ContentRootPath, "..", "img", "back", name),
+                // Абсолютный путь в Docker
+                Path.Combine("/app", "img", "back", name)
+            };
+
+            string? imgPath = possiblePaths.FirstOrDefault(System.IO.File.Exists);
+            if (imgPath == null)
                 return NotFound();
 
             var ext = Path.GetExtension(name).ToLower();

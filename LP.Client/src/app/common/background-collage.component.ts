@@ -19,7 +19,7 @@ export class BackCollageComponent implements OnInit {
     // Генерируем массив URL и перемешиваем
     const urls = Array.from({ length: 12 }, (_, i) =>
       //`${this.baseUrl}/Photos/back/${i + 1}.jpg`
-      '/api/Photos/back/${i + 1}.jpg'
+      `/api/Photos/back/${i + 1}.jpg`
     );
     this.photoUrls = this.shuffleArray(urls);
   }
