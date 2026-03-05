@@ -84,7 +84,7 @@ export class UserPhoto {
 
       formData.append('file', this.file, this.file.name);
 
-      const upload$ = this.http.post<{userId: string; id: string} > (this.base + "/Photos/add", formData, { withCredentials: true });           
+      const upload$ = this.http.post<{ userId: string; id: string }>(this.base + "/Photos/add", formData, { withCredentials: true });           
 
       upload$.subscribe(result => {        
         //console.log(result);

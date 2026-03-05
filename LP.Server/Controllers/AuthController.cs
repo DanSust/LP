@@ -25,7 +25,7 @@ namespace LP.Server.Controllers
 	public record AuthStatus(bool IsAuthenticated, string? Email, string? Name);
 	
 	[ApiController]
-    [Route("api/auth")]
+    [Route("auth")]
     public class AuthController : ControllerBase
 	{
 		private readonly IAuthService _service;

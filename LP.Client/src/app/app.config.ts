@@ -28,6 +28,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { AuthService } from './services/AuthService';
 import { ConfirmComponent } from './auth/auth.confirm.component';
 import { ComingSoonComponent } from './promo/coming-soon.component';
+import { environment } from '../environments/environment';
 
 //import { FotoScrollComponent } from './common/foto-scroll';
 
@@ -78,9 +79,15 @@ const appRoutes: Routes = [
 ];
 
 export function getBaseUrl() {
-  //console.log("getBaseUrl");
+  console.log("getBaseUrl - ", environment.apiUrl);
+  //return '';
+  //return "https://127.0.0.1:7010";
   //return "https://localhost:7010";
-  return "https://127.0.0.1:7010";
+  return environment.apiUrl;
+}
+
+export function getEnvironment(): string {
+  return environment.production ? 'production' : 'development';
 }
 
 export function getDefaultAvatarUrl() {
@@ -89,6 +96,7 @@ export function getDefaultAvatarUrl() {
 }
 
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
+export const APP_ENVIRONMENT = new InjectionToken<string>('APP_ENVIRONMENT');
 export const DEFAULT_AVATAR_URL = new InjectionToken<string>('DEFAULT_AVATAR_URL');
 registerLocaleData(localeRu);
 
@@ -96,6 +104,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(withFetch()),
     { provide: API_BASE_URL, useFactory: getBaseUrl },
+    { provide: APP_ENVIRONMENT, useFactory: getEnvironment },
     { provide: DEFAULT_AVATAR_URL, useFactory: getDefaultAvatarUrl },
     { provide: LOCALE_ID, useValue: 'ru-RU' },   // ← DD.MM.YYYY
     { provide: DateAdapter, useClass: CustomDateAdapter },

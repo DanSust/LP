@@ -1,5 +1,6 @@
 ﻿using LP.Entity;
 using LP.Server.Services.ImageProcessing;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,11 @@ namespace LP.Server.Controllers
         private readonly ApplicationContext _context;
         private readonly IWebHostEnvironment _env;
         private readonly IImageProcessingService _imageService;
+
+        private string SafeCombine(params string[] paths)
+        {
+            return Path.Combine(paths.Where(p => !string.IsNullOrEmpty(p)).ToArray());
+        }
 
         public PhotosController(IWebHostEnvironment env, ApplicationContext context, IImageProcessingService imageService) 
         {
@@ -100,20 +106,18 @@ namespace LP.Server.Controllers
 
         [AllowAnonymous]
         [HttpGet("back/{name}")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
+        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         public IActionResult GetImageBack(string name)
         {
-            var possiblePaths = new[]
-            {
-                // Для Docker (если монтируешь volume)
-                Path.Combine(_env.ContentRootPath, "img", "back", name),
-                // Для Docker (если рядом с .dll)
-                Path.Combine(_env.WebRootPath, "img", "back", name),
-                // Твой текущий вариант (для локальной разработки)
-                Path.Combine(_env.ContentRootPath, "..", "img", "back", name),
-                // Абсолютный путь в Docker
-                Path.Combine("/app", "img", "back", name)
-            };
+            var safeName = Path.GetFileName(name);
+            var possiblePaths = new List<string>();
+
+            // Только не-null пути
+            possiblePaths.Add(SafeCombine(_env.ContentRootPath, "img", "back", safeName));
+            possiblePaths.Add(SafeCombine(_env.WebRootPath, "img", "back", safeName));
+            possiblePaths.Add(SafeCombine(_env.ContentRootPath, "..", "img", "back", safeName));
+            possiblePaths.Add(SafeCombine("/app", "img", "back", safeName));
+
 
             string? imgPath = possiblePaths.FirstOrDefault(System.IO.File.Exists);
             if (imgPath == null)

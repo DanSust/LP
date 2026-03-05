@@ -1,6 +1,6 @@
 {
   "/Photos/**": {
-    "target": "https://localhost:7010",
+    "target": "https://127.0.0.1:7010",
     "secure": false,
     "logLevel": "debug",
     "changeOrigin": true

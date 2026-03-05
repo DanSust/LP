@@ -135,7 +135,8 @@ try
         Log.Warning("Shutdown complete");
     });
 
-    app.Run("https://localhost:5000");
+    //app.Run("https://127.0.0.1:5000");
+    app.Run("http://0.0.0.0:5000");
 }
 catch (Exception ex)
 {

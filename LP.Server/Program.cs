@@ -40,12 +40,7 @@ class Program
         Directory.CreateDirectory(imgPath);
 
         // Add services to the container.
-        //builder.Services.AddStackExchangeRedisCache(options =>
-        //{
-        //    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-        //    options.InstanceName = "LP_";
-        //});
-        
+       
         builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
             var config = builder.Configuration.GetConnectionString(builder.Environment.IsDevelopment()?"RedisLocal":"Redis");
@@ -89,10 +84,10 @@ class Program
                 policy.WithOrigins(
                     "https://oauth.telegram.org",
                     //"http://localhost:4200", 
-                    "https://localhost:4200", 
-                    "https://localhost:7010",
+                    //"https://localhost:4200", 
+                    //"https://localhost:7010",
                     //"http://localhost",
-                    "https://localhost",
+                    //"https://localhost",
                     "http://127.0.0.1:7010",
                     "https://127.0.0.1:7010",
                     "http://127.0.0.1",

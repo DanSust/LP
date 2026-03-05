@@ -47,6 +47,16 @@
           },
           "configurations": {
             "production": {
+              "define": {
+                "NG_API_URL": "'https://made4love.ru'",
+                "NG_PRODUCTION": "true"
+              },
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -82,7 +92,7 @@
           "options": {
             "port": 433,
             "host": "0.0.0.0",
-            "proxyConfig": "proxy.conf.json"
+            //"proxyConfig": "proxy.conf.json"
           },
           "defaultConfiguration": "development"
         },

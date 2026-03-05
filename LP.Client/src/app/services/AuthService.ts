@@ -30,7 +30,7 @@ export class AuthService {
 
   // Get user ID from server
   getUserId(): Observable<any> {
-    return this.http.get<any>(this.baseUrl + '/api/auth/status', { withCredentials: true });
+    return this.http.get<any>(this.baseUrl + '/auth/status', { withCredentials: true });
   }
 
   // Load and cache user ID
@@ -62,7 +62,7 @@ export class AuthService {
 
   login(email: string, password: string): Observable<any> {
     //return of({ success: true }).pipe(delay(1000));
-    return this.http.post<any>(this.baseUrl + '/api/auth/login', { username: email, password }, { withCredentials: true })
+    return this.http.post<any>(this.baseUrl + '/auth/login', { username: email, password }, { withCredentials: true })
       .pipe(tap(response => {
         const userId = response.userId || response.id;
         if (userId) {
@@ -79,7 +79,7 @@ export class AuthService {
     console.log('Cookies before logout:', document.cookie);
     console.log('localStorage userId:', localStorage.getItem('userId'));
     localStorage.removeItem('userId');
-    this.http.get<any>(this.baseUrl + '/api/auth/logout', { withCredentials: true })
+    this.http.get<any>(this.baseUrl + '/auth/logout', { withCredentials: true })
       .subscribe(() => {
         localStorage.removeItem('userId');        
         this.userIdSubject.next(null);
@@ -98,7 +98,7 @@ export class AuthService {
   }
 
   register(email: string, password: string): Observable<{ Success: boolean; message: string; userId?: string }> {
-    return this.http.post<{ Success: boolean; message: string; userId?: string }>(this.baseUrl + '/api/auth/register', {
+    return this.http.post<{ Success: boolean; message: string; userId?: string }>(this.baseUrl + '/auth/register', {
       username: email,
       password
     });
