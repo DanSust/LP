@@ -11,10 +11,10 @@ export default {
         console.log('[Proxy Error]', err.message);
       });
       proxy.on('proxyReq', (proxyReq, req, res) => {
-        console.log('[Proxy Req]', req.method, req.url, '->', options.target + proxyReq.path);
+        //console.log('[Proxy Req]', req.method, req.url, '->', options.target + proxyReq.path);
       });
       proxy.on('proxyRes', (proxyRes, req, res) => {
-        console.log('[Proxy Res]', proxyRes.statusCode, req.url);
+        //console.log('[Proxy Res]', proxyRes.statusCode, req.url);
       });
     }
   },
@@ -29,10 +29,10 @@ export default {
         console.log('[Proxy Error]', err.message);
       });
       proxy.on('proxyReq', (proxyReq, req, res) => {
-        console.log('[Proxy Req]', req.method, req.url, '->', options.target + proxyReq.path);
+        //console.log('[Proxy Req]', req.method, req.url, '->', options.target + proxyReq.path);
       });
       proxy.on('proxyRes', (proxyRes, req, res) => {
-        console.log('[Proxy Res]', proxyRes.statusCode, req.url);
+        //console.log('[Proxy Res]', proxyRes.statusCode, req.url);
       });
     }
   }

@@ -178,16 +178,10 @@ export class ChatView implements OnInit, OnDestroy {
 
   deleteChat(): void {
     console.log('Удалить чат');
-    this.subscription = this.route.paramMap.subscribe(params => {
-      const id = params.get("id");
-      if (id) {
-
-        this.chatService.activeChatId.set(id);
-        this.chatService.deleteChat(id);
-        //console.log('ngOnInit ' + this.userId);
-      }
-    });
-    
+    const id = this.chatService.activeChatId();  // ← Берём текущий ID напрямую
+    if (id) {
+      this.chatService.deleteChat(id);
+    }
     this.showMenu.set(false);
   }
 

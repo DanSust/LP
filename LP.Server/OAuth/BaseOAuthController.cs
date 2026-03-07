@@ -62,7 +62,8 @@ public abstract class BaseOAuthController : ControllerBase
 
     protected IActionResult CallbackResponse(User user, string provider, string? returnUrl)
     {
-        var targetUrl = returnUrl ?? $"https://127.0.0.1/auth/success?provider={provider}&userId={user.Id}";
+        //var targetUrl = returnUrl ?? $"https://127.0.0.1/auth/success?provider={provider}&userId={user.Id}";
+        var targetUrl = returnUrl ?? $"/auth/success?provider={provider}&userId={user.Id}";
 
         var html = $@"
 <!DOCTYPE html>

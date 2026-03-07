@@ -69,7 +69,8 @@ export class AuthService {
           localStorage.setItem('userId', userId);
           this.userIdSubject.next(userId);
         }
-        this.router.navigate(['/profile']);
+        //this.router.navigate(['/profile']);
+        window.location.href = "/profile";
       }
       ));
   }

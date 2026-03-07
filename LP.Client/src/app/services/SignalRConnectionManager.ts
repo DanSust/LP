@@ -11,8 +11,6 @@ type DisconnectCallback = () => void;
 @Injectable({ providedIn: 'root' })
 
 export class SignalRConnectionManager {
-  //private HUB_URL = 'https://127.0.0.1:5000/chat';
-
   private hubConnection: HubConnection | null = null;
   public userId: string | null = null;
   private connectionPromise: Promise<void> | null = null;
@@ -42,6 +40,11 @@ export class SignalRConnectionManager {
       return Promise.resolve();
     }
 
+    if (this.connectionPromise && this.userId === null) {
+      console.log('🔄 Auth state changed, resetting connection promise');
+      this.connectionPromise = null;
+    }
+
     if (this.connectionPromise) {
       console.log('⏳ Connection in progress...');
       return this.connectionPromise;
@@ -56,7 +59,7 @@ export class SignalRConnectionManager {
     });
 
     return this.connectionPromise;
-  }
+  }  
 
   /**
    * Проверяем аутентификацию и получаем userId

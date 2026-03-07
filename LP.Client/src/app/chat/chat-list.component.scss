@@ -133,6 +133,7 @@
   border-bottom: 1px solid var(--divider-color);
   transition: background 0.2s;
   flex-shrink: 0; // Запрещаем сжатие айтемов
+  position: relative;
 
   &:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -140,15 +141,26 @@
 
   &.active {
     background: rgba(255, 255, 255, 0.1);
+
+    app-user-avatar {
+      ::ng-deep .user-name, // если имя внутри аватара
+      ::ng-deep [class*="name"] {
+        color: wheat !important; // или var(--accent-color)
+        font-size: medium;
+        font-weight: 500;
+      }
+    }
   }
 
   .chat-meta {
+    position: absolute; // ← абсолютное позиционирование
+    right: 5px; // ← отступ справа
+    bottom: 2px; // ← отступ снизу (нижний правый угол)
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 5px;
     flex-shrink: 0;
-    margin-left: 10px;
     margin-left: auto; // Прижимаем к правому краю
 
     .message-time {

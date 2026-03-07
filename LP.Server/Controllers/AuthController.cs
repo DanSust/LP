@@ -159,7 +159,7 @@ namespace LP.Server.Controllers
                 await _context.SaveChangesAsync();
 
                 // Отправляем письмо
-                var confirmationLink = $"https://127.0.0.1/confirm?token={confirmation.ConfirmationToken}&email={user.Email}";
+                var confirmationLink = $"/confirm?token={confirmation.ConfirmationToken}&email={user.Email}";
                 await _emailService.SendConfirmationEmailAsync(user.Email, confirmationLink);
 
                 return Ok(new

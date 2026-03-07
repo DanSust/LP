@@ -189,7 +189,7 @@ public class GoogleOAuthController : BaseOAuthController
                     Domain = null, // Автоматически текущий домен
                     Expires = DateTimeOffset.UtcNow.AddMinutes(20) // Expiration
                 });
-
+            var calback =_configuration["OAuth:Google:AuthCallback"];
             string html = $@"
 						   <!doctype html>
 						   <html>
@@ -202,7 +202,7 @@ public class GoogleOAuthController : BaseOAuthController
 							 <script>
         // Даём время браузеру сохранить куки
         setTimeout(function() {{{{
-            window.location.href = 'https://127.0.0.1/authcallback?code={code}&userId={user.Id}';
+            window.location.href = '{calback}?code={code}&userId={user.Id}';
         }}}}, 500); // 100ms достаточно
     </script>
 							</body>

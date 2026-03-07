@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from './../services/AuthService';
 import { TelegrmaComponent } from './Telegram/telegram.component';
 import { Router } from '@angular/router';
+import { API_BASE_URL } from '../app.config';
 
 declare global {
   interface Window {
@@ -37,6 +38,7 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
   private vkInitialized = false;
 
   constructor(
+    @Inject(API_BASE_URL) private baseUrl: string,
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
@@ -177,7 +179,7 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
   GoogleLogin(event: any): void {
     event.preventDefault();
     const popup = window.open(
-      'https://127.0.0.1:7010/api/oauth/google/login?' + window,
+      this.baseUrl+'/api/oauth/google/login?' + window,
       'OAuthPopup',
       'width=600,height=700'
     );
