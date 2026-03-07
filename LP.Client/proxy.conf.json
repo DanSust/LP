@@ -1,6 +1,6 @@
 {
-  "/Photos/**": {
-    "target": "https://127.0.0.1:7010",
+  "/chat": {
+    "target": "https://127.0.0.1:5000",
     "secure": false,
     "logLevel": "debug",
     "changeOrigin": true

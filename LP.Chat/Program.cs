@@ -22,36 +22,50 @@ try
     });
 
     // ✅ Redis Configuration
-    var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "redis:6379";
-    // ✅ Добавляем fallback, если Redis не доступен
-    builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    // ✅ Пробуем подключиться к Redis
+    var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    IConnectionMultiplexer? redisMultiplexer = null;
+    var redisAvailable = false;
+
+    try
     {
-        try
-        {
-            return ConnectionMultiplexer.Connect(redisConnection);
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Redis connection failed. Running without cache.");
-            return null; // Или создайте mock-реализацию
-        }
-    });
+        redisMultiplexer = ConnectionMultiplexer.Connect(redisConnection);
+        redisAvailable = redisMultiplexer.IsConnected;
+        Log.Information("✅ Redis connected: {Endpoint}", redisMultiplexer.GetEndPoints().FirstOrDefault());
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "⚠️ Redis unavailable. Running WITHOUT cache (direct DB access).");
+        redisAvailable = false;
+    }
+    // ✅ Добавляем fallback, если Redis не доступен
+    builder.Services.AddSingleton<IConnectionMultiplexer?>(sp => redisMultiplexer);
 
     // SignalR с Redis Backplane
-    builder.Services.AddSignalR(options =>
+    // ✅ SignalR с условным Redis Backplane
+    var signalRBuilder = builder.Services.AddSignalR(options =>
     {
-        options.EnableDetailedErrors = false;
+        options.EnableDetailedErrors = true;
         options.MaximumReceiveMessageSize = 64 * 1024;
-    })
-    .AddStackExchangeRedis(options =>
-    {
-        // ✅ Правильный способ: создаем ConfigurationOptions и присваиваем
-        var config = ConfigurationOptions.Parse(redisConnection);
-        config.ChannelPrefix = "ChatHub"; // Префикс для каналов Redis
-        config.AbortOnConnectFail = false; // Важно для продакшена
-
-        options.Configuration = config;
+        options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+        options.KeepAliveInterval = TimeSpan.FromSeconds(10);
     });
+
+    if (redisAvailable)
+    {
+        signalRBuilder.AddStackExchangeRedis(options =>
+        {
+            var config = ConfigurationOptions.Parse(redisConnection);
+            config.ChannelPrefix = "ChatHub";
+            config.AbortOnConnectFail = false;
+            options.Configuration = config;
+        });
+        Log.Information("✅ SignalR Redis backplane enabled");
+    }
+    else
+    {
+        Log.Warning("⚠️ SignalR running WITHOUT Redis backplane (single server mode)");
+    }
 
     // Redis для кэша
     builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -87,7 +101,18 @@ try
 
     // Сервисы
     builder.Services.AddSingleton<IMessageBuffer, BufferedMessageStore>();
-    builder.Services.AddSingleton<IMessageCache, RedisMessageCache>();
+    // ✅ IMessageCache только если Redis доступен, иначе null
+    if (redisAvailable)
+    {
+        builder.Services.AddSingleton<IMessageCache, RedisMessageCache>();
+        Log.Information("✅ RedisMessageCache enabled");
+    }
+    else
+    {
+        // Не регистрируем IMessageCache вообще - будем работать напрямую с БД
+        builder.Services.AddSingleton<IMessageCache, NullMessageCache>();
+        Log.Warning("⚠️ No message cache - using direct DB access");
+    }
     builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
     builder.Services.AddSingleton<IMessageBotService, MessageBotService>();
 
@@ -135,8 +160,9 @@ try
         Log.Warning("Shutdown complete");
     });
 
+    var hubConnection = builder.Configuration.GetConnectionString("chatHub") ?? "https://0.0.0.0:5000";
     //app.Run("https://127.0.0.1:5000");
-    app.Run("http://0.0.0.0:5000");
+    app.Run(hubConnection);
 }
 catch (Exception ex)
 {

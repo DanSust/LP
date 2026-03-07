@@ -1,0 +1,7 @@
+﻿choco install mkcert
+mkcert -install
+mkcert localhost 127.0.0.1 ::1
+
+# Получите: localhost.pem и localhost-key.pem
+# Конвертируйте в PFX
+openssl pkcs12 -export -out localhost.pfx -inkey localhost-key.pem -in localhost.pem -password pass:devpass123

@@ -3,5 +3,8 @@
 ng serve --ssl
 ng serve --ssl=true --host 0.0.0.0 --port 443
 ng serve --ssl=true --host 127.0.0.1 --port 443 --proxy-config proxy.conf.json
+ng serve --configuration=development --ssl=true --host 0.0.0.0 --port 443 --proxy-config proxy.conf.json
 
+ 
 dotnet dev-certs https --trust
+dotnet dev-certs https --clean

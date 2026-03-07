@@ -86,6 +86,11 @@ export function getBaseUrl() {
   return environment.apiUrl;
 }
 
+export function getBaseHub() {
+  console.log("getBaseHub - ", environment.hubUrl);  
+  return environment.hubUrl;
+}
+
 export function getEnvironment(): string {
   return environment.production ? 'production' : 'development';
 }
@@ -96,6 +101,7 @@ export function getDefaultAvatarUrl() {
 }
 
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
+export const API_HUB_URL = new InjectionToken<string>('API_HUB_URL');
 export const APP_ENVIRONMENT = new InjectionToken<string>('APP_ENVIRONMENT');
 export const DEFAULT_AVATAR_URL = new InjectionToken<string>('DEFAULT_AVATAR_URL');
 registerLocaleData(localeRu);
@@ -104,6 +110,9 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(withFetch()),
     { provide: API_BASE_URL, useFactory: getBaseUrl },
+    { provide: API_HUB_URL, useFactory: getBaseHub },
+    //{ provide: API_BASE_URL, useValue: environment.apiUrl },
+    //{ provide: API_HUB_URL, useValue: environment.hubUrl },
     { provide: APP_ENVIRONMENT, useFactory: getEnvironment },
     { provide: DEFAULT_AVATAR_URL, useFactory: getDefaultAvatarUrl },
     { provide: LOCALE_ID, useValue: 'ru-RU' },   // ← DD.MM.YYYY

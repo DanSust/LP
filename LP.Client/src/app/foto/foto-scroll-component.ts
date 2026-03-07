@@ -49,11 +49,19 @@ export class FotoScrollComponent {
     //    this.isItMien = currentUserId === this.userId;
     //  });
 
+    console.log('FotoScrollComponent - ', this.baseURL + '/Photos/scroll');
+
     this.http.get<string[]>(this.baseURL + '/Photos/scroll', { withCredentials: true })
-      .subscribe(u => {
+      .subscribe({
+        next: (u) => {
         this.images = u;
         this.isLoading = false;
-      });
+      },
+        error: (error) => {
+          console.error('Failed to load FotoScrollComponent:', error);
+          
+        }
+    });
   }
 
   onImageClick(item: string) {

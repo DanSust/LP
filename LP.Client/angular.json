@@ -71,6 +71,21 @@
               ],
               "outputHashing": "all"
             },
+            "local": {
+              "define": {
+                "NG_API_URL": "'https://127.0.0.1'",
+                "NG_PRODUCTION": "true"
+              },
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -85,14 +100,18 @@
             "production": {
               "buildTarget": "LP.Client:build:production"
             },
+            "local": {
+              "buildTarget": "LP.Client:build:local"
+            },
             "development": {
               "buildTarget": "LP.Client:build:development"
             }
           },
           "options": {
-            "port": 433,
+            "port": 443,
             "host": "0.0.0.0",
-            //"proxyConfig": "proxy.conf.json"
+            "ssl": true,
+            "proxyConfig": "proxy.conf.mjs"
           },
           "defaultConfiguration": "development"
         },

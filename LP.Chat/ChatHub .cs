@@ -15,7 +15,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 public class ChatHub : Hub
 {
     private readonly IMessageBuffer _messageBuffer;
-    private readonly IMessageCache _messageCache;
+    private readonly IMessageCache? _messageCache;
     private readonly ILogger<ChatHub> _logger;
     private readonly IConnectionMultiplexer _redis;
     private readonly IServiceProvider _services;
@@ -27,7 +27,7 @@ public class ChatHub : Hub
     private static readonly ConcurrentDictionary<string, ConnectionInfo> _connections = new();
     public record ConnectionInfo(Guid UserId, Guid ChatId, DateTime ConnectedAt, string ConnectionId);
 
-    public ChatHub(IMessageBuffer messageBuffer, IMessageCache messageCache,
+    public ChatHub(IMessageBuffer messageBuffer, IMessageCache? messageCache,
         ILogger<ChatHub> logger, IConnectionMultiplexer redis, 
         IServiceProvider services,
         IServiceScopeFactory scopeFactory,
@@ -221,7 +221,7 @@ public class ChatHub : Hub
         }
 
         await _messageBuffer.AddMessageAsync(message);
-        await _messageCache.AddToCacheAsync(message);
+        await _messageCache?.AddToCacheAsync(message);
 
         // Отправка всем в чате
         var broadcastMessage = new

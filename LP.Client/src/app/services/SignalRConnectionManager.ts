@@ -3,14 +3,15 @@ import { Inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { Observable } from 'rxjs/internal/Observable';
-import { API_BASE_URL } from '../app.config';
+import { API_BASE_URL, API_HUB_URL } from '../app.config';
 import { catchError, map, of, firstValueFrom } from 'rxjs';
 
 type DisconnectCallback = () => void;
 
 @Injectable({ providedIn: 'root' })
+
 export class SignalRConnectionManager {
-  private readonly HUB_URL = 'https://127.0.0.1:5000/chat';
+  //private HUB_URL = 'https://127.0.0.1:5000/chat';
 
   private hubConnection: HubConnection | null = null;
   public userId: string | null = null;
@@ -24,7 +25,8 @@ export class SignalRConnectionManager {
 
   private handlers = new Map<string, (...args: any[]) => void>(); // ✅ ХРАНИМ ОБРАБОТЧИКИ
 
-  constructor(private http: HttpClient, @Inject(API_BASE_URL) private base: string) {
+  constructor(private http: HttpClient, @Inject(API_BASE_URL) private base: string, @Inject(API_HUB_URL) private hub: string) {
+    
     // 🚀 Автоматическое подключение при создании сервиса
     this.ensureConnection();
   }
@@ -73,7 +75,7 @@ export class SignalRConnectionManager {
   }
 
   private async createConnection(): Promise<void> {
-    const fullUrl = `${this.HUB_URL}?userId=${this.userId}`;
+    const fullUrl = `${this.hub}/chat?userId=${this.userId}`;
     console.log('🔗 Connecting:', fullUrl);
 
     this.hubConnection = new HubConnectionBuilder()

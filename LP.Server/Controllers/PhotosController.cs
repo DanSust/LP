@@ -137,7 +137,7 @@ namespace LP.Server.Controllers
 
         [AllowAnonymous]
         [HttpGet("scroll")]
-        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
+        //[ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
         public async Task<IActionResult> GetImages()
         {
             string imgPath = Path.Combine(_env.ContentRootPath, "..", "img\\scroll");
