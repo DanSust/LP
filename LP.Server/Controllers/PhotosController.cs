@@ -17,19 +17,23 @@ namespace LP.Server.Controllers
         private readonly ApplicationContext _context;
         private readonly IWebHostEnvironment _env;
         private readonly IImageProcessingService _imageService;
-        private readonly ILogger _logger;
+        private readonly ILogger<PhotosController> _logger;
 
         private string SafeCombine(params string[] paths)
         {
             return Path.Combine(paths.Where(p => !string.IsNullOrEmpty(p)).ToArray());
         }
 
-        public PhotosController(IWebHostEnvironment env, ApplicationContext context, IImageProcessingService imageService) 
+        public PhotosController(
+            IWebHostEnvironment env,
+            ApplicationContext context,
+            IImageProcessingService imageService,
+            ILogger<PhotosController> logger)
         {
             _env = env;
             _context = context;
             _imageService = imageService;
-            
+            _logger = logger;
         }
 
         [Authorize]
@@ -37,10 +41,10 @@ namespace LP.Server.Controllers
         //[ResponseCache(Duration = 60)] // Cache for 1 minute
         public async Task<IActionResult> GetImageList()
         {
-            var favor = await _context.PhotoMain.Where(x => x.User.Id == UserId).Select(f=>f.PhotoId).ToListAsync();
+            var favor = await _context.PhotoMain.Where(x => x.User.Id == UserId).Select(f => f.PhotoId).ToListAsync();
             var res = await _context.Photos.Where(x => x.User.Id == UserId).Take(20).ToListAsync();
             var orderList = res
-                .OrderByDescending(x=> favor.Contains(x.Id))
+                .OrderByDescending(x => favor.Contains(x.Id))
                 .ToList();
             return Ok(res);
         }
@@ -60,7 +64,7 @@ namespace LP.Server.Controllers
 
             var userId = _context.Photos.Where(x => x.Id == id).Select(x => x.User.Id).FirstOrDefault();
             //var imgPath = _context.Photos.Where(x => x.Id == id).Select(x => x.Path).FirstOrDefault();
-            string imgPath = Path.Combine(_env.ContentRootPath, "..", "img" , userId.ToString(), id.ToString());
+            string imgPath = Path.Combine(_env.ContentRootPath, "..", "img", userId.ToString(), id.ToString());
             if (!System.IO.File.Exists(imgPath))
             {
                 if (string.IsNullOrWhiteSpace(photo.Path) || !Uri.IsWellFormedUriString(photo.Path, UriKind.Absolute))
@@ -111,7 +115,8 @@ namespace LP.Server.Controllers
         //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         public IActionResult GetImageBack(string name)
         {
-            //_logger.Log(LogLevel.Debug, "Enter GetImageBack");
+            _logger.LogInformation("Getting background image {Name}", name);
+
             var safeName = Path.GetFileName(name);
             var possiblePaths = new List<string>();
             try
@@ -125,7 +130,10 @@ namespace LP.Server.Controllers
 
                 string? imgPath = possiblePaths.FirstOrDefault(System.IO.File.Exists);
                 if (imgPath == null)
+                {
+                    _logger.LogWarning("Background image {Name} not found in any location", name);
                     return NotFound();
+                }
 
                 var ext = Path.GetExtension(name).ToLower();
                 var mimeType = ext switch
@@ -136,11 +144,14 @@ namespace LP.Server.Controllers
                     _ => "application/octet-stream"
                 };
 
+                _logger.LogDebug("Serving background {Name} from {Path}", name, imgPath);
+
                 return PhysicalFile(imgPath, mimeType, enableRangeProcessing: true);
             }
             catch (Exception ex)
             {
                 //_logger.Log(LogLevel.Error, "Exit GetImageBack:" + ex.Message);
+                _logger.LogError(ex, "Error serving background image {Name}", name);
                 return Ok();
             }
         }
@@ -165,16 +176,16 @@ namespace LP.Server.Controllers
 
             var photoIdsInDb = await _context.Photos
                 .Where(x => fileIdsOnDisk.Contains(x.Id.ToString()))
-                .Select(x=> new { PhotoId = x.Id, UserId = x.User.Id, x.User.Created })
+                .Select(x => new { PhotoId = x.Id, UserId = x.User.Id, x.User.Created })
                 .ToListAsync();
 
             var result = await Task.Run(() =>
                 fileIdsOnDisk.Select(id => new
-                    {
-                        PhotoId = id,
-                        UserId = photoIdsInDb.FirstOrDefault(p => p.PhotoId.ToString() == id)?.UserId ?? Guid.NewGuid(),
-                        ExistsInDb = photoIdsInDb.Any(p => p.PhotoId.ToString() == id),
-                        CreatedAt = photoIdsInDb.FirstOrDefault(p => p.PhotoId.ToString() == id)?.Created ?? DateTime.MinValue
+                {
+                    PhotoId = id,
+                    UserId = photoIdsInDb.FirstOrDefault(p => p.PhotoId.ToString() == id)?.UserId ?? Guid.NewGuid(),
+                    ExistsInDb = photoIdsInDb.Any(p => p.PhotoId.ToString() == id),
+                    CreatedAt = photoIdsInDb.FirstOrDefault(p => p.PhotoId.ToString() == id)?.Created ?? DateTime.MinValue
                 })
                     .Where(x => x.UserId != UserId)
                     .OrderByDescending(x => x.CreatedAt)
@@ -191,9 +202,9 @@ namespace LP.Server.Controllers
             if (!System.IO.Directory.Exists(imgPath))
                 return NotFound();
             var result = await Task.Run(() =>
-                Directory.GetFiles(imgPath).Select(Path.GetFileNameWithoutExtension).Where(x=>x != "avatar")
+                Directory.GetFiles(imgPath).Select(Path.GetFileNameWithoutExtension).Where(x => x != "avatar")
                     .ToList());
-            
+
             return Ok(result.Select(x => new { id = x }).ToList());
         }
 
@@ -212,7 +223,7 @@ namespace LP.Server.Controllers
             await using var stream = new FileStream(imgPath, FileMode.Create);
             await file.CopyToAsync(stream);
 
-            
+
 
             // 🔥 Проверяем, является ли это первым фото пользователя
             var userPhotoCount = await _context.Photos.CountAsync(x => x.User.Id == UserId);
@@ -300,7 +311,7 @@ namespace LP.Server.Controllers
 
             // Создать "пустую" сущность только с ID
             User _user = _context.Users.FirstOrDefault(x => x.Id == UserId);
-            var photo = new Photo() { Id = id, User = _user};
+            var photo = new Photo() { Id = id, User = _user };
 
             // Привязать и удалить
             _context.Photos.Attach(photo);
@@ -331,11 +342,11 @@ namespace LP.Server.Controllers
             var user = _context.Users.FindAsync(UserId).Result;
 
             _context.PhotoMain.Where(x => x.User.Id == user.Id).ExecuteDelete();
-            
-            
-            var photo = new PhotoMain(){PhotoId = id, User = user};
+
+
+            var photo = new PhotoMain() { PhotoId = id, User = user };
             _context.PhotoMain.Add(photo);
-            
+
             await _context.SaveChangesAsync();
 
             return Ok(id);
