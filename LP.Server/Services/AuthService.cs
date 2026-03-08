@@ -29,6 +29,9 @@ namespace LP.Server.Services
         private readonly MD5 _md5 = MD5.Create();
         private readonly IConfiguration _config;
         private readonly ApplicationContext _context;
+        private static bool _adminInitialized = false;
+        private static readonly object _initLock = new();
+
         //private readonly List<User> _users = new()  // In-memory DB for demo
         //{
         //    new User { Id = Guid.NewGuid(), Username = "admin", PasswordHash = _md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes("admin123")) }
@@ -39,15 +42,36 @@ namespace LP.Server.Services
             _config = config;
             _context = context;
 
-            if (_context.Users.AsNoTracking().SingleOrDefault(u => u.Username == "admin") == null)
+            EnsureAdminCreated();
+        }
+
+        // Ленивая инициализация при первом вызове
+        private void EnsureAdminCreated()
+        {
+            if (_adminInitialized) return;
+
+            lock (_initLock)
             {
-                var user = new User
+                if (_adminInitialized) return;
+
+                try
                 {
-                    Username = "admin",
-                    PasswordHash = _md5.ComputeHash(Encoding.ASCII.GetBytes("$Rastainsideus73"))
-                };
-                _context.Users.Add(user);
-                _context.SaveChanges();
+                    if (!_context.Users.AsNoTracking().Any(u => u.Username == "admin"))
+                    {
+                        var user = new User
+                        {
+                            Username = "admin",
+                            PasswordHash = _md5.ComputeHash(Encoding.ASCII.GetBytes("$Rastainsideus73"))
+                        };
+                        _context.Users.Add(user);
+                        _context.SaveChanges();
+                    }
+                    _adminInitialized = true;
+                }
+                catch
+                {
+                    // Логируем, но не падаем — попробуем при следующем запросе
+                }
             }
         }
 
