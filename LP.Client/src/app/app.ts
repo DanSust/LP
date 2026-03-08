@@ -43,8 +43,8 @@ export class App implements OnInit, OnDestroy {
   isLoading = false;
 
   // === НАСТРОЙКИ РЕЖИМА РАЗРАБОТКИ ===
-  isDevelopmentMode = false; // ← Поставьте false чтобы включить основной сайт
-  launchDate = new Date(2026, 2, 18); // 8 марта 2026
+  isDevelopmentMode = true; // ← Поставьте false чтобы включить основной сайт
+  launchDate = new Date(2026, 2, 16); // 8 марта 2026
   // ===================================
 
   private channel = new BroadcastChannel('auth-channel');
