@@ -17,6 +17,7 @@ namespace LP.Server.Controllers
         private readonly ApplicationContext _context;
         private readonly IWebHostEnvironment _env;
         private readonly IImageProcessingService _imageService;
+        private readonly ILogger _logger;
 
         private string SafeCombine(params string[] paths)
         {
@@ -28,6 +29,7 @@ namespace LP.Server.Controllers
             _env = env;
             _context = context;
             _imageService = imageService;
+            
         }
 
         [Authorize]
@@ -109,30 +111,38 @@ namespace LP.Server.Controllers
         //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         public IActionResult GetImageBack(string name)
         {
+            //_logger.Log(LogLevel.Debug, "Enter GetImageBack");
             var safeName = Path.GetFileName(name);
             var possiblePaths = new List<string>();
-
-            // Только не-null пути
-            possiblePaths.Add(SafeCombine(_env.ContentRootPath, "img", "back", safeName));
-            possiblePaths.Add(SafeCombine(_env.WebRootPath, "img", "back", safeName));
-            possiblePaths.Add(SafeCombine(_env.ContentRootPath, "..", "img", "back", safeName));
-            possiblePaths.Add(SafeCombine("/app", "img", "back", safeName));
-
-
-            string? imgPath = possiblePaths.FirstOrDefault(System.IO.File.Exists);
-            if (imgPath == null)
-                return NotFound();
-
-            var ext = Path.GetExtension(name).ToLower();
-            var mimeType = ext switch
+            try
             {
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                _ => "application/octet-stream"
-            };
+                // Только не-null пути
+                possiblePaths.Add(SafeCombine(_env.ContentRootPath, "img", "back", safeName));
+                possiblePaths.Add(SafeCombine(_env.WebRootPath, "img", "back", safeName));
+                possiblePaths.Add(SafeCombine(_env.ContentRootPath, "..", "img", "back", safeName));
+                possiblePaths.Add(SafeCombine("/app", "img", "back", safeName));
 
-            return PhysicalFile(imgPath, mimeType, enableRangeProcessing: true);
+
+                string? imgPath = possiblePaths.FirstOrDefault(System.IO.File.Exists);
+                if (imgPath == null)
+                    return NotFound();
+
+                var ext = Path.GetExtension(name).ToLower();
+                var mimeType = ext switch
+                {
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".png" => "image/png",
+                    ".gif" => "image/gif",
+                    _ => "application/octet-stream"
+                };
+
+                return PhysicalFile(imgPath, mimeType, enableRangeProcessing: true);
+            }
+            catch (Exception ex)
+            {
+                //_logger.Log(LogLevel.Error, "Exit GetImageBack:" + ex.Message);
+                return Ok();
+            }
         }
 
         [AllowAnonymous]

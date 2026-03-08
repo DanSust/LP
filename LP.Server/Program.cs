@@ -39,8 +39,15 @@ class Program
         imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img", "back");
         Directory.CreateDirectory(imgPath);
 
+        builder.WebHost.UseUrls("https://0.0.0.0:7010");
+        // Logging
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
+        builder.Logging.AddDebug();
+        builder.Logging.SetMinimumLevel(LogLevel.Information);
+
         // Add services to the container.
-       
+
         builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
             var config = builder.Configuration.GetConnectionString(builder.Environment.IsDevelopment()?"RedisLocal":"Redis");
