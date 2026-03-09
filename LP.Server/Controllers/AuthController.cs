@@ -58,7 +58,11 @@ namespace LP.Server.Controllers
 			return NoContent();
 		}
 
-		[AllowAnonymous]
+        [AllowAnonymous]
+        [HttpGet("ping")]
+        public IActionResult Ping() => Ok(new { time = DateTime.Now });
+
+        [AllowAnonymous]
 		[HttpGet("status")]
 		public async Task<ActionResult<AuthStatus>> Status()
         {
