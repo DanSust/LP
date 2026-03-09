@@ -1,6 +1,6 @@
 // background-collage.component.ts
-import { Component, Inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { API_BASE_URL } from './../app.config';
 
 @Component({
@@ -13,15 +13,29 @@ import { API_BASE_URL } from './../app.config';
 export class BackCollageComponent implements OnInit {
   photoUrls: string[] = [];
 
-  constructor(@Inject(API_BASE_URL) public baseUrl: string) { }
+  constructor(
+    @Inject(API_BASE_URL) public baseUrl: string,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) { }
 
   ngOnInit(): void {
+    if (!this.shouldLoadImages()) return;
     // Генерируем массив URL и перемешиваем
     const urls = Array.from({ length: 12 }, (_, i) =>
       `${this.baseUrl}/Photos/back/${i + 1}.jpg`
       //`/Photos/back/${i + 1}.jpg`
     );
     this.photoUrls = this.shuffleArray(urls);
+  }
+
+  private shouldLoadImages(): boolean {
+    // Проверяем, что мы в браузере
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+
+    // Проверяем ширину экрана
+    return window.innerWidth > 768;
   }
 
   private shuffleArray<T>(array: T[]): T[] {
