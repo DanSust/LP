@@ -41,8 +41,6 @@ namespace LP.Server.Services
         {
             _config = config;
             _context = context;
-
-            EnsureAdminCreated();
         }
 
         // Ленивая инициализация при первом вызове
@@ -77,6 +75,8 @@ namespace LP.Server.Services
 
         public async Task<AuthResponse?> Authenticate(string username, string password)
         {
+            EnsureAdminCreated();
+
             var _hash = _md5.ComputeHash(Encoding.ASCII.GetBytes(password));
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == username);
             if (user == null || !_hash.SequenceEqual(user.PasswordHash))
