@@ -44,7 +44,7 @@ class Program
         imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img", "back");
         Directory.CreateDirectory(imgPath);
 
-        builder.WebHost.UseUrls("https://0.0.0.0:7010");
+        builder.WebHost.UseUrls("http://0.0.0.0:7010");
         // Logging
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
@@ -77,21 +77,28 @@ class Program
 
         var connection = builder.Configuration.GetConnectionString("DefaultConnection");
         builder.Services.AddDbContext<ApplicationContext>(
-            o => o.UseSqlServer(
-                connection, m =>
+            options =>
             {
-                m.MigrationsAssembly("LP.Entity");
-                m.EnableRetryOnFailure();
-            })
-            .LogTo(Console.WriteLine, LogLevel.Information)
-            .LogTo(  // <-- ДОБАВИТЬ ЭТОТ БЛОК
-                msg => Console.WriteLine($"[EF] {msg}"),
-                new[] {
-                    DbLoggerCategory.Database.Connection.Name,
-                    DbLoggerCategory.Database.Command.Name
-                },
-                    LogLevel.Debug)
-            );
+                options.UseSqlServer(
+                        connection,
+                        sqlOptions =>
+                        {
+                            sqlOptions.MigrationsAssembly("LP.Entity");
+                            sqlOptions.EnableRetryOnFailure();
+                        })
+                    .LogTo(Console.WriteLine, LogLevel.Information)
+                    .LogTo(
+                        msg => Console.WriteLine($"[EF] {msg}"),
+                        new[]
+                        {
+                            DbLoggerCategory.Database.Connection.Name,
+                            DbLoggerCategory.Database.Command.Name
+                        },
+                        LogLevel.Debug);
+            },
+            ServiceLifetime.Scoped,  // Явно указываем Scoped
+            ServiceLifetime.Scoped   // Опции тоже Scoped (обычно так же)
+        );
         // Добавьте эти строки для доверия прокси
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
