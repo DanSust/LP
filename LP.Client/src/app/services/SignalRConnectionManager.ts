@@ -65,6 +65,7 @@ export class SignalRConnectionManager {
    * Проверяем аутентификацию и получаем userId
    */
   private checkAuth(): Observable<boolean> {
+    console.log(`${this.base}/auth/status`);
     return this.http.get<any>(`${this.base}/auth/status`, { withCredentials: true }).pipe(
       map(result => {
         this.userId = result.userId;

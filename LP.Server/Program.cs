@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.DotNet.Scaffolding.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -26,9 +27,13 @@ class Program
 {
     private const string ApiVersion = "v1";
     private const string ApiName = "StatMonitoring API";
+
     static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
+        builder.Services.AddSingleton(loggerFactory);
 
         var imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img");
         Directory.CreateDirectory(imgPath);
@@ -47,10 +52,11 @@ class Program
         builder.Logging.SetMinimumLevel(LogLevel.Information);
 
         // Add services to the container.
-
+        builder.Services.AddSingleton(loggerFactory);
         builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
-            var config = builder.Configuration.GetConnectionString(builder.Environment.IsDevelopment()?"RedisLocal":"Redis");
+            var config =
+                builder.Configuration.GetConnectionString(builder.Environment.IsDevelopment() ? "RedisLocal" : "Redis");
             return ConnectionMultiplexer.Connect(config);
         });
         builder.Services.AddStackExchangeRedisCache(options =>
@@ -71,8 +77,29 @@ class Program
 
         var connection = builder.Configuration.GetConnectionString("DefaultConnection");
         builder.Services.AddDbContext<ApplicationContext>(
-            o => o.UseSqlServer(connection, m => m.MigrationsAssembly("LP.Entity"))
-                .LogTo(Console.WriteLine, LogLevel.Information));
+            o => o.UseSqlServer(
+                connection, m =>
+            {
+                m.MigrationsAssembly("LP.Entity");
+                m.EnableRetryOnFailure();
+            })
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            .LogTo(  // <-- ДОБАВИТЬ ЭТОТ БЛОК
+                msg => Console.WriteLine($"[EF] {msg}"),
+                new[] {
+                    DbLoggerCategory.Database.Connection.Name,
+                    DbLoggerCategory.Database.Command.Name
+                },
+                    LogLevel.Debug)
+            );
+        // Добавьте эти строки для доверия прокси
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
+
         builder.Services.Configure<CookiePolicyOptions>(options =>
          {
              options.MinimumSameSitePolicy = SameSiteMode.Lax;
@@ -136,8 +163,8 @@ class Program
         //        o.AccessDeniedPath = "/NoRights";
         //        o.LoginPath = "/auth";
         //    });
-        
-        
+
+
         builder.Services.AddAuthorization(o =>
         {
             o.DefaultPolicy = new AuthorizationPolicyBuilder()
@@ -146,7 +173,7 @@ class Program
                 .Build();
         });
 
-        
+
 
         builder.Services.AddMemoryCache();
         builder.Services.AddHttpClient();
