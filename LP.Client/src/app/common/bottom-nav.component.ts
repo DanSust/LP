@@ -40,7 +40,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     { label: 'Поиск', icon: 'search', route: '/search' },
     { label: 'Симпатии', icon: 'favorite', route: '/vote'  },    
     { label: 'Чат', icon: 'chat', route: '/chat', badge: this.totalUnreadCount() },
-    { label: 'Профиль', icon: 'person', route: '/profile' },
+    /*{ label: 'Профиль', icon: 'person', route: '/profile' },*/
     { label: 'Ещё', icon: 'more_vert', route: '' }
   ]);
 
@@ -80,6 +80,10 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   // Проверка — это элемент меню или обычная навигация
   isMenuItem(item: NavItem): boolean {
     return item.route === '';
+  }
+
+  onProfile(): void {
+    this.router.navigate(['/profile']);
   }
 
   onAbout(): void {

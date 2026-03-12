@@ -104,7 +104,8 @@ export class VoteComponent implements OnInit, AfterViewInit {
     // 🔥 Подписываемся на изменения параметров маршрута
     this.routeSub = this.route.paramMap.subscribe(params => {
       const newUserId = params.get('id') ?? undefined;
-      console.log('Route params changed:', newUserId);
+      //console.log('Route params changed:', newUserId);      
+      console.log('history:', this.navService.getPreviousUrl());
 
       this.resetState();
 
@@ -116,7 +117,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
       if (this.userId) {
         this.profileService.loadProfile(this.userId);
-        this.cameFromSearch.set(this.navService.cameFrom('/search') || this.navService.cameFrom('/match'));
+        this.cameFromSearch.set(this.navService.cameFrom('/search') || this.navService.cameFrom('/match') || this.navService.cameFrom('/scroll'));
       } else {
         this.profileService.loadProfiles();
       }
@@ -202,8 +203,28 @@ export class VoteComponent implements OnInit, AfterViewInit {
     const element = this.photoContainer?.nativeElement;
     if (!element) return;
 
-    const startDrag = (x: number) => {
+    // 🔥 ПРОВЕРКА: игнорируем клики по нижней навигации
+    const shouldIgnoreEvent = (e: Event): boolean => {
+      const target = e.target as HTMLElement;
+      // Игнорируем клики по bottom-nav и всему внутри него
+      if (target.closest('.bottom-nav') || target.closest('app-bottom-nav')) {
+        return true;
+      }
+      // Игнорируем клики по Material Menu
+      if (target.closest('.mat-mdc-menu-panel') || target.closest('.cdk-overlay-container')) {
+        return true;
+      }
+      return false;
+    };
+
+    const startDrag = (x: number, e: Event) => {
       if (isFinePointer) {        
+        return;
+      }
+
+      // 🔥 Проверяем перед стартом свайпа
+      if (shouldIgnoreEvent(e)) {
+        console.log('Ignoring swipe: clicked on nav element');
         return;
       }
 
@@ -232,14 +253,14 @@ export class VoteComponent implements OnInit, AfterViewInit {
         if (Math.abs(deltaX) < this.DRAG_ACTIVATION_THRESHOLD) {
           return;
         }
-        this.hasExceededThreshold = true;
-        this.isDragging.set(true);
+        this.hasExceededThreshold = true;        
       }
 
       this.dragDelta.set(deltaX);
     };
 
     const endDrag = () => {
+      console.log('endDrag - ', this.isDragging());
       if (this.isFullscreen()) return;
       if (!this.isDragging()) return;
 
@@ -259,7 +280,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
     // Touch
     element.addEventListener('touchstart', (e: TouchEvent) => {
-      startDrag(e.touches[0].clientX);
+      startDrag(e.touches[0].clientX, e);
     }, { passive: true });
 
     element.addEventListener('touchmove', (e: TouchEvent) => {
@@ -271,7 +292,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
     // Mouse
     element.addEventListener('mousedown', (e: MouseEvent) => {
-      startDrag(e.clientX);
+      startDrag(e.clientX, e);
     });
 
     document.addEventListener('mousemove', (e: MouseEvent) => {
@@ -283,111 +304,111 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   // vote.component.ts — замените setupClickDelegation на это:
 
-  private setupClickDelegation(): void {
-    setTimeout(() => {
-      const wrapper = this.photoContainer?.nativeElement;
-      if (!wrapper) {
-        console.error('photoContainer not found');
-        return;
-      }
+  //private setupClickDelegation(): void {
+  //  setTimeout(() => {
+  //    const wrapper = this.photoContainer?.nativeElement;
+  //    if (!wrapper) {
+  //      console.error('photoContainer not found');
+  //      return;
+  //    }
 
-      const img = wrapper.querySelector('.card-photo');
-      if (!img) {
-        console.error('img not found');
-        return;
-      }
+  //    const img = wrapper.querySelector('.card-photo');
+  //    if (!img) {
+  //      console.error('img not found');
+  //      return;
+  //    }
 
-      console.log('Setting up click on img:', img);
+  //    console.log('Setting up click on img:', img);
 
-      // Удаляем старые обработчики если есть
-      const newImg = img.cloneNode(true);
-      img.parentNode?.replaceChild(newImg, img);
+  //    // Удаляем старые обработчики если есть
+  //    const newImg = img.cloneNode(true);
+  //    img.parentNode?.replaceChild(newImg, img);
 
-      // Вешаем клик на новый img
-      newImg.addEventListener('click', (e: Event) => {
-        console.log('IMG CLICKED!');
-        e.stopPropagation();
-        e.preventDefault();
-        this.toggleFullscreen();
-      });
+  //    // Вешаем клик на новый img
+  //    newImg.addEventListener('click', (e: Event) => {
+  //      console.log('IMG CLICKED!');
+  //      e.stopPropagation();
+  //      e.preventDefault();
+  //      this.toggleFullscreen();
+  //    });
 
-      // Также вешаем на wrapper как fallback
-      wrapper.addEventListener('click', (e: Event) => {
-        const target = e.target as HTMLElement;
-        // Если клик был по img, уже обработали выше
-        if (target.tagName === 'IMG') return;
+  //    // Также вешаем на wrapper как fallback
+  //    wrapper.addEventListener('click', (e: Event) => {
+  //      const target = e.target as HTMLElement;
+  //      // Если клик был по img, уже обработали выше
+  //      if (target.tagName === 'IMG') return;
 
-        // Игнорируем кнопки
-        if (target.closest('button')) return;
+  //      // Игнорируем кнопки
+  //      if (target.closest('button')) return;
 
-        console.log('WRAPPER CLICKED');
-        this.toggleFullscreen();
-      });
+  //      console.log('WRAPPER CLICKED');
+  //      this.toggleFullscreen();
+  //    });
 
-    }, 100);
-  }
+  //  }, 100);
+  //}
 
-  private setupPhotoClick(): void {
-    const wrapper = this.photoContainer?.nativeElement;
-    if (!wrapper) return;
+  //private setupPhotoClick(): void {
+  //  const wrapper = this.photoContainer?.nativeElement;
+  //  if (!wrapper) return;
 
-    let startX = 0;
-    let startY = 0;
-    let startTime = 0;
-    let isMoved = false;
+  //  let startX = 0;
+  //  let startY = 0;
+  //  let startTime = 0;
+  //  let isMoved = false;
 
-    const handleStart = (clientX: number, clientY: number) => {
-      startX = clientX;
-      startY = clientY;
-      startTime = Date.now();
-      isMoved = false;
-    };
+  //  const handleStart = (clientX: number, clientY: number) => {
+  //    startX = clientX;
+  //    startY = clientY;
+  //    startTime = Date.now();
+  //    isMoved = false;
+  //  };
 
-    const handleMove = (clientX: number, clientY: number) => {
-      const deltaX = Math.abs(clientX - startX);
-      const deltaY = Math.abs(clientY - startY);
-      if (deltaX > 10 || deltaY > 10) {
-        isMoved = true;
-      }
-    };
+  //  const handleMove = (clientX: number, clientY: number) => {
+  //    const deltaX = Math.abs(clientX - startX);
+  //    const deltaY = Math.abs(clientY - startY);
+  //    if (deltaX > 10 || deltaY > 10) {
+  //      isMoved = true;
+  //    }
+  //  };
 
-    const handleEnd = (e: Event) => {
-      const duration = Date.now() - startTime;
+  //  const handleEnd = (e: Event) => {
+  //    const duration = Date.now() - startTime;
 
-      // Это клик если: не двигали И быстро (менее 300ms)
-      if (!isMoved && duration < 300) {
-        e.stopPropagation();
-        e.preventDefault();
-        this.toggleFullscreen();
-      }
-    };
+  //    // Это клик если: не двигали И быстро (менее 300ms)
+  //    if (!isMoved && duration < 300) {
+  //      e.stopPropagation();
+  //      e.preventDefault();
+  //      this.toggleFullscreen();
+  //    }
+  //  };
 
-    // Mouse events
-    wrapper.addEventListener('mousedown', (e: MouseEvent) => {
-      handleStart(e.clientX, e.clientY);
-    });
+  //  // Mouse events
+  //  wrapper.addEventListener('mousedown', (e: MouseEvent) => {
+  //    handleStart(e.clientX, e.clientY);
+  //  });
 
-    wrapper.addEventListener('mousemove', (e: MouseEvent) => {
-      handleMove(e.clientX, e.clientY);
-    });
+  //  wrapper.addEventListener('mousemove', (e: MouseEvent) => {
+  //    handleMove(e.clientX, e.clientY);
+  //  });
 
-    wrapper.addEventListener('mouseup', (e: MouseEvent) => {
-      handleEnd(e);
-    });
+  //  wrapper.addEventListener('mouseup', (e: MouseEvent) => {
+  //    handleEnd(e);
+  //  });
 
-    // Touch events — используем touch-action: none в CSS уже есть
-    wrapper.addEventListener('touchstart', (e: TouchEvent) => {
-      handleStart(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
+  //  // Touch events — используем touch-action: none в CSS уже есть
+  //  wrapper.addEventListener('touchstart', (e: TouchEvent) => {
+  //    handleStart(e.touches[0].clientX, e.touches[0].clientY);
+  //  }, { passive: true });
 
-    wrapper.addEventListener('touchmove', (e: TouchEvent) => {
-      handleMove(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
+  //  wrapper.addEventListener('touchmove', (e: TouchEvent) => {
+  //    handleMove(e.touches[0].clientX, e.touches[0].clientY);
+  //  }, { passive: true });
 
-    wrapper.addEventListener('touchend', (e: TouchEvent) => {
-      handleEnd(e);
-    });
-  }
+  //  wrapper.addEventListener('touchend', (e: TouchEvent) => {
+  //    handleEnd(e);
+  //  });
+  //}
 
   onPhotoClick(event: MouseEvent): void {
     if (this.isDragging() || this.dragDelta() !== 0) {
@@ -482,25 +503,44 @@ export class VoteComponent implements OnInit, AfterViewInit {
   // === ACTIONS ===
 
   onLikeClick(): void {
+    console.log('onLikeClick()');
     this.performSwipe('right', !this.cameFromSearch());
   }
 
   onDislikeClick(): void {
+    console.log('onDislikeClick()');
     this.performSwipe('left', !this.cameFromSearch());
   }
 
   onChatClick(id: string): void {
+    console.log("[onChatClick] Запускаем для profile id:", id);
+
     this.http.post<any>(`${this.base}/chats/get-or-create/${id}`, null, { withCredentials: true })
       .subscribe({
         next: (response) => {
-          this.chatService.startBotDialog(response.userId, response.owner);
+          console.log("[get-or-create] Полный ответ:", response);
+          console.log("[get-or-create] userId →", response.userId);
+          console.log("[get-or-create] chatId →", response.chatId);
+
+          if (!response.userId) {
+            console.warn("!!! Сервер НЕ вернул userId !!!");
+          }
+
+          this.chatService.activeUserId.set(response.userId);
+          this.chatService.activeChatId.set(response.chatId);
+
+          // ← можно добавить проверку
+          setTimeout(() => {
+            console.log("[после set] activeUserId теперь:", this.chatService.activeUserId());
+          }, 0);
+
           this.router.navigateByUrl(`/chat/${response.chatId}`);
         },
-        error: (error) => {
-          if (error.error?.code === 'MUTUAL_LIKE_REQUIRED') {            
+        error: (err) => {
+          if (err.error?.code === 'MUTUAL_LIKE_REQUIRED') {
             this.toast.warning('💕 Нужен взаимный лайк, чтобы начать переписку');
           } else {
-            console.error('Ошибка:', error);
+            console.error('Ошибка:', err);
           }
         }
       });

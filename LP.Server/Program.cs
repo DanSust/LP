@@ -44,7 +44,7 @@ class Program
         imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img", "back");
         Directory.CreateDirectory(imgPath);
 
-        builder.WebHost.UseUrls("http://0.0.0.0:7010");
+        builder.WebHost.UseUrls("https://0.0.0.0:7010");
         // Logging
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();

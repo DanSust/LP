@@ -10,6 +10,7 @@ import { AuthService } from './services/AuthService';
 import { AuthComponent } from './auth/auth.component';
 import { UserStatusService } from './services/UserStatusService';
 import { ChatService } from './services/ChatService';
+import { NavigationService } from './services/NavigationService';
 import { Subscription } from 'rxjs';
 import { routes } from './app.routes';
 import { HttpClient } from "@angular/common/http";
@@ -43,7 +44,7 @@ export class App implements OnInit, OnDestroy {
   isLoading = false;
 
   // === НАСТРОЙКИ РЕЖИМА РАЗРАБОТКИ ===
-  isDevelopmentMode = true; // ← Поставьте false чтобы включить основной сайт
+  isDevelopmentMode = localStorage.getItem('is_admin') !== 'true'
   launchDate = new Date(2026, 2, 16); // 8 марта 2026
   // ===================================
 
@@ -52,7 +53,9 @@ export class App implements OnInit, OnDestroy {
 
   userStatusService = inject(UserStatusService);
   chatService = inject(ChatService);
-  constructor(private authService: AuthService,
+  constructor(
+    private authService: AuthService,
+    private navService: NavigationService,
     private http: HttpClient,
     @Inject(API_BASE_URL) private baseURL: string
   ) { }

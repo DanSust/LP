@@ -18,6 +18,10 @@ export class NavigationService {
       });
   }
 
+  addHistory(url: string): void {
+    this.history.push(url);
+  }
+
   getHistory(): string[] {
     return [...this.history];
   }

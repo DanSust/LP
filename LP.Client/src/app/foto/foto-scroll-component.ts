@@ -8,13 +8,20 @@ import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from './../app.config'; 
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from './../services/AuthService';
+import { NavigationService } from './../services/NavigationService';
 import { NotificationBellComponent } from './../common/notification-bell.component';
 import { first } from 'rxjs';
 
 @Component({
   selector: 'foto-scroll-component',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatButtonModule, MatMenuModule, MatIconModule, NotificationBellComponent],  
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatButtonModule,
+    MatMenuModule,
+    MatIconModule,
+    NotificationBellComponent],
   templateUrl: './foto-scroll-component.html',
   styleUrl: './foto-scroll-component.scss'  
 })
@@ -31,6 +38,7 @@ export class FotoScrollComponent {
   constructor(
     private http: HttpClient,
     private authService: AuthService,
+    private navService: NavigationService,
     private router: Router,
     private route: ActivatedRoute,
     @Inject(API_BASE_URL) private base: string)
@@ -66,6 +74,8 @@ export class FotoScrollComponent {
 
   onImageClick(item: string) {
     console.log(item);
+    this.navService.addHistory('/scroll');
+    this.router.navigate(['/vote', item]);
   }
 
   // Клик по аватару

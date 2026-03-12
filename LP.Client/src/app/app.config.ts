@@ -29,14 +29,14 @@ import { AuthService } from './services/AuthService';
 import { ConfirmComponent } from './auth/auth.confirm.component';
 import { ComingSoonComponent } from './promo/coming-soon.component';
 import { environment } from '../environments/environment';
-
-//import { FotoScrollComponent } from './common/foto-scroll';
+import { FotoScrollComponent } from './foto/foto-scroll-component';
 
 const appRoutes: Routes = [
   { path: "about", component: AboutComponent, canActivate: [AuthGuard] },  
   { path: "location", component: UserLocationComponent },
   { path: "soon", component: ComingSoonComponent },
   { path: "profile", component: UserProfile, canActivate: [AuthGuard] },
+  { path: "scroll", component: FotoScrollComponent, canActivate: [AuthGuard] }, 
   { path: "vote", component: VoteComponent, canActivate: [AuthGuard] },
   { path: "vote/:id", component: VoteComponent, canActivate: [AuthGuard] },
   //{ path: "chat/:id", component: ChatView, canActivate: [AuthGuard] },

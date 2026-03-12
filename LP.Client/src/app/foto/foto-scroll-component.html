@@ -56,8 +56,7 @@
   <div class="gallery-item">
     <img
       src="{{baseURL}}/Photos/imagefree?id={{image.photoId}}"
-      routerLink="/vote/{{image.userId}}"
-      (click)="onImageClick(image)"
+      (click)="onImageClick(image.userId)"
       />
   </div>
   }

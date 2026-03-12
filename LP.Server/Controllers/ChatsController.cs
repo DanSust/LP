@@ -60,15 +60,15 @@ namespace LP.Server.Controllers
 
             if (existingChat != null)
             {
-                return Ok(new { chatId = existingChat.Id });
+                return Ok(new { chatId = existingChat.Id, userId = existingChat.UserId == currentUserId ? existingChat.Owner : existingChat.UserId });
             }
 
             // Создаем новый чат
             var newChat = new Chat
             {
                 Id = Guid.NewGuid(),
-                Owner = Id,
-                UserId = currentUserId,
+                Owner = currentUserId,
+                UserId = Id,
                 Time = DateTime.Now,
                 Name = $"chat_{Guid.NewGuid()}" // Можно заменить на имя собеседника
             };
@@ -83,27 +83,32 @@ namespace LP.Server.Controllers
         [HttpGet("delete/{Id}")]
         public async Task<IActionResult> DeleteChat(Guid id)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var chat = await _context.Chats
+                .FirstOrDefaultAsync(c => c.Id == id);
+            if (chat == null)
+                return NotFound(new { error = "Chat not found" });
+
+            // Создаем execution strategy для поддержки транзакций с повторами
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync(async () =>
             {
-                var chat = await _context.Chats
-                    .FirstOrDefaultAsync(c => c.Id == id);
-                if (chat == null)
-                    return NotFound(new { error = "Chat not found" });
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    await _context.Messages.Where(x => x.ChatId == id).ExecuteDeleteAsync();
+                    _context.Chats.Remove(chat);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
 
-                await _context.Messages.Where(x => x.ChatId == id).ExecuteDeleteAsync();
-                _context.Chats.Remove(chat);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return Ok(new {chatId = id, owner = chat.Owner, userId = chat.UserId});
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-
-                return StatusCode(500, new {error = "Failed to delete chat"});
-            }
+                    return Ok(new { chatId = id, owner = chat.Owner, userId = chat.UserId });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, new { error = "Failed to delete chat" });
+                }
+            });
         }
 
         [Authorize]
@@ -127,8 +132,14 @@ namespace LP.Server.Controllers
                     UnreadMessagesCount = _context.Messages.Count(message =>
                         message.ChatId == chat.Id &&
                         message.UserId != UserId &&
-                        message.Status == "delivered")
+                        message.Status == "delivered"),
+                    LastMessageTime = _context.Messages
+                        .Where(m => m.ChatId == chat.Id)
+                        .OrderByDescending(m => m.Time)
+                        .Select(m => m.Time)
+                        .FirstOrDefault()
                 })
+                .OrderByDescending(chat => chat.LastMessageTime)
                 .ToListAsync());
         }
 

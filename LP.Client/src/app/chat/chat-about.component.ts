@@ -52,20 +52,38 @@ import { RouterModule } from '@angular/router';
     .about-container {
       --gradient-top: #557A94;
       --gradient-bottom: #7396AE;
-      display: flex;
-      align-items: center;
+      
+      align-items: flex-start;
       justify-content: center;
       min-height: 100%;
+      height: 100%;
       padding: 20px;
       background: linear-gradient(180deg, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
+      overflow-y: auto;
+
+      /* Стилизация скроллбара */
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.8)
+        border-radius: 0 16px 16px 0;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+      }
+      
     }
 
     .about-content {
-      max-width: 600px;
+
+      
       background: white;
       border-radius: 16px;
       padding: 30px 40px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      overflow-y: auto;
     }
 
     h1 {

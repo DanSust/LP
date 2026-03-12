@@ -17,11 +17,13 @@
 
     <!-- Троеточие с меню - используем mousedown вместо click -->
     <div class="nav-icon menu-wrapper"
-         *ngIf="isMenuItem(item)"
-         (mousedown)="$event.stopPropagation()">
+         *ngIf="isMenuItem(item)">
       <button mat-icon-button
               [matMenuTriggerFor]="moreMenu"
-              class="more-btn">
+              class="more-btn"
+              (mousedown)="$event.stopPropagation()"
+              (touchstart)="$event.stopPropagation()"
+              >
         <span class="material-icons">{{ item.icon }}</span>
       </button>
     </div>
@@ -36,6 +38,10 @@
   <button mat-menu-item (click)="onNews()">
     <mat-icon>feed</mat-icon>
     <span>Новости</span>
+  </button>
+  <button mat-menu-item (click)="onProfile()">
+    <mat-icon>person</mat-icon>
+    <span>Профиль</span>
   </button>
   <button mat-menu-item (click)="onLogout()">
     <mat-icon>logout</mat-icon>

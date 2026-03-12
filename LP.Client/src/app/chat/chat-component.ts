@@ -104,16 +104,22 @@ export class ChatView implements OnInit, OnDestroy {
   }
 
   private loadParticipantProfile(userId: string) {
+    console.log("[loadParticipantProfile] userId =", userId);
+
     this.http.get<any>(`${this.base}/users/view?id=${userId}`, { withCredentials: true })
       .subscribe({
         next: (user) => {
-          // caption - это имя пользователя (как в vote.service.ts)
-          this.participantName.set(user.caption || user.name || 'Участник');
+          console.log("[users/view] получен ответ:", user);
+          const name = user.caption || user.name || 'Участник';
+          console.log("[users/view] → устанавливаем имя:", name);
+          this.participantName.set(name);
         },
-        error: () => {
-          // Fallback: берем имя из списка чатов если API недоступно
+        error: (err) => {
+          console.log("[users/view] ошибка:", err);
           const chat = this.chatService.chats().find(c => c.userId === userId);
-          this.participantName.set(chat?.name || 'Участник');
+          const fallbackName = chat?.name || 'Участник';
+          console.log("[fallback] имя из чата:", fallbackName);
+          this.participantName.set(fallbackName);
         }
       });
   }

@@ -98,7 +98,7 @@
   }
   <!-- 🔥 ГАЛЕРЕЯ -->
   <div class="gallery-search-container" #galleryContainer>
-    @for (image of allImages; track image.userId) {
+    @for (image of allImages; track image.photoId) {
     <div class="gallery-item">
       <div class="image-wrapper">
         <img [src]="image.imageUrl" routerLink="/vote/{{image.userId}}" />
