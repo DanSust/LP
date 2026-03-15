@@ -6,6 +6,7 @@ import { AuthService } from './../services/AuthService';
 import { TelegrmaComponent } from './Telegram/telegram.component';
 import { Router } from '@angular/router';
 import { API_BASE_URL } from '../app.config';
+import { ToastService } from '../common/toast.service';
 
 declare global {
   interface Window {
@@ -41,6 +42,7 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
     @Inject(API_BASE_URL) private baseUrl: string,
     private fb: FormBuilder,
     private authService: AuthService,
+    private toast: ToastService,
     private router: Router
   ) {
     // Создаем формы в конструкторе - это гарантирует их инициализацию
@@ -90,7 +92,7 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
         redirectUrl: window.location.origin,
         responseMode: VKID.ConfigResponseMode.Callback,
         source: VKID.ConfigSource.LOWCODE,
-        scope: '',
+        scope: 'vkid.personal_info email', // <--- Обязательно добавь это!
       });
 
       const oAuth = new VKID.OAuthList();
@@ -109,14 +111,30 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
           const code = payload.code;
           const deviceId = payload.device_id;
 
+          console.log('OAuthListInternalEvents.LOGIN_SUCCESS - ', payload);
+
           VKID.Auth.exchangeCode(code, deviceId)
-            .then((data: any) => {
-              console.log('VK auth success:', data);
-              this.handleVKLogin(data);
+            .then(async (data: any) => {
+              console.log('VK tokens received:', data);
+
+              let extendedData = { ...data };
+
+              try {
+                // Пробуем получить данные пользователя через более стабильный метод
+                // В SDK 2.x данные часто можно забрать через Auth.userInfo(accessToken)
+                const userInfo = await VKID.Auth.userInfo(data.access_token);
+                console.log('User info from Auth:', userInfo);
+
+                extendedData.firstName = userInfo.first_name || userInfo.user?.first_name;
+                extendedData.lastName = userInfo.last_name || userInfo.user?.last_name;
+                extendedData.avatarUrl = userInfo.avatar || userInfo.user?.avatar;
+              } catch (userError) {
+                console.warn('Failed to get user info via Auth.userInfo:', userError);
+              }
+
+              this.handleVKLogin(extendedData);
             })
-            .catch((error: any) => {
-              console.error('VK exchange error:', error);
-            });
+            .catch((error: any) => console.error('VK exchange error:', error));
         });
 
       console.log('VK ID widget rendered');
@@ -128,7 +146,34 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
   private handleVKLogin(data: any) {
     // Обработка успешного входа через VK
     console.log('Handle VK login:', data);
-    this.authService.socialLogin('vk', data);
+
+    // Отправляем полученный id_token или access_token на бэкенд
+    this.authService.verifyVkToken(data).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        localStorage.setItem('auth_token', res.token);
+        localStorage.setItem('userId', res.user_id);
+        //this.router.navigate(['/profile']);
+        window.location.href = '/profile';
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Ошибка верификации VK:', err);
+      }
+    });
+
+    //this.authService.socialLogin('vk', data).subscribe;
+
+    //this.authService.socialLogin('vk', data).subscribe({
+    //  next: (res) => {
+    //    this.isLoading = false;
+    //    this.router.navigate(['/profile']);
+    //  },
+    //  error: (err) => {
+    //    this.isLoading = false;
+    //    console.error(err);
+    //  }
+    //});
   }
 
   switchTab(tab: 'login' | 'register'): void {
@@ -165,6 +210,7 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
             this.switchTab('login');
           } else {
             // Показываем ошибку в вашем формате
+            this.toast.error(response.message);
             this.registerErrorMessage = response.message;
           }
         },
@@ -177,9 +223,10 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
   }
 
   GoogleLogin(event: any): void {
+    console.log(this.baseUrl + '/oauth/google/login?');
     event.preventDefault();
     const popup = window.open(
-      this.baseUrl+'/api/oauth/google/login?' + window,
+      this.baseUrl+'/oauth/google/login?' + window,
       'OAuthPopup',
       'width=600,height=700'
     );

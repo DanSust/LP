@@ -66,15 +66,15 @@ namespace LP.Server.Controllers
 		[HttpGet("status")]
 		public async Task<ActionResult<AuthStatus>> Status()
         {
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /status STARTED");
-            Console.WriteLine($"  Cookies: {string.Join(", ", Request.Cookies.Keys)}");
-            Console.WriteLine($"  Headers Auth: {Request.Headers.Authorization}");
+            //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /status STARTED");
+            //Console.WriteLine($"  Cookies: {string.Join(", ", Request.Cookies.Keys)}");
+            //Console.WriteLine($"  Headers Auth: {Request.Headers.Authorization}");
 
             var ID = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
             string userId = "";
 			foreach (var claim in User.Claims)
 			{
-                Console.WriteLine($"  Claim: {claim.Type} = {claim.Value}");
+                //Console.WriteLine($"  Claim: {claim.Type} = {claim.Value}");
                 if (claim.Type == ClaimTypes.NameIdentifier)
                     userId = claim.Value;
 			}
@@ -89,8 +89,8 @@ namespace LP.Server.Controllers
                 }
             }
 
-            Console.WriteLine($"  IsAuthenticated: {User.Identity?.IsAuthenticated}");
-            Console.WriteLine($"  UserId from claims: {userId}");
+            //Console.WriteLine($"  IsAuthenticated: {User.Identity?.IsAuthenticated}");
+            //Console.WriteLine($"  UserId from claims: {userId}");
 
             var result = new
             {
@@ -102,7 +102,7 @@ namespace LP.Server.Controllers
                 time = DateTime.Now.ToString("HH:mm:ss.fff")
             };
 
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /status COMPLETED: {System.Text.Json.JsonSerializer.Serialize(result)}");
+            //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /status COMPLETED: {System.Text.Json.JsonSerializer.Serialize(result)}");
 
             return Ok(result);
 

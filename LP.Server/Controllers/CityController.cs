@@ -3,6 +3,7 @@ using LP.Entity.Store;
 using LP.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -29,6 +30,7 @@ namespace LP.Server.Controllers
         {
             try
             {
+                //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /list CITY STARTED");
                 // Используем безопасный метод получения из кеша
                 var cities = await GetFromCacheSafeAsync(
                     CITIES_CACHE_KEY,
@@ -36,10 +38,13 @@ namespace LP.Server.Controllers
                     TimeSpan.FromHours(24)
                 );
 
+                //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /list CITY COMPLETED");
+
                 return Ok(cities);
             }
             catch (Exception ex)
             {
+                Console.Write("Логируем ошибку и возвращаем данные напрямую из БД");
                 // Логируем ошибку и возвращаем данные напрямую из БД
                 var cities = await _context.Cities.OrderBy(x => x.Name).ToListAsync();
                 return Ok(cities);

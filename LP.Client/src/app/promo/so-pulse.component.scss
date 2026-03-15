@@ -57,8 +57,8 @@ $color-text-secondary: #e0e0e0;
 .hearts-container {
   position: relative;
   width: 320px;
-  height: 200px;
-  margin-bottom: 60px;
+  height: 0px;
+  //margin-bottom: 48px;
 }
 
 .heart {
@@ -142,7 +142,7 @@ $color-text-secondary: #e0e0e0;
 
 .ecg-container {
   position: absolute;
-  bottom: -50px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   width: 240px;

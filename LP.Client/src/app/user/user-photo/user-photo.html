@@ -3,7 +3,7 @@
   <div class="photo-box" cdkDrag>
     <mat-icon class="delete-icon" aria-hidden="false" aria-label="Example home icon" fontIcon="delete" (click)="onDelete(item.id)"></mat-icon>
     <mat-icon class="star-icon" aria-hidden="false" aria-label="Example home icon" fontIcon="star"></mat-icon>
-    <img src="https://localhost:7010/Photos/image/{{item.id}}" />
+    <img src="{{baseURL}}//Photos/image/{{item.id}}" />
     <!--{{item.id}}-->
   </div>
   }

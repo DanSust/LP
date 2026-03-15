@@ -94,34 +94,29 @@ namespace LP.Server.Controllers
         /// </summary>
         protected async Task<T> GetFromCacheSafeAsync<T>(string key, Func<Task<T>> getFromDbFunc, TimeSpan? expiration = null)
         {
-            // Проверяем доступность Redis
-            if (await IsRedisAvailableAsync())
+            // 1. Пробуем получить из кеша БЕЗ предварительных проверок "доступности"
+            try
             {
-                try
+                // В нормальных библиотеках (StackExchange.Redis) GetStringAsync сам упадет по таймауту, 
+                // если Redis недоступен. Это быстрее, чем отдельный Ping.
+                var cached = await _cache.GetStringAsync(key);
+                if (!string.IsNullOrEmpty(cached))
                 {
-                    var cached = await _cache.GetStringAsync(key);
-                    if (cached != null)
-                    {
-                        
-                        return JsonSerializer.Deserialize<T>(cached);
-                    }
-                    
-                }
-                catch (Exception ex)
-                {
-                    
+                    return JsonSerializer.Deserialize<T>(cached);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                
+                // Логируем ошибку ОДИН раз, чтобы знать, что Redis упал
+                // Log.Error(ex, "Redis cache read error for key {Key}", key);
+                Console.WriteLine("Redis cache read error");
             }
 
-            // Получаем из БД
+            // 2. Идем в БД (это наше основное действие, если кеш подвел)
             var result = await getFromDbFunc();
 
-            // Пробуем сохранить в кеш, если Redis доступен
-            if (await IsRedisAvailableAsync())
+            // 3. Сохраняем в кеш "в фоновом режиме" (fire and forget или просто в try-catch)
+            if (result != null)
             {
                 try
                 {
@@ -129,13 +124,11 @@ namespace LP.Server.Controllers
                     {
                         AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromHours(24)
                     };
-
                     await _cache.SetStringAsync(key, JsonSerializer.Serialize(result), options);
-                    
                 }
-                catch (Exception ex)
+                catch
                 {
-                    
+                    Console.WriteLine("Redis cache read error");
                 }
             }
 

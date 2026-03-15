@@ -96,7 +96,7 @@ namespace LP.Server.Controllers
             }
 
             sw.Stop();
-            Console.WriteLine($"Время выполнения: {sw.ElapsedMilliseconds} мс");
+            //Console.WriteLine($"Время выполнения: {sw.ElapsedMilliseconds} мс");
             return PhysicalFile(imgPath, "application/octet-stream", enableRangeProcessing: true);
         }
 

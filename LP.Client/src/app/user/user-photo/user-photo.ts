@@ -20,9 +20,11 @@ export class UserPhoto {
   isSaving: boolean = false;
   items: { userId: string; id: string }[] = [];
   file: File | null = null; // Variable to store file
+  baseURL = "";
   constructor(
     private http: HttpClient,
-    @Inject(API_BASE_URL) private base: string) {    
+    @Inject(API_BASE_URL) private base: string) {
+    this.baseURL = base;
   }
 
   ngOnInit() {               // вызывается после конструктора

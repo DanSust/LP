@@ -129,6 +129,7 @@ namespace LP.Server.Controllers
         [Authorize]
         public async Task<IActionResult> Details()
         {
+            //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /info STARTED");
             var userData = await _context.Users
                 .AsNoTracking()
                 .Where(x => x.Id == UserId)
@@ -237,6 +238,8 @@ namespace LP.Server.Controllers
             //        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
             //    }
             //);
+
+            //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /info COMPLETED: {System.Text.Json.JsonSerializer.Serialize(result)}");
 
             return Ok(result);
         }

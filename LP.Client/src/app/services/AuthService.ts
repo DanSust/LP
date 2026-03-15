@@ -112,9 +112,10 @@ export class AuthService {
 
   }
 
-  socialLogin(provider: 'vk' | 'mailru', data: any): Observable<any> {    
+  socialLogin(provider: 'vk' | 'mailru', data: any): Observable<any> {
+    console.log('socialLogin - ', provider);
     return new Observable(observer => {
-      this.http.get<{ url: string }>(this.baseUrl + '/auth' + provider).subscribe({
+      this.http.get<{ url: string }>(this.baseUrl + '/oauth/' + provider + '/callback').subscribe({
         next: (response) => {
           console.log('socialLogin ', provider);
           const popup = window.open(
@@ -155,6 +156,11 @@ export class AuthService {
         error: (err) => observer.error(err)
       });
     });
+  }
+
+  verifyVkToken(vkData: any): Observable<any> {
+    // Отправляем объект, который пришел от VK SDK (id_token, access_token и т.д.)
+    return this.http.post(`${this.baseUrl}/oauth/vk/verify-token-fast`, vkData);
   }
 
   forgotPassword(email: string): Observable<void> {

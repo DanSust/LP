@@ -65,6 +65,8 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
+    console.log('ngOnInit() App')
+
     this.channel.addEventListener('message', (event) => {
       if (event.data.type === 'oauth-done') {
         const { code, userId } = event.data.payload;

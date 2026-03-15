@@ -27,6 +27,7 @@ public static class AuthenticationExtensions
             {
                 options.ClientId = config["OAuth:Google:ClientId"]!;
                 options.ClientSecret = config["OAuth:Google:ClientSecret"]!;
+				//options.CallbackPath = "/api/oauth/google/callback";
                 options.Scope.Add("openid");
                 options.Scope.Add("email");
                 options.Scope.Add("profile");

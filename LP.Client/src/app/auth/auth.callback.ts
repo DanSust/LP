@@ -9,6 +9,7 @@ export class AuthCallbackComponent implements OnInit {
   constructor(private route: ActivatedRoute) { }
 
   ngOnInit(): void {
+    console.log('AuthCallbackComponent init');
     const params = this.route.snapshot.queryParamMap;
     const code = params.get('code');
     const userId = params.get('userId');

@@ -30,10 +30,7 @@ class Program
 
     static async Task Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
-
-        var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
-        builder.Services.AddSingleton(loggerFactory);
+        var builder = WebApplication.CreateBuilder(args);        
 
         var imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img");
         Directory.CreateDirectory(imgPath);
@@ -44,15 +41,18 @@ class Program
         imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img", "back");
         Directory.CreateDirectory(imgPath);
 
-        builder.WebHost.UseUrls("https://0.0.0.0:7010");
+        builder.WebHost.UseUrls("http://0.0.0.0:7010");
+        //if (builder.Environment.IsDevelopment())
+        //    builder.WebHost.UseUrls("https://0.0.0.0:7010");
         // Logging
+        //var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
+        //builder.Services.AddSingleton(loggerFactory);
         builder.Logging.ClearProviders();
-        builder.Logging.AddConsole();
-        builder.Logging.AddDebug();
-        builder.Logging.SetMinimumLevel(LogLevel.Information);
+        //builder.Logging.AddConsole();
+        //builder.Logging.AddDebug();
+        builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
-        // Add services to the container.
-        builder.Services.AddSingleton(loggerFactory);
+        // Add services to the container.        
         builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
             var config =
@@ -86,15 +86,15 @@ class Program
                             sqlOptions.MigrationsAssembly("LP.Entity");
                             sqlOptions.EnableRetryOnFailure();
                         })
-                    .LogTo(Console.WriteLine, LogLevel.Information)
-                    .LogTo(
-                        msg => Console.WriteLine($"[EF] {msg}"),
-                        new[]
-                        {
-                            DbLoggerCategory.Database.Connection.Name,
-                            DbLoggerCategory.Database.Command.Name
-                        },
-                        LogLevel.Debug);
+                    .LogTo(Console.WriteLine, LogLevel.Warning);
+                    //.LogTo(
+                    //    msg => Console.WriteLine($"[EF] {msg}"),
+                    //    new[]
+                    //    {
+                    //        DbLoggerCategory.Database.Connection.Name,
+                    //        DbLoggerCategory.Database.Command.Name
+                    //    },
+                    //    LogLevel.Debug);
             },
             ServiceLifetime.Scoped,  // Явно указываем Scoped
             ServiceLifetime.Scoped   // Опции тоже Scoped (обычно так же)
@@ -202,11 +202,10 @@ class Program
         builder.Services.AddSingleton<IEmailService, EmailService>();
 
         //builder.Services.AddHttpClient<GoogleProvider>().AddLogger<IHttpClientLogger>();   // 
-        builder.Logging.AddConsole();
+        
         builder.Services.AddControllers();
 
         var app = builder.Build();
-        app.UseHttpsRedirection();
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -227,6 +226,12 @@ class Program
             //    endpoints.MapSwagger();
             //});
         }
+        else
+        {
+            // This helps force HTTPS internally
+            app.UseHsts();
+        }
+        app.UseHttpsRedirection();
 
         //app.Use(async (ctx, next) =>
         //{

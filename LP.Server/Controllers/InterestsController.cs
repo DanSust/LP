@@ -28,6 +28,7 @@ namespace LP.Server.Controllers
         {
             try
             {
+                //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /list INTERESTS STARTED");
                 // Используем безопасный метод получения из кеша
                 var interests = await GetFromCacheSafeAsync(
                     INTERESTS_CACHE_KEY,
@@ -39,11 +40,14 @@ namespace LP.Server.Controllers
                     TimeSpan.FromHours(24)
                 );
 
+                //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /list INTERESTS COMPLETED");
+
                 return Ok(interests);
             }
             catch (Exception ex)
             {
                 // Fallback: получаем данные напрямую из БД
+                Console.Write("InterestsController Логируем ошибку и возвращаем данные напрямую из БД");
                 var interests = await _context.Interests
                     .IgnoreQueryFilters()
                     .OrderBy(x => x.Group)
