@@ -349,6 +349,22 @@ mat-chip-option[disabled] {
 
 /* ===== МОБИЛЬНЫЙ < 768px ===== */
 @media (max-width: 767px) {
+  /* Убираем вертикальную линию между шагами */
+  .mat-stepper-vertical-line::before {
+    display: none !important;
+  }
+
+  /* Убираем отступы слева у контента шага, которые резервировались под линию */
+  .mat-vertical-content {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  /* Опционально: уменьшаем отступ заголовка шага, если нужно больше места */
+  .mat-step-header {
+    padding-left: 16px !important;
+  }
+
   mat-mdc-form-field {
     max-width: none !important;
     width: 100% !important;

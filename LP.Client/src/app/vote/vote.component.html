@@ -1,12 +1,12 @@
 <div class="card-stack" #activePhotoContainer>
 
   <!-- Нет профилей -->
-  @if (profiles().length === 0 && !exitingProfile()) {
+  <!--@if (profiles().length === 0 && !exitingProfile()) {
   <div class="no-profiles">
     <h2>Пока нет новых людей</h2>
     <p>Попробуйте изменить фильтры</p>
   </div>
-  }
+  }-->
 
   <!-- === СЛЕДУЮЩИЙ ПРОФИЛЬ (подложка) === -->
   @if (profiles()[1]; as nextProfile) {
@@ -53,12 +53,11 @@
        [class.dragging]="isDragging()">
     <div class="card-content">
 
-      <div class="photo-wrapper" 
+      <div class="photo-wrapper"
            [class.fullscreen]="isFullscreen()"
            [style.transform]="getCurrentTransform()"
            [style.transition]="isDragging() ? 'none' : 'transform 0.3s ease-out'"
            (click)="onPhotoClick($event)">
-
         <!-- Кнопка закрыть только в полноэкранном режиме -->
         @if (isFullscreen()) {
         <button class="close-btn" (click)="toggleFullscreen()" title="Закрыть">
@@ -98,7 +97,7 @@
           }
         </div>
         }
-        
+
         @if (cameFromSearch() && !isFullscreen()) {
         <button class="back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
           <mat-icon>reply</mat-icon>

@@ -313,6 +313,7 @@ namespace LP.Server.Controllers
                 {
                     u.Id,
                     u.Caption,
+                    u.Birthday,
                     CityName = _context.Profiles
                         .Where(p => p.UserId == u.Id)
                         .Select(p => _context.Cities.Where(c => c.Id == p.CityId).Select(c => c.Name).FirstOrDefault())
@@ -343,6 +344,7 @@ namespace LP.Server.Controllers
                 Id = u.Id,
                 Name = u.Caption,
                 City = u.CityName,
+                Birthday = u.Birthday,
                 Photos = photos.Where(p => p.UserId == u.Id).Select(p => new { p.Id, p.Path }).ToList(),
                 Interests = interests.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name, i.Path }).ToList()
             }).ToList();

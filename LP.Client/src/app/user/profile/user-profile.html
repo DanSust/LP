@@ -167,8 +167,8 @@
           <div class="chips-wrapper">
             @for (item of getInterestsByGroup(group.id); track item.id) {
             <mat-chip-option [value]="item.id"
-                             [selected]="item.selected"
-                             [disabled]="selectedInterestsCount >= maxInterests && !item.selected">
+                             [selected]="item.selected">
+              <!--[disabled]="selectedInterestsCount >= maxInterests && !item.selected"-->
               <img matChipAvatar src="assets{{item.path}}" alt="{{item.name}}" />
               {{item.name}}
             </mat-chip-option>

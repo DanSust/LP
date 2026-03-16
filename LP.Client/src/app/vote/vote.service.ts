@@ -66,6 +66,7 @@ export class ProfileService {
             id: p.id,
             name: p.name,
             city: p.city,
+            age: this.calculateAge(p.birthday),
             photoUrls: p.photos?.map((photo: any) => ({
               id: photo.id,
               path: `${this.baseUrl}/Photos/image/${photo.id}`
@@ -90,8 +91,7 @@ export class ProfileService {
       });
   }
 
-  loadProfile(id: string) {
-    console.log('loadProfile ', id);
+  loadProfile(id: string) {    
     this.http.get<any>(`${this.baseUrl}/Users/view?id=${id}`, { withCredentials: true })
       .subscribe({
         next: (response) => {
@@ -114,8 +114,7 @@ export class ProfileService {
           };
           this.profiles.set([profile]);
           this.http.get<any[]>(`${this.baseUrl}/Photos/user?id=${id}`, { withCredentials: true })
-            .subscribe(img => {
-              console.warn(img);
+            .subscribe(img => {              
               profile.photoUrls = img.map(photo => ({
                 id: photo.id,
                 path: `${this.baseUrl}/Photos/image/${photo.id}`

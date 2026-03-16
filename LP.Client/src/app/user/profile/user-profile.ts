@@ -336,7 +336,7 @@ export class UserProfile implements OnInit {
     if (newSelectedIds.length > this.maxInterests) {
       // Восстанавливаем предыдущее состояние
       event.source.value = this.previousSelectedIds;
-      alert(`Максимум ${this.maxInterests} интересов`);
+      this.toast.show(`Максимум ${this.maxInterests} интересов`);
       return;
     }
 
