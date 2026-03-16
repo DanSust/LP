@@ -42,8 +42,8 @@ class Program
         Directory.CreateDirectory(imgPath);
 
         builder.WebHost.UseUrls("http://0.0.0.0:7010");
-        //if (builder.Environment.IsDevelopment())
-        //    builder.WebHost.UseUrls("https://0.0.0.0:7010");
+        if (builder.Environment.IsDevelopment())
+            builder.WebHost.UseUrls("https://0.0.0.0:7010");
         // Logging
         //var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
         //builder.Services.AddSingleton(loggerFactory);

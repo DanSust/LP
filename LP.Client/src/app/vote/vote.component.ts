@@ -267,9 +267,13 @@ export class VoteComponent implements OnInit, AfterViewInit {
       const delta = this.dragDelta();
       this.isDragging.set(false);
 
-      if (delta > this.SWIPE_THRESHOLD) {
+      // ВЫЧИСЛЯЕМ ПОРОГ: 25-30% от ширины экрана обычно достаточно для комфортного свайпа.
+      // Если вы хотите именно "пол-экрана", используйте 0.5
+      const dynamicThreshold = window.innerWidth * 0.3;
+
+      if (delta > dynamicThreshold) {
         this.performSwipe('right');
-      } else if (delta < -this.SWIPE_THRESHOLD) {
+      } else if (delta < -dynamicThreshold) {
         this.performSwipe('left');
       } else {
         // Возврат с анимацией

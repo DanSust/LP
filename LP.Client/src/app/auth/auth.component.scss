@@ -264,6 +264,8 @@ $color-secondary: #7396AE; /*#4a1c6d;*/
   }
 }
 
+/* auth.component.scss */
+
 ::ng-deep telegram-login {
   display: block;
   width: 100%;
@@ -272,62 +274,38 @@ $color-secondary: #7396AE; /*#4a1c6d;*/
   #telegram-login-container {
     position: relative;
     width: 100%;
-    min-height: 52px;
-    cursor: pointer;
-    // iframe должен быть прозрачным и поверх всего
-    iframe[src*="telegram"] {
-      position: relative;
-      width: 100% !important;
-      height: 52px !important;
-      opacity: 0.01; // Почти прозрачный, но кликабельный
-      z-index: 10;
-      cursor: pointer;
-    }
-    // Визуальная кнопка под iframe
+    height: 52px;
+    background: #27A6E5;
+    border-radius: 12px;
+    overflow: hidden; // Это обрежет всё лишнее от гигантского iframe
+
     &::before {
       content: 'Войти через Telegram';
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding: 15px;
-      background: #27A6E5;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.1);
       color: white;
-      font-size: 16px;
       font-weight: 600;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-      transition: all 0.3s ease;
-      box-sizing: border-box;
       z-index: 1;
-      pointer-events: none; // Не перехватываем клики
+      pointer-events: none !important;
     }
-    // Иконка
-    &::after {
-      content: '';
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23gradient)'/%3E%3Cpath d='M22.9866 10.2088C23.1112 9.40332 22.3454 8.76755 21.6292 9.082L7.36482 15.3448C6.85123 15.5703 6.8888 16.3483 7.42147 16.5179L10.3631 17.4547C10.9246 17.6335 11.5325 17.541 12.0228 17.2023L18.655 12.6203C18.855 12.4821 19.073 12.7665 18.9021 12.9426L14.1281 17.8646C13.665 18.3421 13.7569 19.1512 14.314 19.5005L19.659 22.8523C20.2585 23.2282 21.0297 22.8506 21.1418 22.1261L22.9866 10.2088Z' fill='white'/%3E%3Cdefs%3E%3ClinearGradient id='gradient' x1='16' y1='2' x2='16' y2='30' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%2337BBFE'/%3E%3Cstop offset='1' stop-color='%23007DBB'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E");
-      background-size: contain;
-      background-repeat: no-repeat;
-      z-index: 2;
-      pointer-events: none;
-    }
-    // Ховер эффект
-    &:hover::before {
-      transform: translateY(-3px);
-      box-shadow: 0 7px 20px rgba(39, 166, 229, 0.3);
-      background: #1E96D4;
+
+    iframe {
+      /* Свойства ниже заставят даже маленькую кнопку 195px перекрыть всё пространство */
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      // Масштабируем iframe в 5 раз. Кнопка внутри станет огромной.
+      transform: translate(-50%, -50%) scale(5) !important;
+      // Оставляем их родные размеры, чтобы скрипт не ругался
+      width: 195px !important;
+      height: 40px !important;
+      opacity: 0.01 !important; // Делаем невидимым
+      z-index: 10 !important;
+      cursor: pointer !important;
+      border: none !important;
     }
   }
 }

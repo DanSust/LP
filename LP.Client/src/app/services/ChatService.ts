@@ -72,14 +72,15 @@ export class ChatService {
       this.addMessage({
         ...message,
         time: new Date(message.time),
-        userId: message.userId
+        userId: message.userId,
+        own: message.userId === this.userId
       });
       this.updateChatLastMessage(message);
 
       // Увеличиваем счетчик только если чат не активен
       //console.log(message.chatId, this.activeChatId());
       //if (message.chatId !== this.activeChatId()) {
-      if (!message.own) {
+      if (!message.own && message.userId !== this.userId) {
         this.incrementUnreadCount(message.chatId, message.id);
       }
     });

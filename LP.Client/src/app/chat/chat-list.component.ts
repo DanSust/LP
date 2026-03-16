@@ -61,14 +61,28 @@ export class ChatListComponent {
   }
 
   getRelativeTime(date: Date | string): string {
-    const now = new Date();
     const chatDate = new Date(date);
-    const diff = now.getTime() - chatDate.getTime();
-    const minutes = Math.floor(diff / 60000);
+
+    // 1. Проверка на "Invalid Date" (кривая строка)
+    // 2. Проверка на слишком старые даты (например, дефолтная дата из БД)
+    if (isNaN(chatDate.getTime()) || chatDate.getFullYear() <= 1) {
+      return 'Давно'; // Или пустую строку, в зависимости от логики
+    }
+
+    const now = new Date();
+    const diffInMs = now.getTime() - chatDate.getTime();
+
+    // Если дата в будущем
+    if (diffInMs < 0) return 'Только что';
+
+    const minutes = Math.floor(diffInMs / 60000);
 
     if (minutes < 1) return 'Только что';
     if (minutes < 60) return `${minutes} мин`;
     if (minutes < 1440) return `${Math.floor(minutes / 60)} ч`;
-    return `${Math.floor(minutes / 1440)} дн`;
+
+    const days = Math.floor(minutes / 1440);
+    if (days > 365) return chatDate.toLocaleDateString(); // Если больше года, пишем дату
+    return `${days} дн`;
   }
 }

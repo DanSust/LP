@@ -234,6 +234,7 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
 
   // Telegram Login Widget
   telegramLogin(): void {
+    console.log('telegramLogin()');
     // Генерируем уникальный state для защиты от CSRF
     const state = this.generateCSRFToken();
     sessionStorage.setItem('telegram_auth_state', state);

@@ -431,25 +431,36 @@
       background: rgba(255,255,255,.1);
       color: var(--text-primary)
     }
+  }  
+}
+
+@media (max-width:768px) {
+  .chat-container {
+    height: calc(100svh - 70px)
   }
 
-  @media (max-width:768px) {
-    .chat-container {
-      height: calc(100vh - 70px)
-    }
 
-    .messages {
-      padding: 15px;
-      gap: 10px
-    }
+  .messages {
+    padding: 5px;
+    gap: 10px
+  }
 
-    .message {
-      max-width: 85%;
-      padding: 10px 14px
-    }
+  .message {
+    max-width: 85%;
+    padding: 10px 14px
+  }
 
-    .input-area {
-      padding: 10px;
+  .input-area {
+    padding: 5px;
+
+    textarea {
+      padding-right: 40px; // Место для кнопки эмодзи
+
+      &::placeholder {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
       button {
         padding: 10px 18px

@@ -1,5 +1,5 @@
 <form [formGroup]="form">
-  <mat-stepper orientation="vertical" >
+  <mat-stepper orientation="vertical" #stepper>
     <mat-step label="Персональная информация">
       <br />
       <div class="email-nickname-row">
@@ -48,6 +48,9 @@
         <mat-form-field style="flex: 1; width: auto !important; min-width: 0;">
           <mat-label>др</mat-label>
           <input matInput formControlName="Birthday" [matDatepicker]="datepicker" />
+          <mat-error *ngIf="form.get('Birthday')?.hasError('required')">
+            заполните это поле
+          </mat-error>
           <mat-datepicker-toggle matIconSuffix [for]="datepicker"></mat-datepicker-toggle>
           <mat-datepicker #datepicker>
             <mat-datepicker-actions>
@@ -261,7 +264,8 @@
       @else {
       <div class="step-actions">
         <button mat-button matStepperPrevious>Назад</button>
-        <button mat-button [disabled]="form.invalid" (click)="save()">Сохранить</button>
+        <!--<button mat-button [disabled]="form.invalid" (click)="save()">Сохранить</button>-->
+        <button mat-button (click)="save()">Сохранить</button>
       </div>
       }
     </mat-step>

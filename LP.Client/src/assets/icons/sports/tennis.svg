@@ -1,3 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v-4h2l-3-4-3 4h2z"/>
+  <!-- Обод ракетки -->
+  <circle cx="15" cy="9" r="6" stroke="currentColor" stroke-width="2"/>
+  <!-- Сетка (схематично) -->
+  <path d="M12 6L18 12M12 12L18 6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+  <!-- Ручка -->
+  <path d="M11 13L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- Мяч -->
+  <circle cx="7" cy="7" r="2" fill="currentColor"/>
 </svg>

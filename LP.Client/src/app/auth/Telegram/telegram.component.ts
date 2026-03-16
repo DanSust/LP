@@ -3,7 +3,8 @@ import { TelegramAuthService } from "../../services/TelegramService";
 
 @Component({
   selector: 'telegram-login',
-  template: '<div #telegramContainer id="telegram-login-container" style="min-height: 52px;"></div>'
+  //template: '<div #telegramContainer id="telegram-login-container" style="min-height: 52px;"></div>'
+  template: '<div #telegramContainer id="telegram-login-container"></div>'
   
 })
 export class TelegrmaComponent implements AfterViewInit {

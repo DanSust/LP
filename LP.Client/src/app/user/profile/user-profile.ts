@@ -1,11 +1,11 @@
-import { ChangeDetectorRef, Component, Inject, ViewEncapsulation, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, ViewEncapsulation, OnInit, ViewChild } from '@angular/core';
 import { AsyncPipe, CommonModule } from '@angular/common';
-import { FormBuilder, FormsModule, Validators, ReactiveFormsModule, FormControl, FormArray } from '@angular/forms';
+import { FormBuilder, FormsModule, Validators, ReactiveFormsModule, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormField, MatInputModule, MatError } from '@angular/material/input';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { MatStepperModule } from '@angular/material/stepper';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSliderModule } from '@angular/material/slider';
@@ -85,13 +85,17 @@ export class UserProfile implements OnInit {
   ];
 
   userQuestions: QuestionsDTO[] = [];
-  maxQuestions = 3;
+  readonly maxQuestions = 3;
+  readonly maxPhotos = 5;
+
 
   // 🌍 ГЕОЛОКАЦИЯ (как в search.component)  
   isLocating = false;
   locationError: string | null = null;
   currentPosition: LocationCoords | null = null;
   useGeolocation: boolean = false;
+
+  @ViewChild(MatStepper) stepper!: MatStepper;
   
   constructor(
     private fb: FormBuilder,
@@ -112,7 +116,7 @@ export class UserProfile implements OnInit {
       WithPhoto: true,
       WithEmail: true,
       WithLikes: false,
-      Birthday: subYears(new Date(), 18),
+      Birthday: [subYears(new Date(), 18), Validators.required],
       Weight: 60,
       Height: 170,
       Description: '',
@@ -406,6 +410,19 @@ export class UserProfile implements OnInit {
   }
 
   save() {
+    // 1. Проверка на валидность
+    if (this.form.invalid) {
+      // Подсвечиваем все невалидные поля (делаем их touched)
+      this.markFormGroupTouched(this.form);
+
+      // Показываем уведомление (используем твой ToastService)
+      this.toast.warning('Пожалуйста, заполните обязательные поля');
+
+      this.scrollToFirstInvalidControl();
+
+      return;
+    }
+
     if (this.form.valid) {
       const birthday = new Date(this.form.value.Birthday);
       
@@ -444,5 +461,58 @@ export class UserProfile implements OnInit {
         }
       });
     }
+  }
+
+  private scrollToFirstInvalidControl() {
+    const form = this.form;
+    const controls = form.controls;
+
+    // Список полей в том порядке, в котором они идут в форме/степпере
+    // Это нужно, чтобы понять, на какой шаг переключиться
+    const fieldStepMap: { [key: string]: number } = {
+      'Email': 0,
+      'Caption': 0,      
+      'Birthday': 0,
+      'TownName': 0,
+      // Добавь остальные поля и их индексы шагов (0, 1, 2...)
+    };
+
+    for (const name in controls) {
+      if (controls[name].invalid) {
+        // 1. Переключаем степпер на нужный шаг
+        const stepIndex = fieldStepMap[name];
+        if (stepIndex !== undefined) {
+          this.stepper.selectedIndex = stepIndex;
+        }
+
+        // 2. Скроллим к элементу (через небольшую задержку, чтобы степпер успел переключиться)
+        setTimeout(() => {
+          let invalidControl = document.querySelector(`[formControlName="${name}"]`);
+
+          // Если это datepicker, он может быть обернут, попробуем найти input внутри
+          if (!invalidControl) {
+            invalidControl = document.querySelector(`mat-step:nth-child(${stepIndex + 1}) .ng-invalid input`);
+          }
+
+          if (invalidControl) {
+            invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            (invalidControl as HTMLElement).focus();
+          }
+        }, 100);
+
+        break; // Нашли первую ошибку и выходим из цикла
+      }
+    }
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup | FormArray) {
+    Object.values(formGroup.controls).forEach(control => {
+      if (control instanceof FormControl) {
+        control.markAsTouched();
+        control.updateValueAndValidity();
+      } else if (control instanceof FormGroup || control instanceof FormArray) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
 }

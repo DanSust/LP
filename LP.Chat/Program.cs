@@ -162,7 +162,14 @@ try
 
     var hubConnection = builder.Configuration.GetConnectionString("chatHub") ?? "https://0.0.0.0:5000";
     //app.Run("https://127.0.0.1:5000");
-    app.Run(hubConnection);
+    if (builder.Environment.IsDevelopment())
+    {
+        app.Run("https://127.0.0.1:5000");
+    }
+    else
+    {
+        app.Run(hubConnection);
+    }
 }
 catch (Exception ex)
 {
