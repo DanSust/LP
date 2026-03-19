@@ -1,0 +1,15 @@
+User-agent: *
+# Разрешаем индексировать публичные страницы
+Allow: /
+Allow: /about
+Allow: /promo
+
+# Запрещаем индексировать приватные данные и технические разделы
+Disallow: /chat/          # Личные переписки
+Disallow: /user/profile   # Редактирование профиля
+Disallow: /match/         # Страницы совпадений
+Disallow: /vote           # Процесс голосования (чтобы не плодить дубли)
+Disallow: /auth/          # Авторизация и Telegram login
+
+# Указываем путь к карте сайта (когда создашь её)
+Sitemap: https://made4love.ru/sitemap.xml

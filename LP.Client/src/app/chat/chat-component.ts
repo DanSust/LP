@@ -226,7 +226,13 @@ export class ChatView implements OnInit, OnDestroy {
   onInput(): void {
     const textarea = this.messageInput.nativeElement;
     textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    /*textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';*/
+    const minHeight = 24; // Укажите высоту одной строки (соответствует вашему CSS)
+    const maxHeight = 120;
+
+    const newHeight = Math.max(minHeight, textarea.scrollHeight);
+
+    textarea.style.height = (newHeight > maxHeight ? maxHeight : newHeight) + 'px';
   }
 
   ngOnInit(): void {

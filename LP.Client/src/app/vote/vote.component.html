@@ -43,10 +43,15 @@
             [disabled]="isAnimating()">
       ❤️
     </button>
+    @if (cameFromSearch() && !isFullscreen()) {
+    <button class="action-btn back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
+      <mat-icon>reply</mat-icon>
+    </button>
+    }
     <!--<button class="action-btn favorite-btn"
-                (click)="onFavoriteClick(profile.id); $event.stopPropagation()"
-                [disabled]="isAnimating()">⭐
-    </button>-->
+              (click)="onFavoriteClick(profile.id); $event.stopPropagation()"
+              [disabled]="isAnimating()">⭐
+  </button>-->
   </div>
   <div class="card active-card"
        [style.z-index]="10"
@@ -98,11 +103,11 @@
         </div>
         }
 
-        @if (cameFromSearch() && !isFullscreen()) {
+        <!--@if (cameFromSearch() && !isFullscreen()) {
         <button class="back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
           <mat-icon>reply</mat-icon>
         </button>
-        }
+        }-->
 
       </div>
 

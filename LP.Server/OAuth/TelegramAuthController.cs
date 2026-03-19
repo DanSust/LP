@@ -23,7 +23,7 @@ public record TelegramAuthData(
 );
 
 [ApiController]
-[Route("api/auth/telegram")]
+[Route("auth/telegram")]
 [AllowAnonymous]
 public class TelegramAuthController : BaseOAuthController
 {
@@ -48,7 +48,7 @@ public class TelegramAuthController : BaseOAuthController
         return Ok(new
         {
             botName = _config["OAuth:Telegram:BotName"],
-            authUrl = "/api/oauth/telegram/verify"
+            authUrl = "/oauth/telegram/verify"
         });
     }
 

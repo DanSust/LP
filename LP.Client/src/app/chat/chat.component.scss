@@ -24,7 +24,7 @@
 
   color: var(--text-primary);
   @media (max-width:768px) {
-    height: calc(100vh - 70px);
+    height: calc(100svh - 70px);
   }
 }
 
@@ -244,6 +244,7 @@
 .input-area {
   flex-shrink: 0;
   display: flex;
+  align-items: flex-end;
   padding: 15px;
   background: rgba(255,255,255,.08);
   border-top: 1px solid var(--divider-color);
@@ -252,23 +253,28 @@
 
   .textarea-wrapper {
     flex: 1;
-    position: relative
+    position: relative;
+    display: flex;
+    align-items: center;
   }
 
   textarea {
     width: 100%;
     padding: 12px 45px 12px 20px;
     background: #fff;
-    border: 1px solid var(--divider-color);
+    //border: 1px solid var(--divider-color);
+    border: none;
     border-radius: 25px;
     color: #000;
     font-size: 14px;
     font-family: inherit;
     resize: none;
-    min-height: 40px;
+    min-height: 24px;
     max-height: 120px;
     line-height: 1.4;
+    box-sizing: border-box; // Важно, чтобы padding не раздувал высоту
     overflow-y: auto;
+    outline: none;
 
     &::-webkit-scrollbar {
       width: 0;
@@ -439,9 +445,8 @@
     height: calc(100svh - 70px)
   }
 
-
   .messages {
-    padding: 5px;
+    padding: 15px;
     gap: 10px
   }
 
@@ -461,10 +466,10 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
+    }
 
-      button {
-        padding: 10px 18px
-      }
+    button {
+      padding: 10px 18px
     }
   }
 }

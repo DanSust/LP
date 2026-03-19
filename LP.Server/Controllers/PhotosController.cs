@@ -220,10 +220,11 @@ namespace LP.Server.Controllers
                 Directory.CreateDirectory(userPath);
 
             string imgPath = Path.Combine(userPath, _id.ToString());
-            await using var stream = new FileStream(imgPath, FileMode.Create);
-            await file.CopyToAsync(stream);
-
-
+            {
+                await using var stream = new FileStream(imgPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                await file.CopyToAsync(stream);
+                await stream.FlushAsync(); // Принудительно сбрасываем буферы
+            }
 
             // 🔥 Проверяем, является ли это первым фото пользователя
             var userPhotoCount = await _context.Photos.CountAsync(x => x.User.Id == UserId);

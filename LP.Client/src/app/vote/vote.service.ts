@@ -79,10 +79,19 @@ export class ProfileService {
           }));
 
           // Добавляем к текущим профилям
-          this.profiles.update(profiles => [...profiles, ...newProfiles]);
+          //this.profiles.update(profiles => [...profiles, ...newProfiles]);
+          // Оставляем только те профили, которых еще нет в текущем списке по ID
+          // Обновляем список, оставляя только уникальные ID
+          this.profiles.update(currentList => {
+            const uniqueNew = newProfiles.filter(np =>
+              !currentList.some(existing => existing.id === np.id)
+            );
+            return [...currentList, ...uniqueNew];
+          });
 
           this.isLoading.set(false);
           console.log(`Загружено ${newProfiles.length} профилей. Всего: ${this.profiles().length}`);
+          console.log(this.profiles()[0]);
         },
         error: (error) => {
           console.error('Failed to load profiles:', error);
@@ -131,7 +140,7 @@ export class ProfileService {
       });
   }
 
-  loadProfiles(count: number = 5) {
+  loadProfiles(count: number = 1) {
     this.loadMoreProfiles(count);
   }
 
@@ -139,8 +148,10 @@ export class ProfileService {
     const currentProfile = this.profiles()[0];
     const lk = like ? 'like' : 'dislike';
 
-    if (needRemove)
-      this.profiles.update(profiles => profiles.slice(1));    
+    if (needRemove) {
+      this.profiles.update(profiles => profiles.slice(1));
+      console.log('removeTopProfile -', this.profiles());
+    }
     
     this.http.post<any>(this.baseUrl + '/Votes/' + lk + '/' + currentProfile.id, null, { withCredentials: true })
       .subscribe({
@@ -155,11 +166,26 @@ export class ProfileService {
   }
 
   addProfiles(newProfiles: Profile[]) {
-    this.profiles.update(profiles => [...profiles, ...newProfiles]);
+    //this.profiles.update(profiles => [...profiles, ...newProfiles]);
+    this.profiles.update(current => {
+      // Оставляем только те профили, которых еще нет в текущем списке по ID
+      const uniqueNew = newProfiles.filter(np => !current.some(c => c.id === np.id));
+      return [...current, ...uniqueNew];
+    });
   }
 
   addToFavorites(id: string) {
-
+    //return this.http.post(`${this.baseUrl}/Users/update-name`, { id }, { withCredentials: true });
+    this.http.post<any>(this.baseUrl + '/Users/update-name/' + id, null, { withCredentials: true })
+      .subscribe({
+        next: () => {          
+          console.log('Update отправлен')
+        },
+        error: (error: any) => {
+          console.log(error);
+          return (() => error);
+        },
+      });
   }
 
   addViewed(id?: string) {    

@@ -86,9 +86,7 @@ export class UserProfile implements OnInit {
 
   userQuestions: QuestionsDTO[] = [];
   readonly maxQuestions = 3;
-  readonly maxPhotos = 5;
-
-
+  
   // 🌍 ГЕОЛОКАЦИЯ (как в search.component)  
   isLocating = false;
   locationError: string | null = null;

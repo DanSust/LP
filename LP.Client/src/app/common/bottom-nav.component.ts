@@ -69,7 +69,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   }
 
   onItemClick(item: NavItem, event: Event): void {
-    console.log('onItemClick', item);
+    //console.log('onItemClick', item);
     if (this.isMenuItem(item)) {
       event.stopPropagation();
       return;

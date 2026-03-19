@@ -13,8 +13,33 @@ export class TelegramAuthService {
   private authService = inject(AuthService);
 
   constructor(@Inject(API_BASE_URL) private baseUrl: string,
-    private router: Router)
-{ }
+    private router: Router) { }
+
+  checkConnection(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const img = new Image();
+
+      // Устанавливаем таймаут 2.5 секунды. Если за это время не загрузится - считаем недоступным
+      const timeout = setTimeout(() => {
+        img.src = ""; // Прерываем загрузку
+        resolve(false);
+      }, 3000);
+
+      img.onload = () => {
+        clearTimeout(timeout);
+        resolve(true);
+      };
+
+      img.onerror = () => {
+        clearTimeout(timeout);
+        console.warn('img.onerror');
+        resolve(false);
+      };
+
+      // Пытаемся загрузить фавиконку (она маленькая и обычно не кэшируется агрессивно)
+      img.src = `https://telegram.org/favicon.ico?${Date.now()}`;
+    });
+  }
 
   // Загружаем скрипт виджета динамически
   loadScript(container: HTMLElement): Promise<void> {
@@ -63,12 +88,12 @@ export class TelegramAuthService {
       Hash: user.hash
     };
 
-    console.log(this.baseUrl + '/api/auth/telegram/verify', authData);
-    this.http.post(this.baseUrl + '/api/auth/telegram/verify', authData, { headers: { 'Content-Type': 'application/json' }, withCredentials: true }).subscribe({
+    console.log(this.baseUrl + '/auth/telegram/verify', authData);
+    this.http.post(this.baseUrl + '/auth/telegram/verify', authData, { headers: { 'Content-Type': 'application/json' }, withCredentials: true }).subscribe({
       next: (response: any) => {
         //localStorage.setItem('token', response.token);
         // Редирект или обновление состояния        
-        this.authService.handleAuth(response, response.userId);        
+        this.authService.handleAuth(response, response.userId);
       },
       error: (err) => console.error('Auth failed', err)
     });

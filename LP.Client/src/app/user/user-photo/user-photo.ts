@@ -1,3 +1,4 @@
+import { CommonModule, JsonPipe } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CdkDragDrop, CdkDrag, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -5,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { API_BASE_URL } from './../../app.config'; //'../../main';
 import { FileUploadComponent } from '../../common/file-upload';
+import { ToastService } from '../../common/toast.service';
 
 @Component({
   selector: 'user-photo',
@@ -21,8 +23,11 @@ export class UserPhoto {
   items: { userId: string; id: string }[] = [];
   file: File | null = null; // Variable to store file
   baseURL = "";
+  readonly maxPhotos = 5;
+
   constructor(
     private http: HttpClient,
+    private toast: ToastService,
     @Inject(API_BASE_URL) private base: string) {
     this.baseURL = base;
   }
@@ -81,6 +86,11 @@ export class UserPhoto {
   }
 
   onUpload() {
+    if (this.items.length >= this.maxPhotos) {
+      this.toast.warning('Достигнут лимит в 5 фотографий')
+      return;
+    }
+
     if (this.file) {
       const formData = new FormData();
 
@@ -96,8 +106,13 @@ export class UserPhoto {
   }
 
   onFileUploaded(newPhoto: { userId: string; id: string }): void {
-    this.items = [...this.items, newPhoto]; // Add to parent's array
-    console.log('✅ New photo added:', newPhoto);
+    if (this.items.length < this.maxPhotos) {
+      this.items = [...this.items, newPhoto];
+      console.log('✅ New photo added:', newPhoto);
+    } else {
+      // Здесь можно вызвать toast-уведомление, если оно доступно в этом компоненте
+      this.toast.info('Лимит достигнут фотография не добавлена');      
+    }
   }
   
 }

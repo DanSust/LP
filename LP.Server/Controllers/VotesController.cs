@@ -263,6 +263,7 @@ namespace LP.Server.Controllers
         public async Task<IActionResult> GetVoteList(int count = 5)
         {
             var userId = UserId;
+            var user = await _context.Users.FindAsync(userId);
 
             var currentUserProfile = await _context.Profiles
                 .AsNoTracking()
@@ -273,12 +274,17 @@ namespace LP.Server.Controllers
                 .Where(s => s.Owner == userId)
                 .Select(s => s.Like)
                 .ToListAsync();
+            shownIds.Clear();
             shownIds.Add(userId);
 
             // Базовый запрос
             var query = _context.Users
                 .AsNoTracking()
-                .Where(x => x.Username != "admin" && !shownIds.Contains(x.Id) && x.IsPaused == false);
+                .Where(x => x.Username != "admin" 
+                            && !shownIds.Contains(x.Id) 
+                            && x.IsPaused == false
+                            && x.Sex != user.Sex)
+                .OrderBy(u => EF.Functions.Random());
 
             // Если у текущего пользователя стоит WithEmail - фильтруем только с подтвержденным Email
             //if (currentUserProfile?.WithEmail == true)
@@ -298,7 +304,7 @@ namespace LP.Server.Controllers
             
 
             var randomIds = await query
-                .OrderBy(u => EF.Functions.Random())
+                .OrderBy(u => Guid.NewGuid())
                 .Take(count)
                 .Select(x => x.Id)
                 .ToListAsync();

@@ -44,7 +44,7 @@ export class App implements OnInit, OnDestroy {
   isLoading = false;
 
   // === НАСТРОЙКИ РЕЖИМА РАЗРАБОТКИ ===
-  isDevelopmentMode = localStorage.getItem('is_admin') !== 'true'
+  isDevelopmentMode = false; //localStorage.getItem('is_admin') !== 'true'
   launchDate = new Date(2026, 2, 16); // 8 марта 2026
   // ===================================
 

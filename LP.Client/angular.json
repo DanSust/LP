@@ -119,7 +119,14 @@
             "port": 443,
             "host": "0.0.0.0",
             "ssl": true,
-            "proxyConfig": "proxy.conf.mjs"
+            "proxyConfig": "proxy.conf.mjs",
+            "headers": {
+              "Cross-Origin-Opener-Policy": "same-origin-allow-popups"
+              // Можно добавить другие заголовки через запятую:
+              // "X-Content-Type-Options": "nosniff",
+              // "Referrer-Policy": "strict-origin-when-cross-origin"
+            }
+
           },
           "defaultConfiguration": "development"
         },

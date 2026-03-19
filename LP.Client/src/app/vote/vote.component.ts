@@ -66,7 +66,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
   isClick = signal(false);
 
   toggleFullscreen(): void {
-    console.log('toggleFullscreen');
+    //console.log('toggleFullscreen');
     this.isFullscreen.update(v => !v);
   }
 
@@ -86,7 +86,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     private navService: NavigationService,
     private location: Location
   ) {
-    console.log('🏗️ VoteComponent создан');
+    //console.log('🏗️ VoteComponent создан');
     this.userId = this.route.snapshot.paramMap.get('id') ?? undefined;
 
     effect(() => {
@@ -105,7 +105,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     this.routeSub = this.route.paramMap.subscribe(params => {
       const newUserId = params.get('id') ?? undefined;
       //console.log('Route params changed:', newUserId);      
-      console.log('history:', this.navService.getPreviousUrl());
+      //console.log('history:', this.navService.getPreviousUrl());
 
       this.resetState();
 
@@ -143,7 +143,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.waitForElement();
-    console.warn(this.userId);
+    //console.warn(this.userId);
     if (!this.userId) {
       this.setupSwipeGestures();
     }
@@ -196,8 +196,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
   private hasExceededThreshold = false;
 
   // === SWIPE GESTURES ===
-  private setupSwipeGestures(): void {
-    console.log('setupSwipeGestures');
+  private setupSwipeGestures(): void {    
     const isFinePointer = window.matchMedia('(pointer: fine)').matches;
 
     const element = this.photoContainer?.nativeElement;
@@ -260,7 +259,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     };
 
     const endDrag = () => {
-      console.log('endDrag - ', this.isDragging());
+      //console.log('endDrag - ', this.isDragging());
       if (this.isFullscreen()) return;
       if (!this.isDragging()) return;
 
@@ -450,7 +449,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     const profile = this.profiles()[0];
     if (!profile) return;
 
-    console.log('needSwipe ', needSwipe);
+    //console.log('needSwipe ', needSwipe);
     
     // 1. ЗАМОРАЖИВАЕМ текущий профиль для анимации вылета
     this.exitingProfile.set({
@@ -507,24 +506,24 @@ export class VoteComponent implements OnInit, AfterViewInit {
   // === ACTIONS ===
 
   onLikeClick(): void {
-    console.log('onLikeClick()');
+    //console.log('onLikeClick()');
     this.performSwipe('right', !this.cameFromSearch());
   }
 
   onDislikeClick(): void {
-    console.log('onDislikeClick()');
+    //console.log('onDislikeClick()');
     this.performSwipe('left', !this.cameFromSearch());
   }
 
   onChatClick(id: string): void {
-    console.log("[onChatClick] Запускаем для profile id:", id);
+    //console.log("[onChatClick] Запускаем для profile id:", id);
 
     this.http.post<any>(`${this.base}/chats/get-or-create/${id}`, null, { withCredentials: true })
       .subscribe({
         next: (response) => {
-          console.log("[get-or-create] Полный ответ:", response);
-          console.log("[get-or-create] userId →", response.userId);
-          console.log("[get-or-create] chatId →", response.chatId);
+          //console.log("[get-or-create] Полный ответ:", response);
+          //console.log("[get-or-create] userId →", response.userId);
+          //console.log("[get-or-create] chatId →", response.chatId);
 
           if (!response.userId) {
             console.warn("!!! Сервер НЕ вернул userId !!!");
@@ -553,6 +552,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
   onFavoriteClick(id: string): void {
     //console.log('⭐ Избранное:', id);
     this.profileService.addToFavorites(id);
+    this.performSwipe('right', true);
   }
 
   nextPhoto(): void {

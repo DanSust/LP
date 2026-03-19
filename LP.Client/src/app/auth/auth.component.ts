@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -26,7 +26,7 @@ declare global {
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.scss']
 })
-export class AuthComponent implements AfterViewInit, OnDestroy {
+export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
   public loginForm: FormGroup;
   public registerForm: FormGroup;
   public activeTab: 'login' | 'register' = 'login';
@@ -35,7 +35,7 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
   get acceptTerms() { return this.registerForm.get('acceptTerms'); }
 
 
-  private readonly authTelUrl = `${window.location.origin}/api/auth/telegram`;
+  private readonly authTelUrl = `${window.location.origin}/api/auth/telegram/verify`;
   private vkInitialized = false;
 
   constructor(
@@ -57,6 +57,12 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
       confirmPassword: ['', Validators.required],
       acceptTerms: [false, Validators.requiredTrue]
     });
+  }
+
+  ngOnInit(): void {
+    if (window.location.hash.includes('tgAuthResult=')) {
+      this.checkTelegramHash();
+    }
   }
 
   ngAfterViewInit() {
@@ -241,27 +247,89 @@ export class AuthComponent implements AfterViewInit, OnDestroy {
 
     // Формируем URL для Telegram OAuth
     const params = new URLSearchParams({
+      auth_url: this.authTelUrl,
       bot_id: '8220602308',
       origin: window.location.origin,
-      request_access: 'write',
-      auth_url: this.authTelUrl,
+      request_access: 'write',      
+      embed: '1',
       state: state
     });
 
+    //console.log('https://oauth.telegram.org/auth?', params.toString());
+
     // Открываем в отдельном окне (как у Google)
-    const popup = window.open(
-      `https://oauth.telegram.org/auth?${params.toString()}`,
+    const tgURL = `https://oauth.telegram.org/auth?${params.toString()}`;
+    console.log(tgURL);
+    const popup = window.open(tgURL,
       'TelegramAuth',
       'width=600,height=700,scrollbars=yes'
     );
 
-    // Проверяем закрытие popup
-    const checkClosed = setInterval(() => {
-      if (popup?.closed) {
-        clearInterval(checkClosed);
-        this.isLoading = false;
+    if (!popup) {
+      console.error("Popup заблокирован браузером!");
+      alert("Разрешите всплывающие окна для этого сайта");
+    } else {
+      console.log("Popup открыт, url:", tgURL);
+    }
+
+    // Подписываемся на событие ответа от окна
+    const handleMessage = (event: MessageEvent) => {
+      // Проверка безопасности: только с вашего домена
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data.type === 'TG_AUTH_SUCCESS') {
+        const authResponse = event.data.data;
+        console.log('Данные получены из попапа:', authResponse);
+
+        // Вызываем ваш метод завершения авторизации (сохранение токена и т.д.)
+        this.authService.handleAuth(authResponse, authResponse.userId);
+
+        window.removeEventListener('message', handleMessage);
       }
-    }, 1000);
+
+      if (event.data.type === 'TG_AUTH_ERROR') {
+        this.toast.error('Ошибка авторизации через Telegram');
+        window.removeEventListener('message', handleMessage);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // Проверяем закрытие popup
+    //const checkClosed = setInterval(() => {
+    //  if (popup?.closed) {
+    //    clearInterval(checkClosed);
+    //    this.isLoading = false;
+    //  }
+    //}, 1000);
+  }
+
+  private checkTelegramHash(val: string = '') {
+    console.log('checkTelegramHash called, hash:', window.location.hash);
+    console.log('window.opener:', window.opener);
+
+    const hash = window.location.hash;
+    if (hash.includes('tgAuthResult=')) {
+      console.log('Found tgAuthResult in hash');
+      const base64Data = hash.split('tgAuthResult=')[1];
+      try {
+        const userData = JSON.parse(atob(base64Data));
+        console.log('Parsed userData:', userData);
+
+        if (window.opener) {
+          console.log('Sending message to opener and closing');
+          window.opener.postMessage({ type: 'TG_AUTH_SUCCESS', payload: userData }, window.location.origin);
+          window.close();
+        } else {
+          console.log('No opener, handling auth directly');
+          this.authService.handleAuth(userData, userData.id);
+        }
+      } catch (e) {
+        console.error('Ошибка парсинга TG данных', e);
+      }
+    } else {
+      console.log('No tgAuthResult in hash');
+    }
   }
 
   private generateCSRFToken(): string {
