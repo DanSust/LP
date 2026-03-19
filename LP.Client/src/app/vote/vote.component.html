@@ -69,6 +69,11 @@
           <mat-icon>close</mat-icon>
         </button>
         } @else {
+        <!-- РЕЙТИНГ ЗДЕСЬ (перед городом) -->
+        <div class="detail-item rating-item">
+          <app-rating [profileId]="profile.id" size="medium"></app-rating>
+        </div>
+
         <!-- ИМЯ И ВОЗРАСТ В ПРАВОМ ВЕРХНЕМ УГЛУ -->
         <div class="profile-header-overlay">
           <h3>{{ profile.name }}, {{ profile.age }}</h3>
@@ -104,10 +109,10 @@
         }
 
         <!--@if (cameFromSearch() && !isFullscreen()) {
-        <button class="back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
-          <mat-icon>reply</mat-icon>
-        </button>
-        }-->
+  <button class="back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
+    <mat-icon>reply</mat-icon>
+  </button>
+  }-->
 
       </div>
 

@@ -20,6 +20,7 @@ import { HttpClient } from '@angular/common/http';
 import { ChatService } from '../services/ChatService';
 import { ToastService } from '../common/toast.service';
 import { NavigationService } from '../services/NavigationService';
+import { RatingComponent } from '../../app/user/rating/user-rating.component';
 import { getAgeWord } from './../common/usefull.utils';
 import { Subscription } from 'rxjs';
 
@@ -33,7 +34,7 @@ interface ExitingProfile {
 @Component({
   selector: 'vote-cards',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, RatingComponent],
   templateUrl: './vote.component.html',
   styleUrls: ['./vote.component.scss']
 })

@@ -715,6 +715,14 @@
   opacity: 1;
 }
 
+// Стили для элемента с рейтингом
+.rating-item {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .profile-header-overlay {
   position: absolute;
   top: 10px;
