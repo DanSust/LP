@@ -1,5 +1,7 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from './../../app.config';
 
 @Component({
   selector: 'app-rating',
@@ -137,16 +139,18 @@ export class RatingComponent implements OnInit, OnChanges {
   protected filledStars = 0;
   protected showHalfStar = false;
   protected halfStarIndex = 0;
+  private http = inject(HttpClient);
+  private baseUrl = inject(API_BASE_URL);
 
   private ratingCache = new Map<string, number>();
 
   ngOnInit() {
-    this.calculateRating();
+    this.loadRating();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['profileId'] || changes['fixedRating']) {
-      this.calculateRating();
+    if (changes['profileId'] && !changes['profileId'].firstChange) {
+      this.loadRating();
     }
   }
 
@@ -158,6 +162,24 @@ export class RatingComponent implements OnInit, OnChanges {
       this.displayRating = this.getRandomRating(this.profileId);
     }
     this.updateStars();
+  }
+
+  private loadRating(): void {
+    if (!this.profileId) return;
+    
+    this.http.get<any>(`${this.baseUrl}/Users/rating/${this.profileId}`)
+      .subscribe({
+        next: (response) => {
+          this.displayRating = response.rating;
+          this.updateStars();          
+        },
+        error: (err) => {
+          console.error('Error loading rating:', err);
+          // Fallback на случайный рейтинг при ошибке
+          this.displayRating = this.getRandomRating(this.profileId);
+          this.updateStars();          
+        }
+      });
   }
 
   private getRandomRating(profileId: string): number {

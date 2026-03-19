@@ -7,6 +7,7 @@ using LP.Server.Extensions;
 using LP.Server.OAuth;
 using LP.Server.Services;
 using LP.Server.Services.ImageProcessing;
+using LP.Server.Services.Rating;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -199,6 +200,7 @@ class Program
         builder.Services.AddScoped<ILikeRestrictionService, LikeRestrictionService>();
         builder.Services.AddScoped<LP.Common.JwtTokenParser>();
         builder.Services.AddScoped<InterestsStore>();
+        builder.Services.AddScoped<IRatingService, RatingService>();
         builder.Services.AddSingleton<IEmailService, EmailService>();
 
         //builder.Services.AddHttpClient<GoogleProvider>().AddLogger<IHttpClientLogger>();   // 

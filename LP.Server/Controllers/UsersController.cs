@@ -2,6 +2,7 @@
 using LP.Entity;
 using LP.Server.DTO;
 using LP.Server.Services;
+using LP.Server.Services.Rating;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -20,10 +21,14 @@ namespace LP.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UsersController(ApplicationContext context, IAuthService authService) : BaseAuthController
+    public class UsersController(
+        ApplicationContext context, 
+        IAuthService authService,
+        IRatingService ratingService) : BaseAuthController
     {
         private readonly ApplicationContext _context = context;
         private readonly IAuthService _authService = authService;
+        private readonly IRatingService _ratingService = ratingService;
 
         // GET: Users
         [AllowAnonymous]
@@ -411,6 +416,25 @@ namespace LP.Server.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new ResponseDto { Result = true, Message = "данные сохранены" });
+        }
+
+        [HttpGet("rating/{userId}")]
+        [AllowAnonymous] // или [Authorize] - по необходимости
+        public async Task<IActionResult> GetUserRating(Guid userId)
+        {
+            try
+            {
+                var rating = await _ratingService.CalculateUserRating(userId);
+                return Ok(rating);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         private bool UserExists(Guid id)
