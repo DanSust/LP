@@ -37,6 +37,7 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private readonly authTelUrl = `${window.location.origin}/api/auth/telegram/verify`;
   private vkInitialized = false;
+  private vkScriptId = 'vk-sdk-script';
 
   constructor(
     @Inject(API_BASE_URL) private baseUrl: string,
@@ -60,6 +61,7 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadVKScript();
     if (window.location.hash.includes('tgAuthResult=')) {
       this.checkTelegramHash();
     }
@@ -74,6 +76,35 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
   ngOnDestroy() {
     // Очистка при уничтожении компонента
     this.vkInitialized = false;
+  }
+
+  private loadVKScript() {
+    // 1. Если SDK уже в объекте window, просто инициализируем
+    if (window.VKIDSDK) {
+      this.initVK();
+      return;
+    }
+
+    // 2. Если скрипт уже есть в DOM (например, от прошлого визита), 
+    // но SDK еще не готов, ждем загрузки
+    const existingScript = document.getElementById(this.vkScriptId) as HTMLScriptElement;
+    if (existingScript) {
+      existingScript.onload = () => this.initVK();
+      return;
+    }
+
+    // 3. Создаем и добавляем скрипт
+    const script = document.createElement('script');
+    script.id = this.vkScriptId;
+    script.src = 'https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js';
+    script.async = true;
+    script.onload = () => {
+      console.log('VK SDK loaded');
+      this.initVK();
+    };
+    script.onerror = () => console.error('VK SDK load failed');
+
+    document.head.appendChild(script);
   }
 
   private initVK() {

@@ -1,6 +1,7 @@
 import { Component, Inject, OnInit, HostListener, ElementRef, AfterViewInit, OnDestroy, ViewChild, ChangeDetectorRef, viewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSliderModule } from '@angular/material/slider';
@@ -55,6 +56,7 @@ interface SearchFilters {
     MatButtonModule,
     MatMenuModule,
     MatIconModule,
+    MatTooltipModule,
     MatSliderModule,
     MatSelectModule,
     MatFormFieldModule,
@@ -115,6 +117,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private isRestoringState = false;
   private shouldRestoreScroll = false;
   private savedScrollPosition: number = 0;
+
+  showGeoHint: boolean = false;
+  private readonly GEO_HINT_KEY = 'geo_hint_shown';
   
 
   constructor(
@@ -144,6 +149,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadCities();
       this.setupCityAutocomplete();
     }
+
+    this.checkGeoHint();
   }
 
   private onWindowScrollBound = this.onWindowScroll.bind(this);
@@ -176,6 +183,22 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     
     return `${this.baseUrl}/Photos/image/${photoId}`;
+  }
+
+  // Добавьте новые методы:
+  private checkGeoHint(): void {
+    const hintShown = localStorage.getItem(this.GEO_HINT_KEY);
+    if (!hintShown) {
+      // Показываем подсказку с небольшой задержкой для анимации
+      setTimeout(() => {
+        this.showGeoHint = true;
+      }, 500);
+    }
+  }
+
+  hideGeoHint(): void {
+    this.showGeoHint = false;
+    localStorage.setItem(this.GEO_HINT_KEY, 'true');
   }
 
   private restoreState(state: PageState): void {
@@ -512,6 +535,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onGeolocationClick(): void {
+    this.hideGeoHint();
+
     this.isLocating = true;
     this.locationError = null;
 

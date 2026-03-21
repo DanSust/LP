@@ -152,17 +152,18 @@ export class ProfileService {
       this.profiles.update(profiles => profiles.slice(1));
       console.log('removeTopProfile -', this.profiles());
     }
-    
-    this.http.post<any>(this.baseUrl + '/Votes/' + lk + '/' + currentProfile.id, null, { withCredentials: true })
-      .subscribe({
-        next: () => {
-          console.log('Лайк отправлен', currentProfile.id)
-        },
-        error: (error: any) => {
-          console.log(error);
-          return (() => error);
-        },
-      });    
+
+    //Не  надо ставить дизлайк - это просто skip
+    //this.http.post<any>(this.baseUrl + '/Votes/' + lk + '/' + currentProfile.id, null, { withCredentials: true })
+    //  .subscribe({
+    //    next: () => {
+    //      console.log('Лайк отправлен', currentProfile.id)
+    //    },
+    //    error: (error: any) => {
+    //      console.log(error);
+    //      return (() => error);
+    //    },
+    //  });    
   }
 
   addProfiles(newProfiles: Profile[]) {

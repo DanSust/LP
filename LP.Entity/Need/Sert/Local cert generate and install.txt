@@ -5,3 +5,53 @@ mkcert localhost 127.0.0.1 ::1
 # Получите: localhost.pem и localhost-key.pem
 # Конвертируйте в PFX
 openssl pkcs12 -export -out localhost.pfx -inkey localhost-key.pem -in localhost.pem -password pass:devpass123
+
+
+
+---------------------
+Шаг 1: Разрешаем запуск скриптов
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+
+Шаг 2: Устанавливаем сам модуль
+Install-Module -Name Posh-ACME -Scope CurrentUser -Force
+
+Шаг 3: Выпускаем сертификат
+New-PACertificate 'made4love.ru', 'mail.made4love.ru' -AcceptTOS -Contact 'admin@made4love.ru'
+
+то делать дальше (NIC.RU):
+Консоль выдаст таблицу. Ищи там колонку Target (это будет длинная абракадабра) и Host (это будет _acme-challenge).
+
+Зайди в панель NIC.RU.
+
+Первая запись:
+Имя (Host): _acme-challenge
+Тип: TXT
+
+Вторая запись:
+Имя (Host): _acme-challenge.mail
+Тип: TXT
+
+Значение: вставь ту самую абракадабру.
+
+Подожди 3-5 минут. Это важно! DNS в РФ обновляется не мгновенно.
+
+Возвращайся в PowerShell и жми Enter. !!!!!!!
+
+# Копируем основной сертификат (fullchain)
+copy "$sourceDir\fullchain.cer" "$dockerSslDir\fullchain.pem" -Force
+
+# Копируем приватный ключ (cert.key)
+copy "$sourceDir\cert.key" "$dockerSslDir\privkey.pem" -Force
+
+
+docker restart mailserver
+
+но нужно еще добавить в конфиг почтового сервера путь к сертификату и ключу:
+$poshPath = "$env:LOCALAPPDATA\Posh-ACME\made4love.ru"
+$targetPath = "d:\LP\docker-mailserver\docker-data\dms\config\ssl"
+
+# Копируем и переименовываем под стандарт почтовика
+copy "$poshPath\fullchain.cer" "$targetPath\cert.pem" -Force
+copy "$poshPath\cert.key" "$targetPath\key.pem" -Force
+
+Write-Host "Готово! Файлы в целевой папке обновлены." -ForegroundColor Green

@@ -9,7 +9,8 @@ $surface-dark: rgba(0, 0, 0, 0.2);
 $accent-pink: #ff6b9d;
 $accent-blue: #4ecdc4;
 $accent-gold: #ffd700;
-
+$pulse-blue: #03a9f4;
+$pulse-red: #e91e63;
 // Animations
 @keyframes pulse {
   0%, 100% {
@@ -98,30 +99,129 @@ $accent-gold: #ffd700;
   animation: slideUp 0.8s ease-out;
 }
 
-.pulse-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+// Hearts Container Styles (from so-pulse)
+.hearts-container {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 70px;
+  }
+}
+
+.heart {
+  position: absolute;
   width: 60px;
   height: 60px;
-  background: rgba(255, 107, 157, 0.3);
-  border-radius: 50%;
-  margin-bottom: 2rem;
-  position: relative;
+  filter: drop-shadow(0 0 20px currentColor);
+  top: 50%;
+  left: 50%;
+  transition: all 0.3s ease;
 
-  .heart {
-    font-size: 2rem;
-    animation: heartBeat 1.5s ease-in-out infinite;
+  &-left {
+    color: $pulse-red;
+    transform: translate(calc(-50% - 20px), -50%);
     z-index: 2;
+    animation: pulse-red 1.5s ease-in-out infinite;
   }
 
-  .pulse-ring {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 2px solid $accent-pink;
-    border-radius: 50%;
-    animation: pulse 2s ease-out infinite;
+  &-right {
+    color: $pulse-blue;
+    transform: translate(calc(-50% + 20px), -50%);
+    z-index: 1;
+    animation: pulse-blue 1.8s ease-in-out infinite;
+    animation-delay: 0.8s;
+  }
+
+  @media (max-width: 768px) {
+    width: 50px;
+    height: 50px;
+
+    &-left {
+      transform: translate(calc(-50% - 15px), -50%);
+    }
+
+    &-right {
+      transform: translate(calc(-50% + 15px), -50%);
+    }
+  }
+}
+
+.ecg-container {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 70px;
+  opacity: 0.8;
+  overflow: visible;
+
+  @media (max-width: 768px) {
+    width: 200px;
+    bottom: -30px;
+  }
+}
+
+.ecg-line {
+  fill: none;
+  stroke: $accent-pink;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: drawECG 2s ease-out forwards;
+}
+
+@keyframes drawECG {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pulse-red {
+  0%, 100% {
+    transform: translate(calc(-50% - 20px), -50%) scale(1);
+  }
+
+  50% {
+    transform: translate(calc(-50% - 20px), -50%) scale(1.15);
+  }
+}
+
+@keyframes pulse-blue {
+  0%, 100% {
+    transform: translate(calc(-50% + 20px), -50%) scale(1);
+  }
+
+  50% {
+    transform: translate(calc(-50% + 20px), -50%) scale(1.15);
+  }
+}
+
+@media (max-width: 768px) {
+  @keyframes pulse-red {
+    0%, 100% {
+      transform: translate(calc(-50% - 15px), -50%) scale(1);
+    }
+
+    50% {
+      transform: translate(calc(-50% - 15px), -50%) scale(1.15);
+    }
+  }
+
+  @keyframes pulse-blue {
+    0%, 100% {
+      transform: translate(calc(-50% + 15px), -50%) scale(1);
+    }
+
+    50% {
+      transform: translate(calc(-50% + 15px), -50%) scale(1.15);
+    }
   }
 }
 

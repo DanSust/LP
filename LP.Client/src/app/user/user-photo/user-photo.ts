@@ -111,7 +111,7 @@ export class UserPhoto {
       console.log('✅ New photo added:', newPhoto);
     } else {
       // Здесь можно вызвать toast-уведомление, если оно доступно в этом компоненте
-      this.toast.info('Лимит достигнут фотография не добавлена');      
+      this.toast.info('Лимит достигнут, фотография не добавлена');
     }
   }
   

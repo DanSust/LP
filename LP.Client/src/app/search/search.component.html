@@ -21,20 +21,27 @@
     <!-- 🌍 ВЫБОР ЛОКАЦИИ -->
     <div class="filter-group location-group">
       <!--<div class="location-header">
-        @if (useGeolocation && currentPosition) {
-        <div class="geo-status">
-          <mat-icon class="success">check_circle</mat-icon>
-          <span>{{ currentPosition.latitude.toFixed(4) }}, {{ currentPosition.longitude.toFixed(4) }}</span>
-        </div>
-        }
-      </div>-->
-
+    @if (useGeolocation && currentPosition) {
+    <div class="geo-status">
+      <mat-icon class="success">check_circle</mat-icon>
+      <span>{{ currentPosition.latitude.toFixed(4) }}, {{ currentPosition.longitude.toFixed(4) }}</span>
+    </div>
+    }
+  </div>-->
       <!-- Ошибка геолокации -->
       @if (locationError) {
       <div class="location-error">
         <mat-icon>error</mat-icon>
         <span>{{ locationError }}</span>
         <button mat-button color="accent" (click)="requestGeolocation()">Повторить</button>
+      </div>
+      }
+
+      <!-- Всплывающий указатель -->
+      @if (showGeoHint) {
+      <div class="geo-hint-bubble" (click)="$event.stopPropagation(); hideGeoHint()">
+        <span class="hint-text">Определить местоположение</span>
+        <div class="hint-arrow"></div>
       </div>
       }
 
@@ -55,7 +62,8 @@
                 (click)="$event.stopPropagation(); onGeolocationClick()"
                 [disabled]="isLocating"
                 class="geo-btn"
-                title="Определить моё местоположение">
+                title="Определить моё местоположение"
+                [class.show-hint]="showGeoHint">
           @if (isLocating) {
           <mat-spinner diameter="18"></mat-spinner>
           } @else {
@@ -73,7 +81,7 @@
       @if (useGeolocation && currentPosition) {
       <div class="radius-filter">
         <label class="filter-label">Радиус: {{radiusKm}} км</label>
-        <mat-slider min="1" max="500" step="5" [discrete]="1" style="min-width: 100%" >
+        <mat-slider min="1" max="500" step="5" [discrete]="1" style="min-width: 100%">
           <input matSliderThumb [(ngModel)]="radiusKm" (dragEnd)="onFilterChange()">
         </mat-slider>
       </div>
