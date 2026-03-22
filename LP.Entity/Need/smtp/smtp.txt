@@ -3,4 +3,7 @@
 admin@made4love.local
 http://localhost:8080/?_task=mail&_mbox=INBOX#
 
-hosts не менял
+https://www.checktls.com/TestReceiver
+
+Test-NetConnection -ComputerName gmail-smtp-in.l.google.com -Port 25
+Test-NetConnection -ComputerName mxs.mail.ru -Port 25

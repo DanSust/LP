@@ -78,15 +78,24 @@ public class ImageProcessingService : IImageProcessingService
         // ... (как было в предыдущих примерах)
 
         // В конце сохраняем
-        using var image = SKImage.FromBitmap(bitmap);
-        using var data = EncodeImage(image, options.OutputFormat, options.Quality);
-        return data.ToArray();
+        //using var image = SKImage.FromBitmap(bitmap);
+        //using var data = EncodeImage(image, options.OutputFormat, options.Quality);
+        //return data.ToArray();
+        var result = options.CropMode switch
+        {
+            CropMode.Center => CropToSquare(bitmap, size, options),
+            CropMode.Pad => PadToSquare(bitmap, size, options),
+            CropMode.Stretch => StretchToSquare(bitmap, size, options),
+            _ => CropToSquare(bitmap, size, options)
+        };
+
+        return result;
     }
 
     /// <inheritdoc />
     public async Task<byte[]> CreateSquareIconAsync(
         byte[] imageData,
-        int size = 42,
+        int size = 128,
         ImageProcessingOptions options = null)
     {
         //options ??= new ImageProcessingOptions();
@@ -157,7 +166,7 @@ public class ImageProcessingService : IImageProcessingService
     /// <inheritdoc />
     public async Task<byte[]> CreateSquareIconFromFileAsync(
         IFormFile file,
-        int size = 42,
+        int size = 128,
         ImageProcessingOptions options = null)
     {
         if (file == null || file.Length == 0)
@@ -173,7 +182,7 @@ public class ImageProcessingService : IImageProcessingService
     public async Task<string> CreateSquareIconAndSaveAsync(
         byte[] imageData,
         string outputPath,
-        int size = 42,
+        int size = 128,
         ImageProcessingOptions options = null)
     {
         var result = await CreateSquareIconAsync(imageData, size, options);
@@ -390,7 +399,7 @@ public class ImageProcessingService : IImageProcessingService
 public class ServiceConfiguration
 {
     public int MaxImageSize { get; set; } = 10 * 1024 * 1024; // 10MB
-    public int DefaultIconSize { get; set; } = 42;
+    public int DefaultIconSize { get; set; } = 128;
     public int DefaultQuality { get; set; } = 90;
     public string TempDirectory { get; set; } = "temp";
     public bool EnableCaching { get; set; } = false;

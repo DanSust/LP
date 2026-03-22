@@ -106,7 +106,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     this.routeSub = this.route.paramMap.subscribe(params => {
       const newUserId = params.get('id') ?? undefined;
       //console.log('Route params changed:', newUserId);      
-      //console.log('history:', this.navService.getPreviousUrl());
+      console.log('history:', this.navService.getPreviousUrl());
 
       this.resetState();
 
@@ -118,7 +118,10 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
       if (this.userId) {
         this.profileService.loadProfile(this.userId);
-        this.cameFromSearch.set(this.navService.cameFrom('/search') || this.navService.cameFrom('/match') || this.navService.cameFrom('/scroll'));
+        this.cameFromSearch.set(this.navService.cameFrom('/search')
+          || this.navService.cameFrom('/match')
+          || this.navService.cameFrom('/scroll')
+          || this.navService.cameFrom('/chat'));
       } else {
         this.profileService.loadProfiles();
       }

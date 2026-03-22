@@ -232,7 +232,7 @@ namespace LP.Server.Controllers
             {
                 using var ms = new MemoryStream();
                 await file.CopyToAsync(ms);
-                var icon = await _imageService.CreateSquareIconAndSaveAsync(ms.ToArray(), Path.Combine(userPath, "avatar.jpg"));
+                var icon = await _imageService.CreateSquareIconAndSaveAsync(ms.ToArray(), Path.Combine(userPath, "avatar.jpg"), 128);
 
                 var photoMain = new PhotoMain() { PhotoId = _id, User = _user };
                 _context.PhotoMain.Add(photoMain);
