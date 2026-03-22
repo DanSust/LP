@@ -194,33 +194,6 @@ namespace LP.Server.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("confirm")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] string token, [FromQuery] string email)
-        {
-            var user = await _context.Users
-                .Include(u => u.EmailConfirmation)
-                .FirstOrDefaultAsync(u => u.Email == email);
-
-            if (user?.EmailConfirmation == null)
-                return BadRequest(new { message = "Пользователь не найден" });
-
-            if (user.EmailConfirmation.ConfirmationToken != token)
-                return BadRequest(new { message = "Неверный токен" });
-
-            if (user.EmailConfirmation.TokenExpires < DateTime.UtcNow)
-                return BadRequest(new { message = "Срок действия токена истек" });
-
-            // Подтверждаем
-            user.EmailConfirmation.IsConfirmed = true;
-            user.EmailConfirmation.ConfirmationToken = null;
-            user.EmailConfirmation.TokenExpires = null;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Email успешно подтвержден" });
-        }
-
-        [AllowAnonymous]
         [HttpGet("logout")]
 		//[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Logout()

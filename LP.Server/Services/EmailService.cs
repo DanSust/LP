@@ -20,6 +20,15 @@ namespace LP.Server.Services
 
         public async Task SendConfirmationEmailAsync(string toEmail, string confirmationLink)
         {
+            Console.WriteLine("--- Email Sending Attempt ---");
+            Console.WriteLine($"To: {toEmail}");
+            Console.WriteLine($"Host: {_config.Host}");
+            Console.WriteLine($"Port: {_config.Port}");
+            Console.WriteLine($"Username: {_config.Username}");
+            Console.WriteLine($"EnableSsl: {_config.EnableSsl}");
+            Console.WriteLine($"From: {_config.FromEmail}");
+            Console.WriteLine("-----------------------------");
+
             using var client = new SmtpClient(_config.Host, _config.Port);
             client.Credentials = new NetworkCredential(_config.Username, _config.Password);
             client.EnableSsl = _config.EnableSsl;
@@ -41,7 +50,15 @@ namespace LP.Server.Services
             };
 
             message.To.Add(toEmail);
-            await client.SendMailAsync(message);
+            try
+            {
+                await client.SendMailAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SMTP Error: {ex.Message}");
+                throw;
+            }
         }
     }
 

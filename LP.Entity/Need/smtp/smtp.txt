@@ -7,3 +7,6 @@ https://www.checktls.com/TestReceiver
 
 Test-NetConnection -ComputerName gmail-smtp-in.l.google.com -Port 25
 Test-NetConnection -ComputerName mxs.mail.ru -Port 25
+
+docker exec -it mailserver setup email add user@made4love.ru password
+docker exec -it mailserver setup email list

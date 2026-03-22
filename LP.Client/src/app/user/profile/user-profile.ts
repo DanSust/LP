@@ -256,7 +256,20 @@ export class UserProfile implements OnInit {
       return;
     }
 
-    this.toast.show('На вашу почту отправлено письмо');
+    const params = {
+      email: this.form.value.Email,
+      link: this.base+'/Email/confirm'
+    };
+
+    this.http.post(this.base + '/Email/auth/', null, { params: params, withCredentials: true })
+      .subscribe({
+        next: (response) => {
+          this.toast.show('На вашу почту отправлено письмо');
+        },
+        error: (error) => {
+          console.error('POST request failed:', error);
+        }
+      });    
   }
 
   onCitySelected(event: MatAutocompleteSelectedEvent): void {
