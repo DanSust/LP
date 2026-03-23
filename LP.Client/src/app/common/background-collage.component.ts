@@ -19,7 +19,11 @@ export class BackCollageComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    if (!this.shouldLoadImages()) return;
+    // 1. Сначала проверяем, нужно ли ВООБЩЕ что-то делать
+    if (!this.shouldLoadImages()) {
+      this.photoUrls = []; // Гарантируем пустоту
+      return;
+    }
     // Генерируем массив URL и перемешиваем
     const urls = Array.from({ length: 12 }, (_, i) =>
       `${this.baseUrl}/Photos/back/${i + 1}.jpg`

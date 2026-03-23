@@ -43,8 +43,8 @@ export class ChatService {
   public chats = signal<Chat[]>([]);
   public activeChatId = signal<string>('');
   public activeUserId = signal<string>('');
-  public unreadMessageCount = computed(() =>
-    this.chats().reduce((sum, chat) => sum + (chat.unreadMessagesCount || 0), 0)
+  public unreadMessageCount = computed(() => 
+    this.chats().reduce((sum, chat) => sum + (chat.unreadMessagesCount || 0), 0)  
   );
 
   private messageIds = new Set<string>();
@@ -69,6 +69,11 @@ export class ChatService {
 
     this.connectionManager.on('ReceiveMessage', (message: ChatMessage) => {
       //console.log('📥 Received message:', message);
+      if (this.messageIds.has(message.id)) {
+        //console.log('Дубликат сообщения по SignalR → игнорируем', message.id);
+        return;
+      }
+
       this.addMessage({
         ...message,
         time: new Date(message.time),
@@ -80,8 +85,14 @@ export class ChatService {
       // Увеличиваем счетчик только если чат не активен
       //console.log(message.chatId, this.activeChatId());
       //if (message.chatId !== this.activeChatId()) {
-      if (!message.own && message.userId !== this.userId) {
-        this.incrementUnreadCount(message.chatId, message.id);
+        //if (!message.own && message.userId !== this.userId) {
+        //  this.incrementUnreadCount(message.chatId, message.id);
+        //}
+      //}
+
+      // После каждого нового сообщения — пересчитываем точно
+      if (message.chatId === this.activeChatId()) {
+        this.synchronizeUnreadCount(message.chatId);      
       }
     });
 
@@ -118,7 +129,7 @@ export class ChatService {
     this.userId = this.connectionManager.userId ?? "";
 
     // Уже подключены ко всем чатам, дополнительно подключаемся к этому
-    await this.joinChat(chatId);
+    await this.joinChat(chatId);    
     //this.loadMessages(chatId);
   }
 
@@ -146,7 +157,9 @@ export class ChatService {
     }
   }
 
+  private isLoaded = false;
   loadChats(): void {
+    if (this.isLoaded) return;
     this.http.get<Chat[]>(`${this.base}/Chats/list`, { withCredentials: true })
       .pipe(catchError(err => {
         console.error('❌ Error loading chats:', err);
@@ -156,6 +169,7 @@ export class ChatService {
         next: async (chats) => {
           //console.log('Loaded chats:', chats);
           this.chats.set(chats);
+          this.isLoaded = true;
 
           // ПОДКЛЮЧАЕМСЬ КО ВСЕМ ЧАТАМ
           await this.connectToAllChats();
@@ -322,8 +336,6 @@ export class ChatService {
       return;
     }
 
-    //console.log('incrementUnreadCount ' + chatId);
-
     this.chats.update(chats =>
       chats.map(chat =>
         chat.id === chatId 
@@ -337,6 +349,8 @@ export class ChatService {
     const actualUnreadCount = this.messages().filter(msg =>
       msg.chatId === chatId && !msg.own && msg.status !== 'read'
     ).length;
+
+    console.log('actualUnreadCount ' + actualUnreadCount);
 
     this.chats.update(chats =>
       chats.map(chat =>

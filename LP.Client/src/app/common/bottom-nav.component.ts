@@ -35,14 +35,19 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   activeRoute = '/';
   totalUnreadCount = computed(() => this.chatService.unreadMessageCount());
 
-  navItems = computed<NavItem[]>(() => [
-    { label: 'Знакомства', icon: 'people', route: '/match' },
-    { label: 'Поиск', icon: 'search', route: '/search' },
-    { label: 'Симпатии', icon: 'favorite', route: '/vote'  },    
-    { label: 'Чат', icon: 'chat', route: '/chat', badge: this.totalUnreadCount() },
-    /*{ label: 'Профиль', icon: 'person', route: '/profile' },*/
-    { label: 'Ещё', icon: 'more_vert', route: '' }
-  ]);
+  navItems = computed<NavItem[]>(() => {
+    // Вызываем счетчик внутри computed, чтобы создать зависимость
+    const unreadCount = this.totalUnreadCount();
+
+    return [
+      { label: 'Главная', icon: 'home', route: '/match' },
+      { label: 'Поиск', icon: 'search', route: '/search' },
+      { label: 'Симпатии', icon: 'favorite', route: '/vote' },
+      // Присваиваем актуальное значение здесь
+      { label: 'Чат', icon: 'chat', route: '/chat', badge: unreadCount },
+      { label: 'Ещё', icon: 'more_vert', route: '' }
+    ];
+  });
 
   constructor(private router: Router, private authService: AuthService) { }
 
@@ -57,6 +62,8 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
     // Устанавливаем начальное состояние
     this.activeRoute = this.router.url;
+
+    console.log('totalUnreadCount - ', this.totalUnreadCount());
   }
 
   ngOnDestroy(): void {

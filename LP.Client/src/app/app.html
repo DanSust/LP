@@ -4,10 +4,10 @@
                  subtitle="Мы готовим что-то особенное для ваших сердец">
 </app-coming-soon>
 } @else {
-<app-back-collage></app-back-collage>
-
-<div class="overlay"></div>
-
+  @if (!isMobile) {
+    <app-back-collage></app-back-collage>
+    <div class="overlay"></div>
+  }
 @if (userId) {
 <!-- КОНТЕЙНЕР С ПАНЕЛЬЮ ИКОНОК -->
 <div class="app-wrapper">

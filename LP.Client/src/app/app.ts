@@ -42,6 +42,7 @@ export class App implements OnInit, OnDestroy {
   caption = 'made4love';
   userId: string | null = null;
   isLoading = false;
+  isMobile = false;
 
   // === НАСТРОЙКИ РЕЖИМА РАЗРАБОТКИ ===
   isDevelopmentMode = false; //localStorage.getItem('is_admin') !== 'true'
@@ -65,7 +66,7 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('ngOnInit() App')
+    this.isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     this.channel.addEventListener('message', (event) => {
       if (event.data.type === 'oauth-done') {

@@ -1,5 +1,5 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
@@ -41,7 +41,9 @@ export class FotoScrollComponent {
     private navService: NavigationService,
     private router: Router,
     private route: ActivatedRoute,
-    @Inject(API_BASE_URL) private base: string)
+    @Inject(API_BASE_URL) private base: string,
+    @Inject(PLATFORM_ID) private platformId: Object)
+
   {
     this.baseURL = base;
   }
@@ -57,7 +59,11 @@ export class FotoScrollComponent {
     //    this.isItMien = currentUserId === this.userId;
     //  });
 
-    console.log('FotoScrollComponent - ', this.baseURL + '/Photos/scroll');
+    //console.log('FotoScrollComponent - ', this.baseURL + '/Photos/scroll');
+    if (!this.shouldLoadImages()) {
+      this.images = []; // Гарантируем пустоту
+      return;
+    }
 
     this.http.get<string[]>(this.baseURL + '/Photos/scroll', { withCredentials: true })
       .subscribe({
@@ -70,6 +76,16 @@ export class FotoScrollComponent {
           
         }
     });
+  }
+
+  private shouldLoadImages(): boolean {
+    // Проверяем, что мы в браузере
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+
+    // Проверяем ширину экрана
+    return window.innerWidth > 768;
   }
 
   onImageClick(item: string) {
