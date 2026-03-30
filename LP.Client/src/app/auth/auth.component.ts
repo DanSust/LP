@@ -280,9 +280,9 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
     const params = new URLSearchParams({
       auth_url: this.authTelUrl,
       bot_id: '8220602308',
+      embed: '1',
       origin: window.location.origin,
       request_access: 'write',      
-      embed: '1',
       state: state
     });
 
@@ -291,17 +291,7 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
     // Открываем в отдельном окне (как у Google)
     const tgURL = `https://oauth.telegram.org/auth?${params.toString()}`;
     console.log(tgURL);
-    const popup = window.open(tgURL,
-      'TelegramAuth',
-      'width=600,height=700,scrollbars=yes'
-    );
-
-    if (!popup) {
-      console.error("Popup заблокирован браузером!");
-      alert("Разрешите всплывающие окна для этого сайта");
-    } else {
-      console.log("Popup открыт, url:", tgURL);
-    }
+    
 
     // Подписываемся на событие ответа от окна
     const handleMessage = (event: MessageEvent) => {
@@ -325,6 +315,18 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
     };
 
     window.addEventListener('message', handleMessage);
+
+    const popup = window.open(tgURL,
+      'TelegramAuth',
+      'width=600,height=700,scrollbars=yes'
+    );
+
+    if (!popup) {
+      console.error("Popup заблокирован браузером!");
+      alert("Разрешите всплывающие окна для этого сайта");
+    } else {
+      console.log("Popup открыт, url:", tgURL);
+    }
 
     // Проверяем закрытие popup
     //const checkClosed = setInterval(() => {

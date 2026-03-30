@@ -17,13 +17,16 @@ export class TelegrmaComponent implements AfterViewInit {
 
     if (canAccessTelegram) {
       try {
-        // Показываем блок и загружаем скрипт
-        this.isVisible = true;
+        // Сначала пытаемся загрузить скрипт, и только если успешно — показываем
         await this.tgAuth.loadScript(this.container.nativeElement);
+        this.isVisible = true; // Показываем только если скрипт РЕАЛЬНО загрузился
       } catch (e) {
         this.isVisible = false;
-        console.warn('Telegram script failed after ping success');
+        console.error('Telegram script failed to render');
       }
+    } else {
+      this.isVisible = false;
+      console.warn('Telegram blocked by network provider');
     }
   }
 }

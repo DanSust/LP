@@ -73,7 +73,7 @@ $color-blue: #03a9f4;
   }
   // Мобильная адаптация
   @media (max-width: 480px) {
-    font-size: 12px;
+    font-size: smaller;
     padding: 14px 8px;
   }
 }

@@ -17,27 +17,24 @@ export class TelegramAuthService {
 
   checkConnection(): Promise<boolean> {
     return new Promise((resolve) => {
-      const img = new Image();
+      // Используем AbortController для жесткого таймаута
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2500);
 
-      // Устанавливаем таймаут 2.5 секунды. Если за это время не загрузится - считаем недоступным
-      const timeout = setTimeout(() => {
-        img.src = ""; // Прерываем загрузку
-        resolve(false);
-      }, 3000);
-
-      img.onload = () => {
-        clearTimeout(timeout);
-        resolve(true);
-      };
-
-      img.onerror = () => {
-        clearTimeout(timeout);
-        console.warn('img.onerror');
-        resolve(false);
-      };
-
-      // Пытаемся загрузить фавиконку (она маленькая и обычно не кэшируется агрессивно)
-      img.src = `https://telegram.org/favicon.ico?${Date.now()}`;
+      // Делаем простой запрос заголовков (HEAD) или GET в режиме no-cors
+      fetch('https://telegram.org/favicon.ico', {
+        mode: 'no-cors', // Чтобы не спотыкаться о CORS при проверке
+        signal: controller.signal
+      })
+        .then(() => {
+          clearTimeout(timeout);
+          resolve(true);
+        })
+        .catch(() => {
+          clearTimeout(timeout);
+          console.warn('Telegram unreachable via fetch');
+          resolve(false);
+        });
     });
   }
 

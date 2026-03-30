@@ -46,6 +46,8 @@
   font-size: 14px;
   min-width: 215px;
   font-family: sans-serif;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
 }
 
   .photo-box img {
