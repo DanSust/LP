@@ -30,15 +30,16 @@ import { ConfirmComponent } from './auth/auth.confirm.component';
 import { ComingSoonComponent } from './promo/coming-soon.component';
 import { environment } from '../environments/environment';
 import { FotoScrollComponent } from './foto/foto-scroll-component';
+import { SoPulseComponent } from './promo/so-pulse.component';
 
 const appRoutes: Routes = [
-  { path: "about", component: AboutComponent, canActivate: [AuthGuard] },  
+  { path: "about", component: AboutComponent, /*canActivate: [AuthGuard] */},  
   { path: "location", component: UserLocationComponent },
   { path: "soon", component: ComingSoonComponent },
   { path: "profile", component: UserProfile, canActivate: [AuthGuard] },
-  { path: "scroll", component: FotoScrollComponent, canActivate: [AuthGuard] }, 
-  { path: "vote", component: VoteComponent, canActivate: [AuthGuard] },
-  { path: "vote/:id", component: VoteComponent, canActivate: [AuthGuard] },
+  { path: "scroll", component: FotoScrollComponent, /*canActivate: [AuthGuard] */}, 
+  { path: "vote", component: VoteComponent, /*canActivate: [AuthGuard]*/ },
+  { path: "vote/:id", component: VoteComponent, /*canActivate: [AuthGuard] */},
   //{ path: "chat/:id", component: ChatView, canActivate: [AuthGuard] },
   { path: 'chat',
     component: ChatLayoutComponent,
@@ -50,8 +51,8 @@ const appRoutes: Routes = [
   },
   { path: "authcallback", component: AuthCallbackComponent },  
   { path: "match", component: MatchComponent, canActivate: [AuthGuard] },
-  { path: "search", component: SearchComponent, canActivate: [AuthGuard] },
-  { path: "events", component: EventsViewComponent, canActivate: [AuthGuard] },
+  { path: "search", component: SearchComponent, /*canActivate: [AuthGuard]*/ },
+  { path: "events", component: EventsViewComponent, /*canActivate: [AuthGuard] */},
   { path: "auth", component: AuthComponent },
   { path: "confirm", component: ConfirmComponent },
   /*{ path: "home", component: SoPulseComponent },*/
@@ -62,17 +63,18 @@ const appRoutes: Routes = [
     }],
     component: AboutComponent // Любой компонент, guard перенаправит
   },
-  { path: '',
-    loadComponent: () => import('./promo/so-pulse.component')
-      .then(m => m.SoPulseComponent),
-    canMatch: [() => !inject(AuthService).isAuthenticated()]
-  },
-  {
-    path: '',
-    loadComponent: () => import('./common/about.component')
-      .then(m => m.AboutComponent),
-    canMatch: [() => inject(AuthService).isAuthenticated()]
-  },
+  { path: "", component: AboutComponent },
+  //{ path: "",
+  //  loadComponent: () => import('./promo/so-pulse.component')
+  //    .then(m => m.SoPulseComponent),
+  //  canMatch: [() => !inject(AuthService).isAuthenticated()]
+  //},
+  //{
+  //  path: '',
+  //  loadComponent: () => import('./common/about.component')
+  //    .then(m => m.AboutComponent),
+  //  canMatch: [() => !inject(AuthService).isAuthenticated()]
+  //},
   /*{ path: "**", component: NotFoundComponent },*/
   
   //{ path: "foto", component: FotoScrollComponent }

@@ -28,7 +28,7 @@
   @if (profiles()[0]; as profile) {
   <!-- Кнопки -->
 
-  <div class="card-actions" [class.hidden]="isFullscreen()">
+  <div class="card-actions" [class.hidden]="isFullscreen()" [class.unregistered]="!userId">
     <button class="action-btn dislike-btn"
             (click)="onDislikeClick(); $event.stopPropagation()"
             [disabled]="isAnimating()">

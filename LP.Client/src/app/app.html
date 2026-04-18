@@ -1,13 +1,8 @@
-@if (isDevelopmentMode) {
-<app-coming-soon [targetDate]="launchDate"
-                 title="Сайт в разработке"
-                 subtitle="Мы готовим что-то особенное для ваших сердец">
-</app-coming-soon>
-} @else {
-  @if (!isMobile) {
-    <app-back-collage></app-back-collage>
-    <div class="overlay"></div>
-  }
+@if (!isMobile) {
+<app-back-collage></app-back-collage>
+<div class="overlay"></div>
+}
+
 @if (userId) {
 <!-- КОНТЕЙНЕР С ПАНЕЛЬЮ ИКОНОК -->
 <div class="app-wrapper">
@@ -39,9 +34,11 @@
     </a>
   </div>
 </div>
-
+}
+@if (!isHomeRoute) {
 <foto-scroll-component></foto-scroll-component>
+@if (userId) {
 <app-bottom-nav></app-bottom-nav>
 }
-<router-outlet></router-outlet>
 }
+<router-outlet></router-outlet>

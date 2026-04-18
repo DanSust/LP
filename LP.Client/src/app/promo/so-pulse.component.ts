@@ -61,14 +61,15 @@ export class SoPulseComponent implements OnInit, OnDestroy, AfterViewInit {
   onPrimaryClick(): void {
     // Здесь можно добавить логику для основной кнопки
     console.log('Запуск сердцебиения');
-    this.router.navigate(['/auth']);
+    this.router.navigate(['/vote']);
     // Например, редирект на регистрацию или открытие модального окна
   }
 
   onSecondaryClick(): void {
+    this.router.navigate(['/auth']);
     // Здесь можно добавить логику для вторичной кнопки
-    console.log('Просмотр демо');
-    this.showDemo = true;
+    //console.log('Просмотр демо');
+    //this.showDemo = true;
   }
 
   onDemoComplete(): void {

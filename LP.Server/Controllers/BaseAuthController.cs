@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace LP.Server.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("[controller]")]
     [ApiController]
     public class BaseAuthController : ControllerBase

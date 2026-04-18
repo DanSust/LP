@@ -258,12 +258,73 @@ namespace LP.Server.Controllers
             //});
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("list")]
         public async Task<IActionResult> GetVoteList(int count = 5)
         {
             var userId = UserId;
             var user = await _context.Users.FindAsync(userId);
+
+            // ---- РЕЖИМ БЕЗ АВТОРИЗАЦИИ ----
+            if (user == null)
+            {
+                // Базовый запрос: все пользователи, кроме admin
+                var queryN = _context.Users
+                    .AsNoTracking()
+                    .Where(x => x.Username != "admin");
+
+                // Берём случайные count записей
+                var randomIdsN = await queryN
+                    .OrderBy(u => Guid.NewGuid())
+                    .Take(count)
+                    .Select(x => x.Id)
+                    .ToListAsync();
+
+                if (!randomIdsN.Any())
+                    return Ok(new List<object>());
+
+                // Загружаем данные (город, фото, интересы) – аналогично основной ветке
+                var userDataN = await _context.Users
+                    .Where(u => randomIdsN.Contains(u.Id))
+                    .Select(u => new
+                    {
+                        u.Id,
+                        u.Caption,
+                        u.Birthday,
+                        CityName = _context.Profiles
+                            .Where(p => p.UserId == u.Id)
+                            .Select(p => _context.Cities.Where(c => c.Id == p.CityId).Select(c => c.Name).FirstOrDefault())
+                            .FirstOrDefault()
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var userIdListN = userDataN.Select(u => u.Id).ToList();
+
+                var photosN = await _context.Photos
+                    .Where(p => userIdListN.Contains(p.User.Id))
+                    .Select(p => new { p.Id, p.Path, UserId = p.User.Id })
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var interestsN = await _context.UserInterests
+                    .Where(ui => userIdListN.Contains(ui.User.Id))
+                    .Select(ui => new { UserId = ui.User.Id, ui.Interest.Id, ui.Interest.Name, ui.Interest.Path })
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var resultN = userDataN.Select(u => new
+                {
+                    Id = u.Id,
+                    Name = u.Caption,
+                    City = u.CityName,
+                    Birthday = u.Birthday,
+                    Photos = photosN.Where(p => p.UserId == u.Id).Select(p => new { p.Id, p.Path }).ToList(),
+                    Interests = interestsN.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name, i.Path }).ToList()
+                }).ToList();
+
+                return Ok(resultN);
+            }
 
             var currentUserProfile = await _context.Profiles
                 .AsNoTracking()

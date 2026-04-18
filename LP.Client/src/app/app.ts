@@ -54,6 +54,12 @@ export class App implements OnInit, OnDestroy {
 
   userStatusService = inject(UserStatusService);
   chatService = inject(ChatService);
+
+  private router = inject(Router);
+  get isHomeRoute(): boolean {
+    return this.router.url === '/' || this.router.url === '/auth';
+  }
+
   constructor(
     private authService: AuthService,
     private navService: NavigationService,

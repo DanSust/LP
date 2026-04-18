@@ -521,6 +521,9 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   onChatClick(id: string): void {
     //console.log("[onChatClick] Запускаем для profile id:", id);
+    console.log("[onChatClick] userid:", this.userId);
+    if (this.userId === undefined)
+      this.router.navigateByUrl(`/auth`);
 
     this.http.post<any>(`${this.base}/chats/get-or-create/${id}`, null, { withCredentials: true })
       .subscribe({

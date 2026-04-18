@@ -100,6 +100,44 @@ $color-text-secondary: #e0e0e0;
   }
 }
 
+.heart-inner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  top: 50%;
+  left: 80%;
+  transition: all 0.3s ease;
+
+&-left {
+   color: $color-accent;
+   transform: translate(calc(-50% - 20px), -50%);
+   z-index: 2;
+ }
+
+&-right {
+   color: $color-blue;
+   transform: translate(calc(-50% + 20px), -50%);
+   z-index: 1;
+ }
+// Пульсация до синхронизации
+&.heart-left {
+     animation: pulse-red 1.5s ease-in-out infinite;
+   }
+
+&.heart-right {
+   animation: pulse-blue 1.8s ease-in-out infinite;
+   animation-delay: 0.8s;
+ }
+// Синхронизированная пульсация
+&.sync {
+     animation: pulse-sync-red 1.2s ease-in-out infinite;
+
+&.heart-right {
+   animation: pulse-sync-blue 1.2s ease-in-out infinite;
+ }
+}
+}
+
 @keyframes pulse-red {
   0%, 100% {
     transform: translate(calc(-50% - 20px), -50%) scale(1);
