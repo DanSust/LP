@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.DotNet.Scaffolding.Shared;
@@ -236,29 +237,50 @@ class Program
         }
         app.UseHttpsRedirection();
 
-        //app.Use(async (ctx, next) =>
-        //{
-        //    if (ctx.Request.Path == "/api/auth/logout")
-        //    {
-        //        Console.WriteLine("!!! LOGOUT PATH HIT BEFORE AUTH !!!");
-        //        Console.WriteLine($"Method: {ctx.Request.Method}");
-        //        Console.WriteLine($"Has auth cookie: {ctx.Request.Cookies.ContainsKey("auth")}");
-        //        Console.WriteLine($"Has UserId cookie: {ctx.Request.Cookies.ContainsKey("UserId")}");
+        app.Use(async (context, next) =>
+        {
+            // Логируем ВСЕ запросы для отладки OAuth
+            if (context.Request.Path.StartsWithSegments("/api/oauth/google"))
+            {
+                Console.WriteLine("");
+                Console.WriteLine("==========================================");
+                Console.WriteLine($"📡 REQUEST: {context.Request.Method} {context.Request.Path}");
+                Console.WriteLine($"🌐 Full URL: {context.Request.GetEncodedUrl()}");
+                Console.WriteLine($"🔗 Scheme: {context.Request.Scheme}");
+                Console.WriteLine($"🏠 Host: {context.Request.Host}");
+                Console.WriteLine($"📍 Path: {context.Request.Path}");
+                Console.WriteLine($"❓ Query String: {context.Request.QueryString}");
 
-        //        // ВРЕМЕННО - пропускаем без авторизации
-        //        var authService = ctx.RequestServices.GetRequiredService<IAuthService>();
-        //        var userStore = ctx.RequestServices.GetRequiredService<IUserStore>();
+                // Выводим все query параметры
+                if (context.Request.Query.Any())
+                {
+                    Console.WriteLine("📋 Query Parameters:");
+                    foreach (var query in context.Request.Query)
+                    {
+                        Console.WriteLine($"   - {query.Key} = {query.Value}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("📋 Query Parameters: (none)");
+                }
 
-        //        await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                // Выводим все cookies
+                if (context.Request.Cookies.Any())
+                {
+                    Console.WriteLine("🍪 Cookies:");
+                    foreach (var cookie in context.Request.Cookies)
+                    {
+                        Console.WriteLine($"   - {cookie.Key} = {cookie.Value}");
+                    }
+                }
 
-        //        ctx.Response.Cookies.Delete("auth");
-        //        ctx.Response.Cookies.Delete("UserId");
+                Console.WriteLine("==========================================");
+                Console.WriteLine("");
+            }
 
-        //        await ctx.Response.WriteAsJsonAsync(new { success = true });
-        //        return;
-        //    }
-        //    await next();
-        //});
+            await next();
+        });
 
         //app.UseCors(b => b.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
         app.UseRouting();
@@ -280,6 +302,8 @@ class Program
         //    var count = await cityLoader.LoadFromTextFileAsync(@"d:\\Work\\LP\\LP.Entity\\Need\\goroda.txt");
         //    Console.WriteLine($"Loaded {count} cities");
         //}
+
+        Console.WriteLine("Server");
 
         await app.RunAsync();
     }

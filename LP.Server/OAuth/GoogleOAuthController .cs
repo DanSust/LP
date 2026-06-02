@@ -86,11 +86,17 @@ public class GoogleOAuthController : BaseOAuthController
     }
 
     [HttpGet("callback")]
-    public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string state)
-    {
-        //Console.WriteLine($"=== GOOGLE CALLBACK IN CONTROLLER ===");
-        //Console.WriteLine($"Code: {code}");
-        //Console.WriteLine($"State: {state}");
+    public async Task<IActionResult> Callback(
+        [FromQuery] string code,
+        [FromQuery] string state,
+        [FromQuery] string? iss = null,
+        [FromQuery] string? scope = null,
+        [FromQuery] string? authuser = null,
+        [FromQuery] string? prompt = null)
+        {
+        Console.WriteLine($"=== GOOGLE CALLBACK IN CONTROLLER ===");
+        Console.WriteLine($"Code: {code}");
+        Console.WriteLine($"State: {state}");
 
         // 1. Проверяем state
         if (!Request.Cookies.TryGetValue("GoogleState", out var savedState) || savedState != state)

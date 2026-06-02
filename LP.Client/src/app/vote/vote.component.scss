@@ -302,39 +302,6 @@
     transform: scale(1);
   }
 }
-// Мобильная версия
-@media (max-width: 768px) {
-  .photo-wrapper {
-    flex: 0 0 auto;
-    width: 100%;
-    height: 60vh;
-    max-height: 500px;
-    min-height: 0;
-
-    &:active .card-photo,
-    &:focus-within .card-photo {
-      //padding: 80px 10px 100px; // Больше отступов для мобильных
-    }
-
-    // На мобильных стрелки всегда видны в fullscreen
-    &:active,
-    &:focus-within {
-      .photo-arrow {
-        width: 50px;
-        height: 50px;
-        font-size: 28px;
-
-        &.arrow-left {
-          left: 10px;
-        }
-
-        &.arrow-right {
-          right: 10px;
-        }
-      }
-    }
-  }
-}
 
 .card-photo {
   width: 100%;
@@ -598,27 +565,53 @@
 // МОБИЛЬНАЯ ВЕРСИЯ
 @media (max-width: 768px) {
   .card-stack {
-    height: calc(100vh - 70px);
+    height: 100dvh;
+    overflow: hidden; // скролл управляется внутри активной карточки
+  }
+
+  // Подложку и анимацию вылета скрываем — иначе мешают нативному скроллу
+  .next-card,
+  .exit-card {
+    display: flex !important;
+  }
+
+  .active-card {
+    position: relative; // вместо absolute, чтобы работал overflow
+    width: 100%;
+    height: 100dvh;
+    overflow-y: auto; // ← нативный вертикальный скролл
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain; // не «цепляет» body
+    touch-action: pan-y; // вертикаль — браузеру, горизонталь — вашему JS-свайпу
+    z-index: 10;
+
+    &.dragging {
+      cursor: default;
+    }
   }
 
   .card-content {
     flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
+    height: auto; // растягивается по контенту
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   .photo-wrapper {
-    flex: 0 0 auto;
+    flex: none; // отключаем flex-растягивание
     width: 100%;
-    height: 60vh;
-    max-height: 500px;
-    min-height: 0;
+    height: 100dvh; // ← фото на всю высоту экрана
+    position: relative;
+    left: 0;
+    touch-action: pan-y;
 
     .card-photo {
+      width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    // Добавляем стили для back-btn в мобильной версии
+
     .back-btn {
       position: fixed !important;
       bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
@@ -647,49 +640,124 @@
     }
   }
 
-    .details-wrapper {
-      flex: 1 1 auto;
-      width: 100%;
-      max-height: calc(40vh);
-      min-height: 0;
-      padding: 20px 15px 100px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-    }
-    // <-- Для мобильных: центрируем и прижимаем к низу viewport
-    .card-actions {
-      position: fixed; // <-- Фиксируем относительно viewport
-      left: 50%;
-      bottom: calc(90px + env(safe-area-inset-bottom, 0px));
-      transform: translateX(-50%);
-      gap: 25px;
+  .details-wrapper {
+    position: relative; // убираем absolute-поверх-фото
+    bottom: auto;
+    left: auto;
+    right: auto;
+    flex: none;
+    background: linear-gradient(to bottom, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
+    color: var(--text-primary);
+    padding: 30px 20px calc(130px + env(safe-area-inset-bottom, 0px));
+    border-radius: 20px 20px 0 0;
+    margin-top: -20px; // плавно заезжает на нижний край фото
+    z-index: 5;
+    max-height: none;
+    overflow-y: visible; // скролл идёт через родителя .active-card
+    backdrop-filter: none;
 
-      .action-btn {
-        width: 60px;
-        height: 60px;
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .profile-details {
+      h3 {
+        color: white;
+        margin: 0 0 15px;
         font-size: 24px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
       }
     }
 
-  // Для незарегистрированных пользователей убираем дополнительный отступ
-  .card-actions.unregistered {
-    bottom: 10px; // или другое значение, подходящее под ваш дизайн
-  }
-
-    .photo-indicators {
-      top: 15px;
-    }
-
-    .profile-details h3 {
-      font-size: 24px;
-    }
-
     .detail-item {
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 10px;
       font-size: 14px;
-      margin-bottom: 12px;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    }
+
+    .interest-tag {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(4px);
     }
   }
+
+  .rating-item {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 20px;
+    padding: 5px 10px;
+  }
+
+  .profile-header-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 20;
+    //background: rgba(0, 0, 0, 0.4);
+    //border-radius: 20px;
+    padding: 8px 16px;
+
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  // Кнопки Like/Dislike/⋯ — остаются поверх всего
+  .card-actions {
+    position: fixed;
+    left: 50%;
+    bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    gap: 25px;
+    z-index: 100;
+    background: transparent;
+
+    .action-btn {
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  .card-actions.unregistered {
+    bottom: 10px;
+  }
+
+  .photo-arrow {
+    opacity: 0.7;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.4);
+
+    &.arrow-left {
+      left: 10px;
+    }
+
+    &.arrow-right {
+      right: 10px;
+    }
+  }
+
+  .photo-indicators {
+    top: 15px;
+    opacity: 0.7;
+  }
+}
 
 .profile-details {
   h3 {
