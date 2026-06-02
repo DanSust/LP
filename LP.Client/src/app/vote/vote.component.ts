@@ -203,8 +203,15 @@ export class VoteComponent implements OnInit, AfterViewInit {
   private setupSwipeGestures(): void {    
     const isFinePointer = window.matchMedia('(pointer: fine)').matches;
 
-    const element = this.photoContainer?.nativeElement;
-    if (!element) return;
+    //const element = this.photoContainer?.nativeElement;
+    //if (!element) return;
+    // ВАЖНО: используем весь active-card для свайпа, а не только photo-wrapper
+    const element = document.querySelector('.active-card') as HTMLElement;
+    if (!element) {
+      console.warn('active-card not found, retrying...');
+      setTimeout(() => this.setupSwipeGestures(), 100);
+      return;
+    }
 
     // 🔥 ПРОВЕРКА: игнорируем клики по нижней навигации
     const shouldIgnoreEvent = (e: Event): boolean => {
