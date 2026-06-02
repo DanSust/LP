@@ -28,31 +28,7 @@
   @if (profiles()[0]; as profile) {
   <!-- Кнопки -->
 
-  <div class="card-actions" [class.hidden]="isFullscreen()" [class.unregistered]="!userId">
-    <button class="action-btn dislike-btn"
-            (click)="onDislikeClick(); $event.stopPropagation()"
-            [disabled]="isAnimating()">
-      ✕
-    </button>
-    <button class="action-btn more-btn"
-            (click)="onChatClick(profile.id); $event.stopPropagation()">
-      ⋯
-    </button>
-    <button class="action-btn like-btn"
-            (click)="onLikeClick(); $event.stopPropagation()"
-            [disabled]="isAnimating()">
-      ❤️
-    </button>
-    @if (cameFromSearch() && !isFullscreen()) {
-    <button class="action-btn back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
-      <mat-icon>reply</mat-icon>
-    </button>
-    }
-    <!--<button class="action-btn favorite-btn"
-              (click)="onFavoriteClick(profile.id); $event.stopPropagation()"
-              [disabled]="isAnimating()">⭐
-  </button>-->
-  </div>
+  
   <div class="card active-card"
        [style.z-index]="10"
        [class.dragging]="isDragging()">
@@ -107,6 +83,32 @@
           }
         </div>
         }
+
+        <div class="card-actions" [class.hidden]="isFullscreen()" [class.unregistered]="!userId">
+          <button class="action-btn dislike-btn"
+                  (click)="onDislikeClick(); $event.stopPropagation()"
+                  [disabled]="isAnimating()">
+            ✕
+          </button>
+          <button class="action-btn more-btn"
+                  (click)="onChatClick(profile.id); $event.stopPropagation()">
+            ⋯
+          </button>
+          <button class="action-btn like-btn"
+                  (click)="onLikeClick(); $event.stopPropagation()"
+                  [disabled]="isAnimating()">
+            ❤️
+          </button>
+          @if (cameFromSearch() && !isFullscreen()) {
+          <button class="action-btn back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
+            <mat-icon>reply</mat-icon>
+          </button>
+          }
+          <!--<button class="action-btn favorite-btn"
+                      (click)="onFavoriteClick(profile.id); $event.stopPropagation()"
+                      [disabled]="isAnimating()">⭐
+          </button>-->
+        </div>
 
         <!--@if (cameFromSearch() && !isFullscreen()) {
   <button class="back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">

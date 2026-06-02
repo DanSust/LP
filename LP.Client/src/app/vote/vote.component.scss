@@ -714,7 +714,7 @@
 
   // Кнопки Like/Dislike/⋯ — остаются поверх всего
   .card-actions {
-    position: fixed;
+    position: absolute;
     left: 50%;
     bottom: 80px;
     transform: translateX(-50%);
