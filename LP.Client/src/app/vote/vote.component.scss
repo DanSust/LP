@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined');
+
 :host {
   safe-area-inset-bottom: 60px;
   --gradient-top: #557A94;
@@ -259,9 +262,7 @@
       opacity: 1 !important;
     }
 
-    .card-actions {
-      display: none !important;
-    }
+    
   }
 
   .close-btn {
@@ -466,8 +467,8 @@
   .action-btn {
     width: 65px;
     height: 65px;
-    border-radius: 50%;
-    border: 2px solid white;
+    //border-radius: 50%;
+    border: none; //2px solid white;
     font-size: 28px;
     cursor: pointer;
     background: transparent;
@@ -477,7 +478,7 @@
     }
 
     &.dislike-btn {
-      color: #0095ff;
+      color: cornsilk;
     }
 
     &.more-btn {
@@ -485,7 +486,7 @@
     }
 
     &.like-btn {
-      color: #2ed573;
+      color: whitesmoke;      
     }
 
     &.back-btn {
@@ -650,8 +651,8 @@
     background: linear-gradient(to bottom, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
     color: var(--text-primary);
     padding: 30px 20px calc(130px + env(safe-area-inset-bottom, 0px));
-    border-radius: 20px 20px 0 0;
-    margin-top: -20px; // плавно заезжает на нижний край фото
+    //border-radius: 20px 20px 0 0;
+    margin-top: 0px; // плавно заезжает на нижний край фото
     z-index: 5;
     max-height: none;
     overflow-y: visible; // скролл идёт через родителя .active-card
@@ -689,7 +690,7 @@
     top: 10px;
     left: 10px;
     z-index: 20;
-    background: rgba(0, 0, 0, 0.4);
+    //background: rgba(0, 0, 0, 0.4);
     border-radius: 20px;
     padding: 5px 10px;
   }
@@ -728,7 +729,7 @@
       font-size: 24px;
       //background: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(1px);
-      border: 1px solid lightgray;
+      //border: 1px solid lightgray;
 
       &:active {
         transform: scale(0.95);
