@@ -236,6 +236,7 @@ export class ChatView implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    scroll(0, 0);
     this.subscription = this.route.paramMap.subscribe(params => {
       const id = params.get("id");
       if (id) {        

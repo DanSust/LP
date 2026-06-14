@@ -241,10 +241,18 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
       const { email, password } = this.registerForm.value;
       this.authService.register(email, password).subscribe({
         next: (response: any) => {
+          console.log(response);
           this.isLoading = false;
-          if (response.Success) {
+          if (response.success) {
             // Успех
-            this.switchTab('login');
+            this.loginForm.patchValue({
+              email: email,
+              password: password
+            });
+
+            //this.switchTab('login');
+            this.onLogin();
+            this.toast.success(response.message);
           } else {
             // Показываем ошибку в вашем формате
             this.toast.error(response.message);

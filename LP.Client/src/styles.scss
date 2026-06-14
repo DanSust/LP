@@ -51,3 +51,7 @@ body {
 .no-scroll {
   overflow: hidden;
 }
+
+* {
+  -webkit-overflow-scrolling: touch;
+}

@@ -126,6 +126,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
         this.profileService.loadProfiles();
       }
     });
+    scroll(0, 0);
   }
 
   ngOnDestroy(): void {

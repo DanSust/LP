@@ -136,6 +136,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    scroll(0, 0);
     const savedState = this.pageStateService.getState();
     const cameFromVote = this.navigationService.cameFrom('/vote') ||
       this.navigationService.cameFrom(/\/vote\/.*/);
@@ -155,7 +156,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private onWindowScrollBound = this.onWindowScroll.bind(this);
 
-  ngAfterViewInit(): void {
+  ngAfterViewInit(): void {    
     if (this.shouldRestoreScroll) {
       this.restoreScrollPosition();
     }

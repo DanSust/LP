@@ -41,6 +41,7 @@ export class EventsViewComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    scroll(0, 0);
     this.loadEvents();
   }
 

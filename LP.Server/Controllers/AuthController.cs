@@ -178,7 +178,13 @@ namespace LP.Server.Controllers
 
                 // Отправляем письмо
                 var confirmationLink = $"/confirm?token={confirmation.ConfirmationToken}&email={user.Email}";
-                await _emailService.SendConfirmationEmailAsync(user.Email, confirmationLink);
+                try
+                {
+                    await _emailService.SendConfirmationEmailAsync(user.Email, confirmationLink);
+                }
+                catch (Exception ex)
+                {
+                }
 
                 return Ok(new
                 {
