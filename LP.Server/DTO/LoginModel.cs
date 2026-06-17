@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LP.Server
+namespace LP.Server.DTO
 {
     public class LoginModel
     {
