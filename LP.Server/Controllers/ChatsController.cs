@@ -16,16 +16,15 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class ChatsController : BaseAuthController
     {
-        private readonly ApplicationContext _context;
+        //private readonly ApplicationContext _context;
         private readonly ILikeRestrictionService _likeService;
         private readonly LocalAIService _analyzerService;
         public ChatsController(
             ApplicationContext context,
             ILikeRestrictionService likeService,
             LocalAIService analyzerService
-            )
+            ) : base(context)
         {
-            _context = context;
             _likeService = likeService;
             _analyzerService = analyzerService;
         }

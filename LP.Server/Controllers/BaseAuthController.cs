@@ -12,8 +12,12 @@ namespace LP.Server.Controllers
     [ApiController]
     public class BaseAuthController : ControllerBase
     {
+        protected readonly ApplicationContext _context;
         protected Guid UserId => Guid.Parse(GetUserId());
-
+        public BaseAuthController(ApplicationContext context)
+        {
+            _context = context;
+        }
         private string GetUserId()
         {
             // 🔒 Security: User is guaranteed to be authenticated here due to [Authorize]

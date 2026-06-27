@@ -17,9 +17,8 @@ namespace LP.Server.Controllers
     public class CityController : RedisController
     {
         private readonly ApplicationContext _context;
-        private const string CITIES_CACHE_KEY = "cities:all";
 
-        public CityController(ApplicationContext context, IDistributedCache cache) : base(cache) 
+        public CityController(ApplicationContext context, IDistributedCache cache, string cacheKey = "cities:all") : base(cache, context, cacheKey) 
         {
             _context = context;
         }
@@ -33,7 +32,6 @@ namespace LP.Server.Controllers
                 //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /list CITY STARTED");
                 // Используем безопасный метод получения из кеша
                 var cities = await GetFromCacheSafeAsync(
-                    CITIES_CACHE_KEY,
                     async () => await _context.Cities.OrderBy(x => x.Name).ToListAsync(),
                     TimeSpan.FromHours(24)
                 );

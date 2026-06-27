@@ -24,7 +24,7 @@ namespace LP.Server.Controllers
     public class UsersController(
         ApplicationContext context, 
         IAuthService authService,
-        IRatingService ratingService) : BaseAuthController
+        IRatingService ratingService) : BaseAuthController(context)
     {
         private readonly ApplicationContext _context = context;
         private readonly IAuthService _authService = authService;

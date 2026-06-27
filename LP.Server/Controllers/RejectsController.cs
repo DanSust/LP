@@ -13,9 +13,8 @@ namespace LP.Server.Controllers
     {
         private readonly ApplicationContext _context;
 
-        public RejectsController(ApplicationContext context)
+        public RejectsController(ApplicationContext context) : base(context)
         {
-            _context = context;
         }
 
         [Authorize]

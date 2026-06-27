@@ -5,6 +5,7 @@ using LP.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -14,10 +15,9 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class InterestsController : RedisController
     {
-        private const string INTERESTS_CACHE_KEY = "interests:all";
         private readonly ApplicationContext _context;
         
-        public InterestsController(ApplicationContext context, IDistributedCache cache): base(cache)
+        public InterestsController(ApplicationContext context, IDistributedCache cache, string cacheKey = "interests:all") : base(cache, context, cacheKey)
         {
             _context = context;
         }
@@ -31,7 +31,6 @@ namespace LP.Server.Controllers
                 //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /list INTERESTS STARTED");
                 // Используем безопасный метод получения из кеша
                 var interests = await GetFromCacheSafeAsync(
-                    INTERESTS_CACHE_KEY,
                     async () => await _context.Interests
                         .IgnoreQueryFilters()
                         .OrderBy(x => x.Group)

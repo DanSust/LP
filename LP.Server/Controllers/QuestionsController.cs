@@ -14,11 +14,8 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class QuestionsController : BaseAuthController
     {
-        private readonly ApplicationContext _context;
-        
-        public QuestionsController(ApplicationContext context)
+        public QuestionsController(ApplicationContext context) : base(context)
         {
-            _context = context;
         }
 
         [Authorize]

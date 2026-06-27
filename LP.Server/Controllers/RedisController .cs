@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LP.Entity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -10,13 +11,15 @@ namespace LP.Server.Controllers
     public abstract class RedisController : BaseAuthController
     {
         protected readonly IDistributedCache _cache;
+        protected readonly string _cacheKey;
         private bool? _redisAvailable;
         private readonly SemaphoreSlim _redisCheckLock = new SemaphoreSlim(1, 1);
         private DateTime? _lastCheckTime;
 
-        protected RedisController(IDistributedCache cache)
+        protected RedisController(IDistributedCache cache, ApplicationContext context, string cacheKey = "*:all") : base(context)
         {
             _cache = cache;
+            _cacheKey = cacheKey;
         }
 
         /// <summary>
@@ -92,24 +95,36 @@ namespace LP.Server.Controllers
         /// <summary>
         /// Безопасно получает значение из кеша с проверкой доступности Redis
         /// </summary>
-        protected async Task<T> GetFromCacheSafeAsync<T>(string key, Func<Task<T>> getFromDbFunc, TimeSpan? expiration = null)
+        protected async Task<T> GetFromCacheSafeAsync<T>(Func<Task<T>> getFromDbFunc, TimeSpan? expiration = null)
         {
-            // 1. Пробуем получить из кеша БЕЗ предварительных проверок "доступности"
             try
             {
-                // В нормальных библиотеках (StackExchange.Redis) GetStringAsync сам упадет по таймауту, 
-                // если Redis недоступен. Это быстрее, чем отдельный Ping.
-                var cached = await _cache.GetStringAsync(key);
-                if (!string.IsNullOrEmpty(cached))
+                using var cts = new CancellationTokenSource();
+                var timeoutTask = Task.Delay(TimeSpan.FromSeconds(1), cts.Token);
+                var cacheTask = _cache.GetStringAsync(_cacheKey, cts.Token);
+
+                var completedTask = await Task.WhenAny(cacheTask, timeoutTask);
+
+                if (completedTask == timeoutTask)
                 {
-                    return JsonSerializer.Deserialize<T>(cached);
+                    // Таймаут
+                    Console.WriteLine($"Redis cache timeout for key: {_cacheKey}");
+                    cts.Cancel(); // Отменяем операцию кеша
+                }
+                else
+                {
+                    // Операция кеша завершилась
+                    var cached = await cacheTask;
+                    if (!string.IsNullOrEmpty(cached))
+                    {
+                        return JsonSerializer.Deserialize<T>(cached);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                // Логируем ошибку ОДИН раз, чтобы знать, что Redis упал
-                // Log.Error(ex, "Redis cache read error for key {Key}", key);
-                Console.WriteLine("Redis cache read error");
+                // Логируем ошибку
+                Console.WriteLine($"Redis cache read error for key {_cacheKey}: {ex.Message}");
             }
 
             // 2. Идем в БД (это наше основное действие, если кеш подвел)
@@ -118,18 +133,22 @@ namespace LP.Server.Controllers
             // 3. Сохраняем в кеш "в фоновом режиме" (fire and forget или просто в try-catch)
             if (result != null)
             {
-                try
+                _ = Task.Run(async () =>
                 {
-                    var options = new DistributedCacheEntryOptions
+                    try
                     {
-                        AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromHours(24)
-                    };
-                    await _cache.SetStringAsync(key, JsonSerializer.Serialize(result), options);
-                }
-                catch
-                {
-                    Console.WriteLine("Redis cache read error");
-                }
+                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                        var options = new DistributedCacheEntryOptions
+                        {
+                            AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromHours(24)
+                        };
+                        await _cache.SetStringAsync(_cacheKey, JsonSerializer.Serialize(result), options, cts.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Redis cache write error for key {_cacheKey}: {ex.Message}");
+                    }
+                });
             }
 
             return result;

@@ -18,11 +18,8 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class VotesController : BaseAuthController
     {
-        private readonly ApplicationContext _context;
-
-        public VotesController(ApplicationContext context)
+        public VotesController(ApplicationContext context) : base(context)
         {
-            _context = context;
         }
 
         [Authorize]

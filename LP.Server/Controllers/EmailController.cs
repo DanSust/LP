@@ -14,12 +14,10 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class EmailController : BaseAuthController
     {
-        private readonly ApplicationContext _context;
         private readonly IEmailService _service;
 
-        public EmailController(ApplicationContext context, IEmailService service)
+        public EmailController(ApplicationContext context, IEmailService service) : base(context)
         {
-            _context = context;
             _service = service;
         }
 

@@ -13,10 +13,10 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class EventsController : RedisController
     {
-        private const string EVENTS_CACHE_KEY = "events:list";
+        //private const string EVENTS_CACHE_KEY = "events:list";
         private readonly ApplicationContext _context;
         
-        public EventsController(ApplicationContext context, IDistributedCache cache) : base(cache)
+        public EventsController(ApplicationContext context, IDistributedCache cache, string cacheKey = "events:list") : base(cache, context, cacheKey) 
         {
             _context = context;
         }
@@ -35,7 +35,6 @@ namespace LP.Server.Controllers
 
                 // Используем безопасный метод получения из кеша
                 var events = await GetFromCacheSafeAsync(
-                    EVENTS_CACHE_KEY,
                     async () =>
                     {
                         return await _context.Events

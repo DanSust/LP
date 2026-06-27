@@ -14,7 +14,6 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class PhotosController : BaseAuthController
     {
-        private readonly ApplicationContext _context;
         private readonly IWebHostEnvironment _env;
         private readonly IImageProcessingService _imageService;
         private readonly ILogger<PhotosController> _logger;
@@ -28,10 +27,9 @@ namespace LP.Server.Controllers
             IWebHostEnvironment env,
             ApplicationContext context,
             IImageProcessingService imageService,
-            ILogger<PhotosController> logger)
+            ILogger<PhotosController> logger) : base(context)
         {
             _env = env;
-            _context = context;
             _imageService = imageService;
             _logger = logger;
         }
