@@ -16,11 +16,8 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class CityController : RedisController
     {
-        private readonly ApplicationContext _context;
-
         public CityController(ApplicationContext context, IDistributedCache cache, string cacheKey = "cities:all") : base(cache, context, cacheKey) 
         {
-            _context = context;
         }
 
         [AllowAnonymous]

@@ -15,11 +15,8 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class InterestsController : RedisController
     {
-        private readonly ApplicationContext _context;
-        
         public InterestsController(ApplicationContext context, IDistributedCache cache, string cacheKey = "interests:all") : base(cache, context, cacheKey)
         {
-            _context = context;
         }
 
         [AllowAnonymous]

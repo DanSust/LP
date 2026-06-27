@@ -13,12 +13,8 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class EventsController : RedisController
     {
-        //private const string EVENTS_CACHE_KEY = "events:list";
-        private readonly ApplicationContext _context;
-        
         public EventsController(ApplicationContext context, IDistributedCache cache, string cacheKey = "events:list") : base(cache, context, cacheKey) 
         {
-            _context = context;
         }
 
         [Authorize]
@@ -37,6 +33,7 @@ namespace LP.Server.Controllers
                 var events = await GetFromCacheSafeAsync(
                     async () =>
                     {
+                        Console.WriteLine("GetFromCacheSafeAsync from DB");
                         return await _context.Events
                             .Where(x => x.CreatedAt >= DateTime.UtcNow.AddMonths(-1))
                             .Select(item => new EventListItemDto
