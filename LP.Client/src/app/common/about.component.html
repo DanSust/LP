@@ -23,15 +23,27 @@
           <path class="ecg-line" d="M0,35 L15,35 L20,10 L25,50 L30,10 L35,35 L120,35 L125,15 L130,45 L135,15 L140,35 L240,35" />
         </svg>
       </div>
-      <h1 class="hero-title">
-        <span class="gradient-text">Синхронное</span>
+      <h1 class="hero-title" *ngIf="!isAboutPage">
+        <span class="gradient-text">Знакомства</span>
         <br>
-        <span class="gradient-text">Сердцебиение</span>
+        <span class="gradient-text">для серьёзных отношений</span>
       </h1>
-      <p class="hero-subtitle">
+      <h1 class="hero-title" *ngIf="isAboutPage">
+        <span class="gradient-text">О сервисе</span>
+        <br>
+        <span class="gradient-text">Made4Love</span>
+      </h1>
+      <p class="hero-tagline" *ngIf="!isAboutPage">Синхронное сердцебиение</p>
+      <p class="hero-subtitle" *ngIf="!isAboutPage">
         Не просто приложение для знакомств. Это цифровое пространство,
         где технологии помогают случиться настоящему — тому самому совпадению,
         когда биение ваших сердец переходит в единый ритм.
+      </p>
+      <p class="hero-subtitle" *ngIf="isAboutPage">
+        Made4Love — это сервис знакомств, который помогает людям с близкими
+        интересами находить друг друга, общаться в реальном времени и строить
+        серьёзные отношения. Мы объединяем технологии проверки совместимости,
+        живой чат и сообщество.
       </p>
       <div class="hero-actions">
         <button class="btn-primary" routerLink="/vote">
@@ -55,6 +67,56 @@
       <div class="floating-card card-3">
         <span class="floating-emoji">⭐</span>
       </div>
+    </div>
+  </section>
+
+  <!-- Уникальный блок для страницы /about: убирает дубль с главной -->
+  <section id="about-service" class="about-section" *ngIf="isAboutPage">
+    <div class="section-header">
+      <span class="section-tag">О проекте</span>
+      <h2>Что такое Made4Love</h2>
+    </div>
+
+    <div class="about-copy">
+      <p>
+        Made4Love — российский сервис знакомств для тех, кто ищет не случайное
+        общение, а серьёзные отношения. Мы создаём пространство, где знакомиться
+        легко и безопасно: анкеты, интересы и ценности помогают сразу понять,
+        есть ли между вами что-то большее.
+      </p>
+      <p>
+        Сервис работает на основе проверки совместимости в реальном времени:
+        алгоритм сопоставляет интересы, образ жизни и то, как люди общаются.
+        А живой чат на SignalR позволяет поддерживать разговор без задержек —
+        где бы вы ни находились.
+      </p>
+      <p>
+        Мы верим, что технологии должны помогать чувствам, а не заменять их.
+        Поэтому Made4Love — это не бесконечная лента анкет, а бережное
+        пространство для настоящих встреч.
+      </p>
+    </div>
+
+    <div class="about-facts">
+      <div class="about-fact">
+        <h3>Для серьёзных отношений</h3>
+        <p>Анкеты и интересы помогают найти людей с близкими ценностями, а не просто расширить список контактов.</p>
+      </div>
+      <div class="about-fact">
+        <h3>Совместимость в реальном времени</h3>
+        <p>Мы показываем, насколько вы близки с человеком, ещё до первого сообщения.</p>
+      </div>
+      <div class="about-fact">
+        <h3>Безопасное общение</h3>
+        <p>Живой чат, понятные правила и поддержка помогают чувствовать себя спокойно.</p>
+      </div>
+    </div>
+
+    <div class="about-links">
+      <a routerLink="/events">События и встречи</a>
+      <a routerLink="/auth">Создать анкету</a>
+      <a href="/assets/terms.html">Правила сервиса</a>
+      <a href="/assets/privacy.html">Политика конфиденциальности</a>
     </div>
   </section>
 
@@ -163,6 +225,33 @@
     </div>
   </section>
 
+  <!-- FAQ только на странице /about: дополнительный уникальный контент -->
+  <section class="faq-section" *ngIf="isAboutPage">
+    <div class="section-header">
+      <span class="section-tag">Вопросы</span>
+      <h2>Частые вопросы</h2>
+    </div>
+
+    <div class="faq-list">
+      <details>
+        <summary>Как работает проверка совместимости?</summary>
+        <p>Алгоритм сопоставляет интересы, образ жизни и манеру общения. Результат показывается в реальном времени, чтобы вы могли сосредоточиться на людях, с которыми действительно есть общее.</p>
+      </details>
+      <details>
+        <summary>Сервис платный?</summary>
+        <p>Создать анкету и начать общение можно бесплатно. Дополнительные возможности и участие в розыгрышах появляются по мере активности в сервисе.</p>
+      </details>
+      <details>
+        <summary>Как получить приз за свадьбу?</summary>
+        <p>Найдите пару на Made4Love, сыграйте свадьбу и подтвердите событие. Мы свяжемся с вами и расскажем, как получить денежный приз.</p>
+      </details>
+      <details>
+        <summary>Безопасно ли знакомиться на Made4Love?</summary>
+        <p>Мы модерируем анкеты, поддерживаем жалобы и напоминаем о правилах безопасного общения. Не передавайте личные данные и деньги незнакомым людям.</p>
+      </details>
+    </div>
+  </section>
+
   <!-- CTA Section -->
   <section class="cta-section">
     <div class="cta-content">
@@ -175,7 +264,7 @@
           <span class="btn-shine"></span>
         </button>
 
-        <a href="https://t.me/made4love_ru" target="_blank" class="btn-telegram">
+        <a href="https://t.me/made4love_ru" target="_blank" rel="noopener" class="btn-telegram">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .33z" />
           </svg>
@@ -184,4 +273,38 @@
       </div>
     </div>
   </section>
+
+  <!-- Видимый футер с внутренними ссылками (заменяет скрытый футер из index.html) -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a routerLink="/" class="footer-logo">Made4Love</a>
+        <p>Знакомства для серьёзных отношений. Проверка совместимости, живой чат и сообщество людей, которым близки ваши интересы.</p>
+      </div>
+
+      <nav class="footer-nav" aria-label="Навигация по сайту">
+        <div class="footer-column">
+          <h2>Сервис</h2>
+          <a routerLink="/">Главная</a>
+          <a routerLink="/about">О сервисе</a>
+          <a routerLink="/events">События</a>
+          <a routerLink="/auth">Регистрация</a>
+        </div>
+        <div class="footer-column">
+          <h2>Документы</h2>
+          <a href="/assets/terms.html">Условия использования</a>
+          <a href="/assets/privacy.html">Политика конфиденциальности</a>
+        </div>
+        <div class="footer-column">
+          <h2>Связь</h2>
+          <a href="https://t.me/made4love_ru" target="_blank" rel="noopener">Telegram</a>
+        </div>
+      </nav>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© {{ currentYear }} Made4Love. Все права защищены.</span>
+      <span>18+</span>
+    </div>
+  </footer>
 </div>

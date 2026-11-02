@@ -96,9 +96,17 @@
   touch-action: none;
   user-select: none;
   z-index: 10;
+  background: linear-gradient(to bottom, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
 
   &.dragging {
     cursor: grabbing;
+  }
+}
+
+.card-stack.dragging {
+  .next-card {
+    visibility: hidden;
+    opacity: 0;
   }
 }
 

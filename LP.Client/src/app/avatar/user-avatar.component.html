@@ -1,7 +1,8 @@
 <div class="avatar-wrapper">
   <div class="avatar-container">
     <img [src]="avatarUrl()"
-         [alt]="name"
+         [alt]="name()"
+         decoding="async"
          class="chat-avatar"
          (error)="onImageError()">
     <div class="status-indicator" [class.online]="isOnline()"></div>

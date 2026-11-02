@@ -33,7 +33,18 @@ import { FotoScrollComponent } from './foto/foto-scroll-component';
 import { SoPulseComponent } from './promo/so-pulse.component';
 
 const appRoutes: Routes = [
-  { path: "about", component: AboutComponent, /*canActivate: [AuthGuard] */},  
+  {
+    path: "about",
+    component: AboutComponent,
+    data: {
+      indexable: true,
+      canonical: '/about',
+      seo: {
+        title: 'О сервисе Made4Love — знакомства для серьёзных отношений',
+        description: 'Узнайте, как работает Made4Love: проверка совместимости, живой чат, безопасное общение и сообщество людей, которые ищут серьёзные отношения.'
+      }
+    }
+  },
   { path: "location", component: UserLocationComponent },
   { path: "soon", component: ComingSoonComponent },
   { path: "profile", component: UserProfile, canActivate: [AuthGuard] },
@@ -52,7 +63,18 @@ const appRoutes: Routes = [
   { path: "authcallback", component: AuthCallbackComponent },  
   { path: "match", component: MatchComponent, canActivate: [AuthGuard] },
   { path: "search", component: SearchComponent, /*canActivate: [AuthGuard]*/ },
-  { path: "events", component: EventsViewComponent, /*canActivate: [AuthGuard] */},
+  {
+    path: "events",
+    component: EventsViewComponent,
+    data: {
+      indexable: true,
+      canonical: '/events',
+      seo: {
+        title: 'События и знакомства — Made4Love',
+        description: 'События и встречи Made4Love: узнавайте о новых мероприятиях сервиса и находите людей, с которыми интересно провести время.'
+      }
+    }
+  },
   { path: "auth", component: AuthComponent },
   { path: "confirm", component: ConfirmComponent },
   /*{ path: "home", component: SoPulseComponent },*/
@@ -63,7 +85,19 @@ const appRoutes: Routes = [
     }],
     component: AboutComponent // Любой компонент, guard перенаправит
   },
-  { path: "", component: AboutComponent },
+  {
+    path: "",
+    pathMatch: "full",
+    component: AboutComponent,
+    data: {
+      indexable: true,
+      canonical: '/',
+      seo: {
+        title: 'Made4Love — знакомства для серьёзных отношений',
+        description: 'Made4Love — знакомства для серьёзных отношений. Проверка совместимости, живой чат и денежный приз за свадьбу. Создайте анкету бесплатно.'
+      }
+    }
+  },
   //{ path: "",
   //  loadComponent: () => import('./promo/so-pulse.component')
   //    .then(m => m.SoPulseComponent),
@@ -75,8 +109,18 @@ const appRoutes: Routes = [
   //    .then(m => m.AboutComponent),
   //  canMatch: [() => !inject(AuthService).isAuthenticated()]
   //},
-  /*{ path: "**", component: NotFoundComponent },*/
-  
+  {
+    path: "**",
+    component: NotFoundComponent,
+    data: {
+      indexable: false,
+      seo: {
+        title: 'Страница не найдена — Made4Love',
+        description: 'Запрошенная страница не найдена. Вернитесь на главную Made4Love или посмотрите другие разделы сервиса.'
+      }
+    }
+  },
+
   //{ path: "foto", component: FotoScrollComponent }
 ];
 

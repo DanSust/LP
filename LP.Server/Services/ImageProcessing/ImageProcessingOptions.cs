@@ -62,6 +62,7 @@ public class ProcessingParameters
     public int Quality { get; set; } = 90;
     public OutputFormat OutputFormat { get; set; } = OutputFormat.Jpeg;
     public bool MaintainAspectRatio { get; set; } = true;
+    public bool AllowUpscale { get; set; } = false;
     public bool CropToSquare { get; set; } = false;
     public CropMode SquareCropMode { get; set; } = CropMode.Center;
 }

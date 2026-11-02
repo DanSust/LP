@@ -225,7 +225,8 @@ public class ImageProcessingService : IImageProcessingService
                     bitmap,
                     parameters.Width,
                     parameters.Height,
-                    parameters.MaintainAspectRatio);
+                    parameters.MaintainAspectRatio,
+                    parameters.AllowUpscale);
             }
 
             // Обрезка до квадрата если нужно
@@ -336,7 +337,7 @@ public class ImageProcessingService : IImageProcessingService
         return data.ToArray();
     }
 
-    private SKBitmap ResizeImage(SKBitmap original, int? width, int? height, bool maintainAspectRatio)
+    private SKBitmap ResizeImage(SKBitmap original, int? width, int? height, bool maintainAspectRatio, bool allowUpscale)
     {
         int newWidth = width ?? original.Width;
         int newHeight = height ?? original.Height;
@@ -347,8 +348,11 @@ public class ImageProcessingService : IImageProcessingService
                 (float)newWidth / original.Width,
                 (float)newHeight / original.Height);
 
-            newWidth = (int)(original.Width * ratio);
-            newHeight = (int)(original.Height * ratio);
+            if (!allowUpscale)
+                ratio = Math.Min(ratio, 1f);
+
+            newWidth = Math.Max(1, (int)(original.Width * ratio));
+            newHeight = Math.Max(1, (int)(original.Height * ratio));
         }
 
         return original.Resize(new SKImageInfo(newWidth, newHeight), SKFilterQuality.High);

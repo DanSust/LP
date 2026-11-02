@@ -1,14 +1,49 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>Made4Love — Сайт знакомств для серьезных отношений с призами за свадьбу</title>
+  <script>
+    (function () {
+      var path = window.location.pathname.replace(/\/+$/, '') || '/';
+      var staticShellRoutes = ['/', '/index.html', '/about', '/events', '/404.html'];
+      if (staticShellRoutes.indexOf(path) === -1) {
+        document.documentElement.classList.add('hide-seo-shell');
+      }
+    })();
+  </script>
+  <title>Made4Love — знакомства для серьёзных отношений</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
   <meta name="yandex-verification" content="2d6279d4f339616e" />
-  <meta name="description" content="Сервис знакомств с проверкой совместимости в реальном времени. Найди свою половинку и получи бонус за свадьбу! Ищите вторую половинку на Made4Love. Проверяйте совместимость в реальном времени, участвуйте в интерактивах и получайте денежные призы за свадьбу. Начни свою историю любви сегодня!">
+  <meta name="robots" content="index,follow">
+  <meta name="description" content="Made4Love — знакомства для серьёзных отношений. Проверка совместимости, живой чат и денежный приз за свадьбу. Создайте анкету бесплатно.">
+  <meta name="theme-color" content="#557A94">
+  <meta name="application-name" content="Made4Love">
+  <link rel="canonical" href="https://made4love.ru/">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="apple-touch-icon" href="assets/favicon.ico">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Made4Love">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="Made4Love — знакомства для серьёзных отношений">
+  <meta property="og:description" content="Made4Love — знакомства для серьёзных отношений. Проверка совместимости, живой чат и денежный приз за свадьбу. Создайте анкету бесплатно.">
+  <meta property="og:url" content="https://made4love.ru/">
+  <meta property="og:image" content="https://made4love.ru/assets/social-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Made4Love — знакомства для серьёзных отношений">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Made4Love — знакомства для серьёзных отношений">
+  <meta name="twitter:description" content="Made4Love — знакомства для серьёзных отношений. Проверка совместимости, живой чат и денежный приз за свадьбу. Создайте анкету бесплатно.">
+  <meta name="twitter:image" content="https://made4love.ru/assets/social-preview.jpg">
+  <meta name="twitter:image:alt" content="Made4Love — знакомства для серьёзных отношений">
+
   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
-  <link rel="icon" type="image/x-icon" href="assets/favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
@@ -16,27 +51,53 @@
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Made4Love",
-      "url": "https://made4love.ru",
-      "applicationCategory": "LifestyleApplication",
-      "operatingSystem": "All",
-      "description": "Инновационный сервис знакомств с проверкой совместимости в реальном времени и денежными призами за свадьбу.",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "RUB"
-      },
-      "featureList": [
-        "Проверка совместимости в реальном времени",
-        "Денежные призы за свадьбу",
-        "Интерактивный дейтинг",
-        "Авторизация через Google Telegram и VK"
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://made4love.ru/#webapp",
+          "name": "Made4Love",
+          "url": "https://made4love.ru/",
+          "applicationCategory": "LifestyleApplication",
+          "operatingSystem": "All",
+          "inLanguage": "ru-RU",
+          "isAccessibleForFree": true,
+          "description": "Инновационный сервис знакомств с проверкой совместимости в реальном времени и денежными призами за свадьбу.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "RUB"
+          },
+          "featureList": [
+            "Проверка совместимости в реальном времени",
+            "Денежные призы за свадьбу",
+            "Интерактивный дейтинг",
+            "Авторизация через Google, Telegram и VK"
+          ],
+          "publisher": { "@id": "https://made4love.ru/#organization" }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://made4love.ru/#organization",
+          "name": "Made4Love",
+          "url": "https://made4love.ru/",
+          "logo": "https://made4love.ru/assets/logo.svg",
+          "sameAs": [
+            "https://t.me/made4love_ru"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://made4love.ru/#website",
+          "url": "https://made4love.ru/",
+          "name": "Made4Love",
+          "inLanguage": "ru-RU",
+          "publisher": { "@id": "https://made4love.ru/#organization" }
+        }
       ]
     }
   </script>
   <style>
-    {
+    * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -57,6 +118,60 @@
       background: linear-gradient(to bottom, #557A94 130px, #7396AE 100%) !important;
     }
 
+    /* Статическая оболочка для поисковых роботов и пользователей без JS.
+       На SPA-маршрутах (например, /vote) она скрывается до загрузки Angular,
+       чтобы не мелькал текст главной страницы. */
+    .hide-seo-shell .seo-shell {
+      display: none;
+    }
+
+    .seo-shell {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 56px 24px;
+      color: #fff;
+      font-family: Roboto, Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    .seo-shell h1 {
+      margin: 0 0 20px;
+      font-size: clamp(28px, 5vw, 48px);
+      line-height: 1.15;
+    }
+
+    .seo-shell p {
+      margin: 0 0 16px;
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .seo-shell h2 {
+      margin: 32px 0 12px;
+      font-size: 24px;
+    }
+
+    .seo-shell details {
+      margin-bottom: 10px;
+    }
+
+    .seo-shell summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .seo-shell nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      margin-top: 28px;
+    }
+
+    .seo-shell a {
+      color: #fff;
+      text-decoration: underline;
+    }
+
     @media (max-width: 768px) {
       .icon-sidebar {
         display: none;
@@ -70,10 +185,19 @@
   </style>
 </head>
 <body>
-<app-root></app-root>
-  <footer style="display: none;">
-    <h2>Made4Love — Знакомства для серьезных отношений</h2>
-    <p>Найди свою половинку, проверяй совместимость и получай призы за свадьбу...</p>
-  </footer>
+<app-root>
+  <div class="seo-shell">
+    <h1>Знакомства для серьёзных отношений</h1>
+    <p>Made4Love помогает найти людей с близкими интересами, проверить совместимость в реальном времени и начать разговор без неловких пауз.</p>
+    <p>Создайте анкету, общайтесь в живом чате и участвуйте в событиях сервиса. Пара, нашедшая друг друга на Made4Love и сыгравшая свадьбу, получает денежный приз.</p>
+    <nav aria-label="Основные страницы">
+      <a href="/about">О сервисе</a>
+      <a href="/events">События</a>
+      <a href="/auth">Создать анкету</a>
+      <a href="/assets/terms.html">Условия</a>
+      <a href="/assets/privacy.html">Конфиденциальность</a>
+    </nav>
+  </div>
+</app-root>
 </body>
 </html>

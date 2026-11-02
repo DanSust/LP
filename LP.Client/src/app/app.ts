@@ -1,5 +1,5 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, Inject, inject, OnDestroy, OnInit } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -11,11 +11,12 @@ import { AuthComponent } from './auth/auth.component';
 import { UserStatusService } from './services/UserStatusService';
 import { ChatService } from './services/ChatService';
 import { NavigationService } from './services/NavigationService';
-import { Subscription } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 import { routes } from './app.routes';
 import { HttpClient } from "@angular/common/http";
 import { API_BASE_URL } from './app.config';
 import { ComingSoonComponent } from './promo/coming-soon.component';
+import { SeoConfig, SeoService } from './services/SeoService';
 
 
 @Component({
@@ -51,11 +52,13 @@ export class App implements OnInit, OnDestroy {
 
   private channel = new BroadcastChannel('auth-channel');
   private subscription?: Subscription;
+  private routeSeoSubscription?: Subscription;
 
   userStatusService = inject(UserStatusService);
   chatService = inject(ChatService);
 
   private router = inject(Router);
+  private seoService = inject(SeoService);
   get isHomeRoute(): boolean {
     return this.router.url === '/' || this.router.url === '/auth';
   }
@@ -68,6 +71,11 @@ export class App implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.updateSeoForCurrentRoute();
+    this.routeSeoSubscription = this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(() => this.updateSeoForCurrentRoute());
+
     if (this.isDevelopmentMode) {
       return;
     }
@@ -107,6 +115,22 @@ export class App implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.routeSeoSubscription?.unsubscribe();
     this.channel.close();
+  }
+
+  private updateSeoForCurrentRoute(): void {
+    let route = this.router.routerState.snapshot.root;
+    while (route.firstChild) route = route.firstChild;
+
+    const path = this.router.url.split(/[?#]/, 1)[0] || '/';
+    const canonicalPath = route.data['canonical'] as string | undefined;
+    const seo = route.data['seo'] as SeoConfig | undefined;
+
+    this.seoService.updateMetaTags({
+      ...seo,
+      url: canonicalPath || path,
+      robots: route.data['indexable'] === true ? 'index,follow' : 'noindex,nofollow'
+    });
   }
 }

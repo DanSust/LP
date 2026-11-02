@@ -1,6 +1,6 @@
-import { Component } from "@angular/core";
+import { Component, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { RouterModule } from "@angular/router";
+import { Router, RouterModule } from "@angular/router";
 
 @Component({
   selector: "about-app",
@@ -10,6 +10,18 @@ import { RouterModule } from "@angular/router";
   styleUrls: ["./about.component.scss"]
 })
 export class AboutComponent {
+  private readonly router = inject(Router);
+
+  readonly currentYear = new Date().getFullYear();
+
+  /**
+   * На главной и на /about используется один компонент, но контент должен
+   * отличаться: иначе поисковики видят полный дубль страниц.
+   */
+  get isAboutPage(): boolean {
+    return this.router.url.split(/[?#]/, 1)[0].startsWith("/about");
+  }
+
   features = [
     {
       icon: "🃏",

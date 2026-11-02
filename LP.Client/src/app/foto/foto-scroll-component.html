@@ -56,6 +56,9 @@
   <div class="gallery-item">
     <img
       src="{{baseURL}}/Photos/imagefree?id={{image.photoId}}"
+      alt="Фото пользователя"
+      loading="lazy"
+      decoding="async"
       (click)="onImageClick(image.userId)"
       />
   </div>

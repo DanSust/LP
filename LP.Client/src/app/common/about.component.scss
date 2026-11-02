@@ -231,6 +231,10 @@ $pulse-red: #e91e63;
   margin-bottom: 1.5rem;
   font-weight: 800;
 
+  @media (max-width: 768px) {
+    font-size: clamp(2rem, 9vw, 3rem);
+  }
+
   .gradient-text {
     background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
     -webkit-background-clip: text;
@@ -829,4 +833,203 @@ $pulse-red: #e91e63;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba($accent-blue, 0.3);
   }
+}
+
+// Hero tagline (creative subtitle under the keyword H1)
+.hero-tagline {
+  margin: -0.75rem 0 1rem;
+  color: $accent-pink;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+// About page: unique content
+.about-section {
+  padding: 6rem 5%;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.about-copy {
+  max-width: 900px;
+  margin: 0 auto 3rem;
+
+  p {
+    color: $text-secondary;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 1.25rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.about-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto 2.5rem;
+}
+
+.about-fact {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+
+  h3 {
+    color: white;
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+  }
+
+  p {
+    color: $text-secondary;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+}
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+
+  a {
+    padding: 0.75rem 1.25rem;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// FAQ (about page only)
+.faq-section {
+  padding: 6rem 5%;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.faq-list {
+  display: grid;
+  gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+
+  details {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  summary {
+    color: white;
+    cursor: pointer;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  p {
+    color: $text-secondary;
+    line-height: 1.7;
+    margin-top: 1rem;
+  }
+}
+
+// Visible site footer
+.site-footer {
+  padding: 4rem 5% 2rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1.2fr 2fr;
+  gap: 3rem;
+  max-width: 1100px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.footer-brand {
+  .footer-logo {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  p {
+    max-width: 340px;
+    color: $text-secondary;
+    line-height: 1.7;
+  }
+}
+
+.footer-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.footer-column {
+  h2 {
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  a {
+    display: block;
+    margin-bottom: 0.6rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    text-decoration: none;
+
+    &:hover {
+      color: white;
+      text-decoration: underline;
+    }
+  }
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1100px;
+  margin: 3rem auto 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.875rem;
 }

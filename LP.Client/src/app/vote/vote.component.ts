@@ -271,7 +271,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     };
 
     const endDrag = () => {
-      //console.log('endDrag - ', this.isDragging());
+      
       if (this.isFullscreen()) return;
       if (!this.isDragging()) return;
 
@@ -286,7 +286,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
         this.performSwipe('right');
       } else if (delta < -dynamicThreshold) {
         this.performSwipe('left');
-      } else {
+      } else {        
         // Возврат с анимацией
         this.dragDelta.set(0);
       }
@@ -461,7 +461,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     const profile = this.profiles()[0];
     if (!profile) return;
 
-    //console.log('needSwipe ', needSwipe);
+    console.log('needSwipe ', needSwipe);
     
     // 1. ЗАМОРАЖИВАЕМ текущий профиль для анимации вылета
     this.exitingProfile.set({
@@ -485,7 +485,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
       });
     });
 
-    // 4. Очищаем после анимации
+    //// 4. Очищаем после анимации
     setTimeout(() => {
       this.isAnimating.set(false);
       this.exitingProfile.set(null);

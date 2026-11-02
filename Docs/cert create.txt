@@ -1,0 +1,19 @@
+docker run -it --rm `
+  -v C:\letsencrypt\etc:/etc/letsencrypt `
+  -v C:\letsencrypt\lib:/var/lib/letsencrypt `
+  certbot/certbot certonly --manual --preferred-challenges dns `
+  -d made4love.ru -d www.made4love.ru `
+  --email admin@made4love.ru `
+  --agree-tos --no-eff-email
+  
+  
+add record to nic.ru
+  
+wait for...
+nslookup -q=txt _acme-challenge.www.made4love.ru 8.8.8.8
+
+copy from c:\letsencrypt\etc\archive\made4love.ru  to relese folder
+
+restart nginx
+
+profit

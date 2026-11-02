@@ -169,7 +169,7 @@
             <mat-chip-option [value]="item.id"
                              [selected]="item.selected">
               <!--[disabled]="selectedInterestsCount >= maxInterests && !item.selected"-->
-              <img matChipAvatar src="assets{{item.path}}" alt="{{item.name}}" />
+              <img matChipAvatar src="assets{{item.path}}" alt="{{item.name}}" loading="lazy" decoding="async" />
               {{item.name}}
             </mat-chip-option>
             }

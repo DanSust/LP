@@ -46,7 +46,9 @@
       </mat-icon>
       <div class="image-wrapper">
         <img [src]="getImageUrl(image.photoId)"
+             [alt]="'Фото: ' + image.name"
              loading="lazy"
+             decoding="async"
              routerLink="/vote/{{image.userId}}" />
       </div>
       <div class="photo-info">

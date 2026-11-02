@@ -1,4 +1,4 @@
-<div class="card-stack" #activePhotoContainer>
+<div class="card-stack" #activePhotoContainer [class.dragging]="isDragging()">
 
   <!-- Нет профилей -->
   <!--@if (profiles().length === 0 && !exitingProfile()) {
@@ -16,6 +16,8 @@
         @if (nextProfile.photoUrls && nextProfile.photoUrls.length > 0) {
         <img [src]="nextProfile.photoUrls[0].path"
              [alt]="nextProfile.name"
+             loading="lazy"
+             decoding="async"
              class="card-photo" />
         } @else {
         <div class="no-photo">Нет фото</div>
@@ -89,6 +91,7 @@
         @if (profile.photoUrls && profile.photoUrls.length > 0) {
         <img [src]="profile.photoUrls[currentPhotoIndex()].path"
              [alt]="profile.name"
+             decoding="async"
              class="card-photo"
              (load)="onImageLoad()" />
         } @else {
@@ -139,7 +142,7 @@
               <span class="detail-label">🎯</span>
               @for (interest of profile.interests; track interest.id; let last = $last) {
               <span class="interest-tag">
-                <img [src]="'assets' + interest.path" [alt]="interest.name" class="interest-icon" />
+                <img [src]="'assets' + interest.path" [alt]="interest.name" loading="lazy" decoding="async" class="interest-icon" />
                 {{ interest.name }}
               </span>
 
@@ -183,6 +186,7 @@
       <div class="photo-wrapper">
         <img [src]="exit.photoUrl"
              [alt]="exit.name"
+             decoding="async"
              class="card-photo exit-photo"
              [style.transform]="getExitTransform()"
              [style.transition]="'transform 300ms ease-out'" />

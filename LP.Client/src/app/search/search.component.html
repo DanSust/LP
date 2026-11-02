@@ -109,7 +109,11 @@
     @for (image of allImages; track image.photoId) {
     <div class="gallery-item">
       <div class="image-wrapper">
-        <img [src]="image.imageUrl" routerLink="/vote/{{image.userId}}" />
+        <img [src]="image.imageUrl"
+             [alt]="'Фото: ' + image.name"
+             loading="lazy"
+             decoding="async"
+             routerLink="/vote/{{image.userId}}" />
       </div>
       <div class="photo-info">
         <span class="photo-name">{{ image.name }}</span>

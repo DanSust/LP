@@ -1,15 +1,27 @@
 User-agent: *
-# Разрешаем индексировать публичные страницы
+# Публичные страницы
 Allow: /
 Allow: /about
-Allow: /promo
+Allow: /events
+Allow: /assets/terms.html
+Allow: /assets/privacy.html
 
-# Запрещаем индексировать приватные данные и технические разделы
-Disallow: /chat/          # Личные переписки
-Disallow: /user/profile   # Редактирование профиля
-Disallow: /match/         # Страницы совпадений
-Disallow: /vote           # Процесс голосования (чтобы не плодить дубли)
-Disallow: /auth/          # Авторизация и Telegram login
+# Приватные и технические разделы
+Disallow: /auth
+Disallow: /authcallback
+Disallow: /confirm
+Disallow: /profile
+Disallow: /chat
+Disallow: /match
+Disallow: /vote
+Disallow: /search
+Disallow: /location
+Disallow: /scroll
+Disallow: /logout
+Disallow: /soon
+Disallow: /api/Photos/
 
-# Указываем путь к карте сайта (когда создашь её)
+# Убираем UTM-метки и клики из индекса (Яндекс)
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&yclid&gclid /
+
 Sitemap: https://made4love.ru/sitemap.xml
