@@ -20,6 +20,7 @@ import { HttpClient } from '@angular/common/http';
 import { ChatService } from '../services/ChatService';
 import { ToastService } from '../common/toast.service';
 import { NavigationService } from '../services/NavigationService';
+import { AuthService } from '../services/AuthService';
 import { RatingComponent } from '../../app/user/rating/user-rating.component';
 import { getAgeWord } from './../common/usefull.utils';
 import { Subscription } from 'rxjs';
@@ -42,6 +43,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
   @ViewChild('activePhotoContainer') photoContainer!: ElementRef<HTMLDivElement>;
 
   chatService = inject(ChatService);
+  authService = inject(AuthService);
 
   userId?: string = '';
   imageLoaded = signal(false);
@@ -528,10 +530,13 @@ export class VoteComponent implements OnInit, AfterViewInit {
   }
 
   onChatClick(id: string): void {
-    //console.log("[onChatClick] Запускаем для profile id:", id);
-    console.log("[onChatClick] userid:", this.userId);
-    if (this.userId === undefined)
-      this.router.navigateByUrl(`/auth`);
+    console.log("[onChatClick] Запускаем для profile id:", id);
+    console.log("[onChatClick] userid:", this.authService.getCachedUserId());
+    if (!this.authService.getCachedUserId()) {
+      console.warn("Профиль не загружен");
+      this.toast.warning('Для начала диалога нужно зарегистрироваться');
+      return;
+    }
 
     this.http.post<any>(`${this.base}/chats/get-or-create/${id}`, null, { withCredentials: true })
       .subscribe({
@@ -555,6 +560,10 @@ export class VoteComponent implements OnInit, AfterViewInit {
           this.router.navigateByUrl(`/chat/${response.chatId}`);
         },
         error: (err) => {
+          if (err.status === 401) {           // ✅ сервер сам скажет, что нет авторизации
+            this.router.navigateByUrl('/auth');
+            return;
+          }
           if (err.error?.code === 'MUTUAL_LIKE_REQUIRED') {
             this.toast.warning('💕 Нужен взаимный лайк, чтобы начать переписку');
           } else {

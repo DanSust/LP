@@ -12,15 +12,12 @@ export class AuthGuard implements CanActivate {
     return this.authService.userId$.pipe(
       take(1),
       map(userId => {
-        if (userId && userId !== undefined) {
-          if (userId === undefined)
-            console.log('canActivate ' + userId);
-          return true; // Пускаем
-        } else {
-          console.log('redirect to auth');
-          this.router.navigate(['/auth']); // Перенаправляем на auth
-          return false;
+        if (userId) return true;
+        // Проверяем, что мы уже не на /auth
+        if (!this.router.url.startsWith('/auth')) {
+          this.router.navigate(['/auth'], { replaceUrl: true });
         }
+        return false;
       })
     );
   }
