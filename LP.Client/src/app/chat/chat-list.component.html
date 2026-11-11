@@ -24,6 +24,13 @@
                          [name]="chat.name">
         </app-user-avatar>
 
+        @if (getChatExpiry(chat); as expiry) {
+        <div class="chat-hint"
+             [title]="'Чат без сообщений будет удалён через ' + expiry.text">
+          Удаление через {{ expiry.days }}д {{ expiry.hours }}ч
+        </div>
+        }
+
         <div class="chat-meta">
           @if (chat.lastMessageTime) {
           <div class="message-time">{{ getRelativeTime(chat.lastMessageTime) }}</div>

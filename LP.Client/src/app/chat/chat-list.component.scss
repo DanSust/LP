@@ -152,6 +152,20 @@
     }
   }
 
+  .chat-hint {
+    position: absolute;
+    left: 67px; // padding + avatar + gap
+    bottom: 6px;
+    max-width: calc(100% - 130px);
+    font-size: 11px;
+    line-height: 1.2;
+    color: rgba(255, 210, 140, 0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+  }
+
   .chat-meta {
     position: absolute; // ← абсолютное позиционирование
     right: 5px; // ← отступ справа

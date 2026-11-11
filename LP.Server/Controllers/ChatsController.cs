@@ -170,7 +170,7 @@ namespace LP.Server.Controllers
                     LastMessageTime = _context.Messages
                         .Where(m => m.ChatId == chat.Id)
                         .OrderByDescending(m => m.Time)
-                        .Select(m => m.Time)
+                        .Select(m => (DateTime?)m.Time)
                         .FirstOrDefault()
                 })
                 .ToListAsync();
@@ -178,7 +178,7 @@ namespace LP.Server.Controllers
             // Чаты без сообщений сортируем по времени создания, чтобы только что
             // созданный чат не оказывался в самом конце списка.
             return Ok(chats
-                .OrderByDescending(chat => chat.LastMessageTime == default ? chat.Time : chat.LastMessageTime)
+                .OrderByDescending(chat => chat.LastMessageTime ?? chat.Time)
                 .ToList());
         }
 

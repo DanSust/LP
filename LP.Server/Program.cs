@@ -204,6 +204,7 @@ class Program
         builder.Services.AddScoped<InterestsStore>();
         builder.Services.AddScoped<IRatingService, RatingService>();
         builder.Services.AddSingleton<IEmailService, EmailService>();
+        builder.Services.AddHostedService<EmptyChatCleanupService>();
 
         //builder.Services.AddHttpClient<GoogleProvider>().AddLogger<IHttpClientLogger>();   // 
         

@@ -14,7 +14,8 @@ export interface Chat {
   avatar?: string;
   userId: string;
   lastMessage?: string;
-  lastMessageTime?: Date | string;
+  lastMessageTime?: Date | string | null;
+  time?: Date | string;
   unreadMessagesCount: number;
   status: boolean;
 }

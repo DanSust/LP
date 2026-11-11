@@ -16,6 +16,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ChatService, Message } from './../services/ChatService';
 import { UserAvatarComponent } from './../avatar/user-avatar.component ';
 import { ParseQuotePipe } from './parse-quote.pipe';
+import { getEmptyChatExpiry } from './chat-expiry';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -59,12 +60,23 @@ export class ChatView {
     return this.chatService.otherUser()?.name || this.chatService.activeChat()?.name || 'Участник';
   });
 
+  private readonly now = signal(Date.now());
+
+  emptyChatExpiry = computed(() => {
+    const chat = this.chatService.activeChat();
+    return chat ? getEmptyChatExpiry(chat, this.now()) : null;
+  });
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
   private destroyRef = inject(DestroyRef);
 
   constructor() {
+    // Обновляем таймер раз в минуту, чтобы часы в подсказке уменьшались.
+    const timer = setInterval(() => this.now.set(Date.now()), 60_000);
+    this.destroyRef.onDestroy(() => clearInterval(timer));
+
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {

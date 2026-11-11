@@ -555,6 +555,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
             name: response.name ?? 'Неизвестный',
             userId: response.userId,
             lastMessageTime: response.lastMessageTime ?? undefined,
+            time: response.time,
             unreadMessagesCount: response.unreadMessagesCount ?? 0,
             status: true
           };

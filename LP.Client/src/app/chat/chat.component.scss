@@ -134,6 +134,23 @@
   }
 }
 
+.chat-expiry-banner {
+  flex-shrink: 0;
+  padding: 8px 20px;
+  background: rgba(255, 210, 140, .12);
+  border-bottom: 1px solid rgba(255, 210, 140, .25);
+  color: rgba(255, 235, 200, .9);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+
+  strong {
+    color: #ffd28c;
+    font-weight: 600;
+    white-space: nowrap
+  }
+}
+
 .messages {
   flex: 1;
   overflow-y: auto;

@@ -40,6 +40,13 @@
     </div>
   </div>
 
+  @if (emptyChatExpiry(); as expiry) {
+  <div class="chat-expiry-banner">
+    Если не написать сообщение, чат будет удалён через
+    <strong>{{ expiry.days }}д {{ expiry.hours }}ч</strong>
+  </div>
+  }
+
   <!-- ПРЕВЬЮ ЦИТАТЫ НАД ПОЛЕМ ВВОДА -->
   @if (quotedMessage()) {
   <div class="quote-container">
