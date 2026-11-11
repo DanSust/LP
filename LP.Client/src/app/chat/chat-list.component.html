@@ -1,73 +1,39 @@
 <div class="chat-list-container">
   <!-- Шапка списка чатов -->
   <div class="list-header">
-    <h2>Чаты</h2>
 
-    <button class="new-chat-btn"
-            type="button"
-            (click)="startNewChat()"
-            aria-label="Найти собеседника">
-      <span aria-hidden="true">✏️</span>
+    <button class="new-chat-btn" (click)="toggleMobileMenu()">
+      <span>✏️</span>
     </button>
+    <h2>Чаты</h2>
   </div>
 
-  <div class="search-container">
-    <label class="visually-hidden" for="chat-search">Поиск по чатам</label>
-    <input id="chat-search"
-           type="search"
-           class="search-input"
-           placeholder="Поиск..."
-           [value]="searchQuery()"
-           (input)="searchQuery.set($any($event.target).value)" />
-  </div>
+  <!-- Поиск -->
+  <!--<div class="search-container">
+    <input type="text" placeholder="Поиск..." class="search-input">
+  </div>-->
 
   <div class="scrollable-content">
-    @if (isLoading() && chats().length === 0) {
-    <div class="list-state">
-      <span class="state-title">Загрузка чатов…</span>
-    </div>
-    } @else if (chats().length === 0) {
-    <div class="list-state">
-      <span class="state-title">Пока нет чатов</span>
-      <span class="state-hint">Найдите собеседника — и здесь появится переписка.</span>
-      <button type="button" class="state-action" (click)="startNewChat()">Найти собеседника</button>
-    </div>
-    } @else if (filteredChats().length === 0) {
-    <div class="list-state">
-      <span class="state-title">Ничего не найдено</span>
-      <span class="state-hint">Попробуйте изменить запрос.</span>
-      <button type="button" class="state-action" (click)="clearSearch()">Сбросить поиск</button>
-    </div>
-    } @else {
+    <!-- Список чатов -->
     <div class="chats-scroll">
-      @for (chat of filteredChats(); track chat.id) {
-      <button class="chat-item"
-              type="button"
-              [class.active]="chat.id === activeChatId()"
-              (click)="selectChat(chat)">
+      @for (chat of chats(); track chat.id) {
+      <div class="chat-item"
+           [class.active]="chat.id === activeChatId()"
+           (click)="selectChat(chat)">
         <app-user-avatar [userId]="chat.userId"
-                         [name]="chat.name"
-                         [showName]="false">
+                         [name]="chat.name">
         </app-user-avatar>
 
-        <span class="chat-details">
-          <span class="chat-row">
-            <span class="chat-name">{{ chat.name }}</span>
-            @if (chat.lastMessageTime) {
-            <span class="message-time">{{ getRelativeTime(chat.lastMessageTime) }}</span>
-            }
-          </span>
-
-          <span class="chat-row">
-            <span class="chat-preview">{{ chat.lastMessage || 'Начните общение' }}</span>
-            @if (chat.unreadMessagesCount > 0) {
-            <span class="unread-badge">{{ chat.unreadMessagesCount > 99 ? '99+' : chat.unreadMessagesCount }}</span>
-            }
-          </span>
-        </span>
-      </button>
+        <div class="chat-meta">
+          @if (chat.lastMessageTime) {
+          <div class="message-time">{{ getRelativeTime(chat.lastMessageTime) }}</div>
+          }
+          @if (chat.unreadMessagesCount > 0) {
+          <div class="unread-badge">{{ chat.unreadMessagesCount }}</div>
+          }
+        </div>
+      </div>
       }
     </div>
-    }
   </div>
 </div>

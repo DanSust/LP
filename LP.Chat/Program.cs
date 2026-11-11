@@ -21,28 +21,50 @@ try
         options.FallbackPolicy = null; // Никакая авторизация не требуется
     });
 
-    // ✅ Redis Configuration
-    // ✅ Пробуем подключиться к Redis
-    var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    // ✅ Redis опционален: без него чат работает напрямую с БД и in-memory SignalR.
+    var redisConnection = builder.Configuration.GetConnectionString("Redis");
     IConnectionMultiplexer? redisMultiplexer = null;
-    var redisAvailable = false;
 
-    try
+    if (!string.IsNullOrWhiteSpace(redisConnection))
     {
-        redisMultiplexer = ConnectionMultiplexer.Connect(redisConnection);
-        redisAvailable = redisMultiplexer.IsConnected;
-        Log.Information("✅ Redis connected: {Endpoint}", redisMultiplexer.GetEndPoints().FirstOrDefault());
-    }
-    catch (Exception ex)
-    {
-        Log.Warning(ex, "⚠️ Redis unavailable. Running WITHOUT cache (direct DB access).");
-        redisAvailable = false;
-    }
-    // ✅ Добавляем fallback, если Redis не доступен
-    builder.Services.AddSingleton<IConnectionMultiplexer?>(sp => redisMultiplexer);
+        try
+        {
+            var redisConfig = ConfigurationOptions.Parse(redisConnection);
+            // Не падаем и не рвём соединения SignalR, если Redis лежит.
+            redisConfig.AbortOnConnectFail = false;
+            redisConfig.ConnectTimeout = 2000;
+            redisConfig.SyncTimeout = 2000;
+            redisConfig.ConnectRetry = 1;
 
-    // SignalR с Redis Backplane
-    // ✅ SignalR с условным Redis Backplane
+            redisMultiplexer = await ConnectionMultiplexer.ConnectAsync(redisConfig);
+
+            if (redisMultiplexer.IsConnected)
+            {
+                Log.Information("✅ Redis connected: {Endpoint}", redisMultiplexer.GetEndPoints().FirstOrDefault());
+            }
+            else
+            {
+                Log.Warning("⚠️ Redis unavailable. Chat will work directly with the database.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "⚠️ Redis unavailable. Chat will work directly with the database.");
+            redisMultiplexer = null;
+        }
+    }
+    else
+    {
+        Log.Warning("⚠️ Redis connection string is not configured. Chat will work directly with the database.");
+    }
+
+    // Единая безопасная точка доступа к Redis (никогда не бросает исключение при использовании).
+    builder.Services.AddSingleton(sp => new RedisConnection(
+        redisMultiplexer,
+        sp.GetRequiredService<ILogger<RedisConnection>>()));
+
+    // SignalR: по умолчанию in-memory (одна нода чата).
+    // Backplane нужен только при нескольких экземплярах чата — включается флагом Chat:UseRedisBackplane.
     var signalRBuilder = builder.Services.AddSignalR(options =>
     {
         options.EnableDetailedErrors = true;
@@ -51,12 +73,13 @@ try
         options.KeepAliveInterval = TimeSpan.FromSeconds(10);
     });
 
-    if (redisAvailable)
+    var useRedisBackplane = builder.Configuration.GetValue("Chat:UseRedisBackplane", false);
+    if (useRedisBackplane && redisMultiplexer?.IsConnected == true)
     {
         signalRBuilder.AddStackExchangeRedis(options =>
         {
-            var config = ConfigurationOptions.Parse(redisConnection);
-            config.ChannelPrefix = "ChatHub";
+            var config = ConfigurationOptions.Parse(redisConnection!);
+            config.ChannelPrefix = RedisChannel.Literal("ChatHub");
             config.AbortOnConnectFail = false;
             options.Configuration = config;
         });
@@ -64,12 +87,8 @@ try
     }
     else
     {
-        Log.Warning("⚠️ SignalR running WITHOUT Redis backplane (single server mode)");
+        Log.Information("✅ SignalR running in single-server mode (in-memory), Redis backplane disabled");
     }
-
-    // Redis для кэша
-    builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-        ConnectionMultiplexer.Connect(redisConnection));
 
     // Rate Limiting (100 сообщений в минуту на пользователя)
     builder.Services.AddRateLimiter(options =>
@@ -101,18 +120,8 @@ try
 
     // Сервисы
     builder.Services.AddSingleton<IMessageBuffer, BufferedMessageStore>();
-    // ✅ IMessageCache только если Redis доступен, иначе null
-    if (redisAvailable)
-    {
-        builder.Services.AddSingleton<IMessageCache, RedisMessageCache>();
-        Log.Information("✅ RedisMessageCache enabled");
-    }
-    else
-    {
-        // Не регистрируем IMessageCache вообще - будем работать напрямую с БД
-        builder.Services.AddSingleton<IMessageCache, NullMessageCache>();
-        Log.Warning("⚠️ No message cache - using direct DB access");
-    }
+    // Кэш сообщений безопасен: при недоступном Redis читает/пишет напрямую в БД.
+    builder.Services.AddSingleton<IMessageCache, RedisMessageCache>();
     builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
     builder.Services.AddSingleton<IMessageBotService, MessageBotService>();
 
@@ -128,10 +137,10 @@ try
 
     app.UseRateLimiter();
     app.MapHub<ChatHub>("/chat");
-    app.MapGet("/health", (IConnectionMultiplexer redis) =>
+    app.MapGet("/health", (RedisConnection redis) =>
     {
         var connections = ChatHub.GetActiveConnections();
-        var redisConnected = redis?.IsConnected ?? false;
+        var redisConnected = redis.IsAvailable;
 
         return Results.Json(new
         {
@@ -146,7 +155,7 @@ try
                 ConnectionDuration = DateTime.UtcNow - c.ConnectedAt
             }).OrderByDescending(c => c.ConnectedAt),
             RedisConnected = redisConnected,
-            RedisEndpoint = redis?.GetEndPoints()?.FirstOrDefault()?.ToString() ?? "Not connected"
+            RedisEndpoint = redis.Multiplexer?.GetEndPoints()?.FirstOrDefault()?.ToString() ?? "Not connected"
         });
     });
 

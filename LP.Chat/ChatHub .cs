@@ -17,7 +17,7 @@ public class ChatHub : Hub
     private readonly IMessageBuffer _messageBuffer;
     private readonly IMessageCache? _messageCache;
     private readonly ILogger<ChatHub> _logger;
-    private readonly IConnectionMultiplexer _redis;
+    private readonly RedisConnection _redis;
     private readonly IServiceProvider _services;
     private readonly IUserPresenceService _presenceService;
     private readonly IServiceScopeFactory _scopeFactory;
@@ -28,7 +28,7 @@ public class ChatHub : Hub
     public record ConnectionInfo(Guid UserId, Guid ChatId, DateTime ConnectedAt, string ConnectionId);
 
     public ChatHub(IMessageBuffer messageBuffer, IMessageCache? messageCache,
-        ILogger<ChatHub> logger, IConnectionMultiplexer redis, 
+        ILogger<ChatHub> logger, RedisConnection redis, 
         IServiceProvider services,
         IServiceScopeFactory scopeFactory,
         IHubContext<ChatHub> hubContext,
@@ -146,7 +146,16 @@ public class ChatHub : Hub
     public async Task JoinChat(Guid chatId)
     {
         var userId = GetUserId();
-        await Groups.AddToGroupAsync(Context.ConnectionId, $"chat:{chatId}");
+
+        try
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"chat:{chatId}");
+        }
+        catch (RedisException ex)
+        {
+            // Backplane недоступен — чат продолжает работать, история всё равно отправится.
+            _logger.LogWarning(ex, "Failed to add connection to SignalR group for chat {ChatId}", chatId);
+        }
 
         if (_connections.TryGetValue(Context.ConnectionId, out var existingInfo))
         {
@@ -180,7 +189,15 @@ public class ChatHub : Hub
 
     public async Task LeaveChat(Guid chatId)
     {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"chat:{chatId}");
+        try
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"chat:{chatId}");
+        }
+        catch (RedisException ex)
+        {
+            _logger.LogWarning(ex, "Failed to remove connection from SignalR group for chat {ChatId}", chatId);
+        }
+
         Console.WriteLine($"✅ User {GetUserId()} left chat {chatId}");
     }
 
@@ -221,7 +238,10 @@ public class ChatHub : Hub
         }
 
         await _messageBuffer.AddMessageAsync(message);
-        await _messageCache?.AddToCacheAsync(message);
+        if (_messageCache is not null)
+        {
+            await _messageCache.AddToCacheAsync(message);
+        }
 
         // Отправка всем в чате
         var broadcastMessage = new
@@ -236,8 +256,18 @@ public class ChatHub : Hub
             MessageType = message.MessageType
         };
 
-        await Clients.OthersInGroup($"chat:{chatId}")
-            .SendAsync("ReceiveMessage", broadcastMessage);
+        // Отправка всем в чате.
+        // Если Redis-backplane включён и внезапно упал, не рвём соединение:
+        // сообщение уже сохранено в БД, клиент сможет перечитать историю.
+        try
+        {
+            await Clients.OthersInGroup($"chat:{chatId}")
+                .SendAsync("ReceiveMessage", broadcastMessage);
+        }
+        catch (RedisException ex)
+        {
+            _logger.LogWarning(ex, "Redis backplane unavailable, message {MessageId} saved to DB but not broadcast", messageId);
+        }
 
         // Подтверждение отправителю
         await Clients.Caller.SendAsync("MessageStatus", new
@@ -304,9 +334,20 @@ public class ChatHub : Hub
 
                 if (!targetConnectionIds.Any()) return;
 
-                // Публикуем в Redis
-                var pubSub = _redis.GetSubscriber();
-                await pubSub.PublishAsync($"chat:{chatId}:read", messageId.ToString());
+                // Публикуем в Redis только если он доступен.
+                // Без Redis уведомление всё равно уйдёт напрямую подключённым клиентам ниже.
+                var pubSub = _redis.TryGetSubscriber();
+                if (pubSub is not null)
+                {
+                    try
+                    {
+                        await pubSub.PublishAsync(RedisChannel.Literal($"chat:{chatId}:read"), messageId.ToString());
+                    }
+                    catch (RedisException ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to publish read status to Redis for chat {ChatId}", chatId);
+                    }
+                }
 
                 // Отправляем уведомление только онлайн участникам
                 await _hubContext.Clients.Clients(targetConnectionIds).SendAsync("StatusUpdate", new

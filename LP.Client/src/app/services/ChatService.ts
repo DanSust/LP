@@ -121,6 +121,35 @@ export class ChatService {
     return this.loadChatsPromise;
   }
 
+  /**
+   * Добавляет чат в локальный список или обновляет существующий.
+   * Нужен, чтобы чат, созданный из карточки пользователя, был виден
+   * в списке сразу, не дожидаясь первого сообщения и перезагрузки списка.
+   */
+  public upsertChat(chat: Chat): void {
+    if (!chat?.id) {
+      return;
+    }
+
+    const normalized: Chat = {
+      ...chat,
+      unreadMessagesCount: chat.unreadMessagesCount ?? 0,
+      status: chat.status ?? true
+    };
+
+    this.chats.update(chats => {
+      const index = chats.findIndex(item => item.id === normalized.id);
+
+      if (index === -1) {
+        return [normalized, ...chats];
+      }
+
+      const next = [...chats];
+      next[index] = { ...next[index], ...normalized };
+      return next;
+    });
+  }
+
   private async fetchChats(): Promise<void> {
     this.isLoadingChats.set(true);
 

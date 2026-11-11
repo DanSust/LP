@@ -77,7 +77,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly getPeopleWord = getPeopleWord;
 
   allImages: ImageData[] = []; // Все загруженные изображения
-  readonly skeletonItems = [1, 2, 3, 4, 5, 6, 7, 8];
   isLoading = true;
   isLoadingMore = false; // Флаг загрузки дополнительных данных
   baseUrl: string;

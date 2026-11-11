@@ -58,10 +58,10 @@ namespace LP.Server.Controllers
 
             if (existingChat != null)
             {
-                return Ok(new { chatId = existingChat.Id, userId = existingChat.UserId == currentUserId ? existingChat.Owner : existingChat.UserId });
+                return Ok(await ToChatListItem(existingChat, currentUserId));
             }
 
-            // Создаем новый чат
+            // Создаем новый чат сразу, чтобы он был виден в списке до первого сообщения
             var newChat = new Chat
             {
                 Id = Guid.NewGuid(),
@@ -74,7 +74,44 @@ namespace LP.Server.Controllers
             _context.Chats.Add(newChat);
             await _context.SaveChangesAsync();
 
-            return Ok(new { chatId = newChat.Id, owner = newChat.Owner, userId = newChat.UserId});
+            return Ok(await ToChatListItem(newChat, currentUserId));
+        }
+
+        /// <summary>
+        /// Возвращает чат в том же формате, что и список чатов,
+        /// чтобы клиент мог сразу добавить его в список без повторной загрузки.
+        /// </summary>
+        private async Task<object> ToChatListItem(Chat chat, Guid currentUserId)
+        {
+            var otherUserId = chat.Owner == currentUserId ? chat.UserId : chat.Owner;
+
+            var name = await _context.Users
+                .Where(u => u.Id == otherUserId)
+                .Select(u => u.Caption)
+                .FirstOrDefaultAsync() ?? "Неизвестный";
+
+            var lastMessageTime = await _context.Messages
+                .Where(m => m.ChatId == chat.Id)
+                .OrderByDescending(m => m.Time)
+                .Select(m => (DateTime?)m.Time)
+                .FirstOrDefaultAsync();
+
+            var unreadMessagesCount = await _context.Messages.CountAsync(message =>
+                message.ChatId == chat.Id &&
+                message.UserId != currentUserId &&
+                message.Status == "delivered");
+
+            return new
+            {
+                chatId = chat.Id,
+                id = chat.Id,
+                name,
+                owner = chat.Owner,
+                userId = otherUserId,
+                time = chat.Time,
+                unreadMessagesCount,
+                lastMessageTime
+            };
         }
 
         [Authorize]
@@ -114,9 +151,8 @@ namespace LP.Server.Controllers
         public async Task<IActionResult> List()
         {
             //return Ok(await _context.Chats.Where(x=>x.Owner == UserId || x.UserId == UserId).OrderByDescending(x => x.Time).ToListAsync());
-            return Ok(await _context.Chats
+            var chats = await _context.Chats
                 .Where(chat => chat.Owner == UserId || chat.UserId == UserId)
-                .OrderByDescending(chat => chat.Time)
                 .Select(chat => new
                 {
                     chat.Id,
@@ -135,15 +171,15 @@ namespace LP.Server.Controllers
                         .Where(m => m.ChatId == chat.Id)
                         .OrderByDescending(m => m.Time)
                         .Select(m => m.Time)
-                        .FirstOrDefault(),
-                    LastMessage = _context.Messages
-                        .Where(m => m.ChatId == chat.Id)
-                        .OrderByDescending(m => m.Time)
-                        .Select(m => m.Text)
                         .FirstOrDefault()
                 })
-                .OrderByDescending(chat => chat.LastMessageTime)
-                .ToListAsync());
+                .ToListAsync();
+
+            // Чаты без сообщений сортируем по времени создания, чтобы только что
+            // созданный чат не оказывался в самом конце списка.
+            return Ok(chats
+                .OrderByDescending(chat => chat.LastMessageTime == default ? chat.Time : chat.LastMessageTime)
+                .ToList());
         }
 
         [Authorize]

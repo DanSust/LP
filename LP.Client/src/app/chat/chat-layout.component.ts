@@ -30,15 +30,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   styles: [`
     :host {
       display: block;
-      height: 100vh;
-      height: 100dvh;
-      overflow: hidden;
+      height: 100vh;           /* На всю высоту родителя */
     }
-
     .container {
       width: 100%;
-      height: calc(100vh - 130px);
-      height: calc(100dvh - 130px);
+      height: calc(100% - 130px);
       display: flex;
       overflow: hidden;
     }
@@ -47,7 +43,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       width: 30%;
       flex-shrink: 0;
       height: 100%;
-      min-height: 0;
       box-sizing: border-box;
       overflow: hidden;
       display: flex;
@@ -56,24 +51,21 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
     .content {
       flex: 1;
-      min-width: 0;
       height: 100%;
-      min-height: 0;
       overflow: hidden;
       box-sizing: border-box;
     }
 
     @media (max-width: 768px) {
       .container {
-        height: calc(100vh - var(--bottom-nav-h, 70px) - env(safe-area-inset-bottom, 0px));
-        height: calc(100dvh - var(--bottom-nav-h, 70px) - env(safe-area-inset-bottom, 0px));
+        height: calc(100vh - 70px);
       }
-
+      
       .sidebar {
         width: 100%;
         height: 100%;
       }
-
+      
       .content {
         width: 100%;
         height: 100%;

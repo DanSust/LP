@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChatService, Chat } from './../services/ChatService';
 import { UserAvatarComponent } from './../avatar/user-avatar.component ';
@@ -17,35 +17,15 @@ export class ChatListComponent {
 
   chats = this.chatService.chats;
   activeChatId = this.chatService.activeChatId;
-  isLoading = this.chatService.isLoadingChats;
-
-  searchQuery = signal('');
-
-  filteredChats = computed(() => {
-    const query = this.searchQuery().trim().toLowerCase();
-    const chats = this.chats();
-
-    if (!query) {
-      return chats;
-    }
-
-    return chats.filter(chat =>
-      chat.name?.toLowerCase().includes(query) ||
-      chat.lastMessage?.toLowerCase().includes(query)
-    );
-  });
+  showMobileMenu = false;
 
   selectChat(chat: Chat): void {
     void this.chatService.openChat(chat.id);
     void this.router.navigate(['/chat', chat.id]);
   }
 
-  startNewChat(): void {
-    void this.router.navigate(['/search']);
-  }
-
-  clearSearch(): void {
-    this.searchQuery.set('');
+  toggleMobileMenu(): void {
+    this.showMobileMenu = !this.showMobileMenu;
   }
 
   getRelativeTime(date: Date | string): string {

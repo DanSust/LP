@@ -7,12 +7,8 @@
         <mat-icon>people</mat-icon>
         <span>Найдено: {{allImages.length}} {{getPeopleWord(allImages.length)}}</span>
       </div>
-      <button class="filter-toggle-btn"
-              type="button"
-              (click)="toggleFilters()"
-              title="Показать фильтры"
-              aria-label="Показать фильтры поиска">
-        <mat-icon aria-hidden="true">filter_list</mat-icon>
+      <button class="filter-toggle-btn" (click)="toggleFilters()" title="Показать фильтры">
+        <mat-icon>filter_list</mat-icon>
         <span>Фильтры</span>
       </button>
     </div>
@@ -102,44 +98,29 @@
     </div>
 
     <!-- Кнопка применения -->
-    <button class="apply-filters-btn" type="button" (click)="applyFilters()" color="accent">
-      <mat-icon aria-hidden="true">search</mat-icon>
+    <button class="apply-filters-btn" (click)="applyFilters()" color="accent">
+      <mat-icon>search</mat-icon>
       Искать
     </button>
   </div>
   }
   <!-- 🔥 ГАЛЕРЕЯ -->
   <div class="gallery-search-container" #galleryContainer>
-    @if (!showFilters && isLoading && allImages.length === 0) {
-    @for (item of skeletonItems; track item) {
-    <div class="gallery-item skeleton-card" aria-hidden="true">
-      <div class="skeleton"></div>
-    </div>
-    }
-    } @else if (!showFilters && !isLoading && allImages.length === 0) {
-    <div class="gallery-state" role="status">
-      <mat-icon aria-hidden="true">person_search</mat-icon>
-      <h2>Никого не нашли</h2>
-      <p>Попробуйте изменить город или возраст — возможно, рядом есть кто-то ещё.</p>
-      <button type="button" class="state-action" (click)="toggleFilters()">Изменить фильтры</button>
-    </div>
-    } @else {
     @for (image of allImages; track image.photoId) {
-    <a class="gallery-item"
-       [routerLink]="['/vote', image.userId]"
-       [attr.aria-label]="'Открыть профиль: ' + image.name + ', ' + image.age + ' лет'">
+    <div class="gallery-item">
       <div class="image-wrapper">
         <img [src]="image.imageUrl"
              [alt]="'Фото: ' + image.name"
              loading="lazy"
-             decoding="async" />
+             decoding="async"
+             routerLink="/vote/{{image.userId}}" />
       </div>
       <div class="photo-info">
         <span class="photo-name">{{ image.name }}</span>
         <span class="photo-age">{{ image.age }} лет</span>
         @if (image.distance) {
         <span class="photo-distance">
-          <mat-icon aria-hidden="true">place</mat-icon>
+          <mat-icon>place</mat-icon>
           {{ formatDistance(image.distance) }}
         </span>
         }
@@ -149,8 +130,7 @@
           }
         </div>
       </div>
-    </a>
-    }
+    </div>
     }
 
     <!-- Индикатор загрузки дополнительных данных -->

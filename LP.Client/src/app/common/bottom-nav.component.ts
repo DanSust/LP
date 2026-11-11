@@ -62,6 +62,8 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
     // Устанавливаем начальное состояние
     this.activeRoute = this.router.url;
+
+    console.log('totalUnreadCount - ', this.totalUnreadCount());
   }
 
   ngOnDestroy(): void {
@@ -71,6 +73,15 @@ export class BottomNavComponent implements OnInit, OnDestroy {
 
   isActive(route: string): boolean {
     return this.activeRoute.startsWith(route);
+  }
+
+  onItemClick(item: NavItem, event: Event): void {
+    //console.log('onItemClick', item);
+    if (this.isMenuItem(item)) {
+      event.stopPropagation();
+      return;
+    }
+    this.router.navigate([item.route]);
   }
 
   // Проверка — это элемент меню или обычная навигация

@@ -1,26 +1,31 @@
 :host {
   --gradient-top: #557A94;
   --gradient-bottom: #7396AE;
-  --text-primary: rgba(255,255,255,.95);
-  --text-secondary: rgba(255,255,255,.78);
-  --text-hint: rgba(255,255,255,.62);
-  --divider-color: rgba(255,255,255,.16);
+  --text-primary: rgba(255,255,255,.87);
+  --text-secondary: rgba(255,255,255,.6);
+  --text-hint: rgba(255,255,255,.38);
+  --divider-color: rgba(255,255,255,.12);
   --surface-dark: #456f7a;
   --surface-light: #2d2d2d;
   display: block;
-  height: 100%;
-  min-height: 0;
+  height: 100%
+}
+
+::ng-deep html body {
   overflow: hidden;
 }
 
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  height: calc(100vh - 130px);
   margin: 0 auto;
   background: linear-gradient(to bottom,var(--gradient-top) 0%,var(--gradient-bottom) 100%);
+
   color: var(--text-primary);
+  @media (max-width:768px) {
+    height: calc(100svh - 70px);
+  }
 }
 
 // mat-menu
@@ -129,32 +134,6 @@
   }
 }
 
-.participant-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-  }
-}
-
-.connection-banner {
-  flex-shrink: 0;
-  padding: 6px 12px;
-  text-align: center;
-  font-size: 12px;
-  color: #fff;
-  background: rgba(0, 0, 0, .18);
-}
-
 .messages {
   flex: 1;
   overflow-y: auto;
@@ -178,31 +157,9 @@
   }
 }
 
-.messages-empty {
-  margin: auto;
-  max-width: 320px;
-  padding: 20px;
-  text-align: center;
-  color: var(--text-secondary);
-
-  .messages-empty-title {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .messages-empty-hint {
-    display: block;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-}
-
 .message {
-  max-width: min(75%, 560px);
-  width: fit-content;
+  max-width: 75%;
+  width: 75%;
   padding: 12px 16px;
   background: linear-gradient(135deg,var(--surface-dark),var(--gradient-top));
   color: var(--text-primary);
@@ -245,10 +202,6 @@
 
       &.delivered, &.read {
         color: #4fc3f7
-      }
-
-      &.failed {
-        color: #ffb4b4
       }
     }
   }
@@ -334,14 +287,13 @@
 
   .emoji-button {
     position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
+    top: 10%;
+    right: 12px;
     background: rgba(0,0,0,.05);
     border: none;
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -404,7 +356,7 @@
   }
 
 
-  > button {
+  button {
     padding: 12px 24px;
     background: var(--gradient-top);
     color: #fff;
@@ -423,16 +375,6 @@
       box-shadow: none
     }
   }
-}
-
-.send-error {
-  flex-shrink: 0;
-  padding: 8px 15px;
-  background: rgba(183, 28, 28, .35);
-  border-top: 1px solid rgba(255, 255, 255, .2);
-  color: #fff;
-  font-size: 13px;
-  text-align: center;
 }
 
 .reply-button {
@@ -499,6 +441,10 @@
 }
 
 @media (max-width:768px) {
+  .chat-container {
+    height: calc(100svh - 70px)
+  }
+
   .messages {
     padding: 15px;
     gap: 10px
@@ -510,7 +456,7 @@
   }
 
   .input-area {
-    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    padding: 5px;
 
     textarea {
       padding-right: 40px; // Место для кнопки эмодзи
@@ -522,7 +468,7 @@
       }
     }
 
-    > button {
+    button {
       padding: 10px 18px
     }
   }

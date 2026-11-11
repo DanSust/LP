@@ -1,78 +1,67 @@
 <div class="gallery-wrapper">
   <!-- 🔥 ВКЛАДКИ -->
-  <div class="tabs-container" role="tablist" aria-label="Разделы знакомств">
+  <div class="tabs-container">
     <button class="tab-button"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'mutual'"
             [class.active]="activeTab === 'mutual'"
             (click)="setActiveTab('mutual')">
       Взаимные
     </button>
     <button class="tab-button"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'likesMe'"
             [class.active]="activeTab === 'likesMe'"
             (click)="setActiveTab('likesMe')">
       Я нравлюсь
     </button>
     <button class="tab-button"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'viewed'"
             [class.active]="activeTab === 'viewed'"
             (click)="setActiveTab('viewed')">
       Гости
     </button>
+    <!--<button class="tab-button"
+            [class.active]="activeTab === 'iLike'"
+            (click)="setActiveTab('iLike')">
+      Я
+    </button>-->
   </div>
 
-  <!-- 🔥 ГАЛЕРЕЯ -->
-  <div class="gallery-match-container" #galleryContainer>
-    @if (isLoading && filteredImages().length === 0) {
-    @for (item of skeletonItems; track item) {
-    <div class="gallery-item skeleton-card" aria-hidden="true">
-      <div class="skeleton"></div>
-    </div>
-    }
-    } @else if (!isLoading && filteredImages().length === 0) {
-    <div class="gallery-state" role="status">
-      <mat-icon aria-hidden="true">favorite_border</mat-icon>
-      <h2>Здесь пока пусто</h2>
-      <p>Загляните в другой раздел или зайдите позже — новые люди появляются каждый день.</p>
-    </div>
-    } @else {
+  <!--<div class="gallery-match-container" *ngIf="!isLoading; else loadingTemplate">
     @for (image of filteredImages(); track image.userId) {
     <div class="gallery-item">
-      <a class="gallery-link"
-         [routerLink]="['/vote', image.userId]"
-         [attr.aria-label]="'Открыть профиль: ' + image.name + ', ' + image.age + ' лет'">
-        <div class="image-wrapper">
-          <img [src]="getImageUrl(image.photoId)"
-               [alt]="'Фото: ' + image.name"
-               loading="lazy"
-               decoding="async" />
-        </div>
-        <div class="photo-info">
-          <span class="photo-name">{{ image.name }}</span>
-          <span class="photo-age">{{ image.age }} лет</span>
-          @if (image.distance) {
-          <span class="photo-distance">
-            <mat-icon aria-hidden="true">place</mat-icon>
-            {{ formatDistance(image.distance) }}
-          </span>
-          }
-        </div>
-      </a>
-
-      <button class="delete-btn"
-              type="button"
-              (click)="onDelete(image.userId)"
-              aria-label="Удалить из списка">
-        <mat-icon aria-hidden="true">delete</mat-icon>
-      </button>
+      <img [src]="baseUrl + '/Photos/image/' + image.photoId" routerLink="/vote/{{image.userId}}" />
+      <div class="photo-info">
+        <span class="photo-name">{{ image.name }}</span>
+        <span class="photo-age">{{ image.age }}</span>
+      </div>
     </div>
     }
+  </div>-->
+  <!-- 🔥 ГАЛЕРЕЯ -->
+  <div class="gallery-match-container" #galleryContainer>
+    @for (image of filteredImages(); track image.userId) {
+    <div class="gallery-item">
+      <mat-icon class="delete-icon"
+                aria-hidden="false"
+                aria-label="Delete"
+                fontIcon="delete"
+                (click)="onDelete(image.userId); $event.stopPropagation()">
+      </mat-icon>
+      <div class="image-wrapper">
+        <img [src]="getImageUrl(image.photoId)"
+             [alt]="'Фото: ' + image.name"
+             loading="lazy"
+             decoding="async"
+             routerLink="/vote/{{image.userId}}" />
+      </div>
+      <div class="photo-info">
+        <span class="photo-name">{{ image.name }}</span>
+        <span class="photo-age">{{ image.age }} лет</span>
+        @if (image.distance) {
+        <span class="photo-distance">
+          <mat-icon>place</mat-icon>
+          {{ formatDistance(image.distance) }}
+        </span>
+        }
+      </div>
+    </div>
     }
 
     @if (isLoadingMore) {

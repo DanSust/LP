@@ -12,13 +12,12 @@ import {
 } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
 import { ProfileService } from './vote.service';
 import { Profile } from './vote.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { API_BASE_URL } from './../app.config';
 import { HttpClient } from '@angular/common/http';
-import { ChatService } from '../services/ChatService';
+import { ChatService, Chat } from '../services/ChatService';
 import { ToastService } from '../common/toast.service';
 import { NavigationService } from '../services/NavigationService';
 import { AuthService } from '../services/AuthService';
@@ -36,7 +35,7 @@ interface ExitingProfile {
 @Component({
   selector: 'vote-cards',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule, RatingComponent],
+  imports: [CommonModule, MatIconModule, RatingComponent],
   templateUrl: './vote.component.html',
   styleUrls: ['./vote.component.scss']
 })
@@ -428,18 +427,6 @@ export class VoteComponent implements OnInit, AfterViewInit {
   //  });
   //}
 
-  onPhotoKeydown(event: KeyboardEvent): void {
-    // Не перехватываем клавиши у вложенных кнопок (стрелки, закрытие).
-    if (event.target !== event.currentTarget) {
-      return;
-    }
-
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      this.toggleFullscreen();
-    }
-  }
-
   onPhotoClick(event: MouseEvent): void {
     if (this.isDragging() || this.dragDelta() !== 0) {
       //console.log('Ignored: dragging');
@@ -547,7 +534,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     console.log("[onChatClick] userid:", this.authService.getCachedUserId());
     if (!this.authService.getCachedUserId()) {
       console.warn("Профиль не загружен");
-      this.toast.warning('Для начала диалога нужно зарегистрироваться <br> <a href="/auth" >Заходи</a>');
+      this.toast.warning('Для начала диалога нужно зарегистрироваться');
       return;
     }
 
@@ -562,15 +549,29 @@ export class VoteComponent implements OnInit, AfterViewInit {
             console.warn("!!! Сервер НЕ вернул userId !!!");
           }
 
+          const chatId = response.chatId ?? response.id;
+          const chat: Chat = {
+            id: chatId,
+            name: response.name ?? 'Неизвестный',
+            userId: response.userId,
+            lastMessageTime: response.lastMessageTime ?? undefined,
+            unreadMessagesCount: response.unreadMessagesCount ?? 0,
+            status: true
+          };
+
+          // Чат уже создан на сервере — сразу показываем его в списке,
+          // не дожидаясь первого сообщения.
+          this.chatService.upsertChat(chat);
+
           this.chatService.activeUserId.set(response.userId);
-          this.chatService.activeChatId.set(response.chatId);
+          this.chatService.activeChatId.set(chatId);
 
           // ← можно добавить проверку
           setTimeout(() => {
             console.log("[после set] activeUserId теперь:", this.chatService.activeUserId());
           }, 0);
 
-          this.router.navigateByUrl(`/chat/${response.chatId}`);
+          this.router.navigateByUrl(`/chat/${chatId}`);
         },
         error: (err) => {
           if (err.status === 401) {           // ✅ сервер сам скажет, что нет авторизации

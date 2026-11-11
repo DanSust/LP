@@ -36,11 +36,6 @@ import { CommonModule } from '@angular/common';
     .toast-warning { background: linear-gradient(135deg, #ff9800, #f57c00); }
     .toast-info { background: linear-gradient(135deg, #2196f3, #1976d2); }
     .icon { font-size: 20px; }
-    .message a {
-  color: #fff;    
-  text-decoration: none;
-  font-weight: 600;
-}
     
     @keyframes slideIn {
       from { transform: translateX(100%); opacity: 0; }

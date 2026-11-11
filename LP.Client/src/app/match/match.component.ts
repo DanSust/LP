@@ -39,7 +39,6 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly getPeopleWord = getPeopleWord;
 
   allImages: ImageData[] = [];
-  readonly skeletonItems = [1, 2, 3, 4, 5, 6, 7, 8];
   isLoading = true;
   isLoadingMore = false;
 

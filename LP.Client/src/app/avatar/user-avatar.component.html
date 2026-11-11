@@ -5,11 +5,8 @@
          decoding="async"
          class="chat-avatar"
          (error)="onImageError()">
-    <div class="status-indicator"
-         [class.online]="isOnline()"
-         [attr.title]="isOnline() ? 'Онлайн' : 'Офлайн'"></div>
+    <div class="status-indicator" [class.online]="isOnline()"></div>
   </div>
-  @if (showName()) {
   <div class="chat-name">{{ name() }}</div>
-  }
 </div>
+

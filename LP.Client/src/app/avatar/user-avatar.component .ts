@@ -12,7 +12,6 @@ import { UserStatusService } from './../services/UserStatusService';
 export class UserAvatarComponent {
   readonly userId = input<string>('');
   readonly name = input<string>('');
-  readonly showName = input<boolean>(true);
 
   private avatarUrlSignal = signal<string>('');
   public avatarUrl = this.avatarUrlSignal.asReadonly();
@@ -24,7 +23,9 @@ export class UserAvatarComponent {
   constructor() {
     effect(() => {
       const id = this.userId();
-      this.avatarUrlSignal.set(id ? `Photos/avatar/${id}` : 'assets/default-avatar.svg');
+      if (id) {
+        this.avatarUrlSignal.set(`Photos/avatar/${id}`);
+      }
     });
   }
 
