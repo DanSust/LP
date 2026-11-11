@@ -1,213 +1,169 @@
-import { Component, inject, OnInit, OnDestroy, ViewChild, ElementRef, effect, computed, signal, HostListener, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  ViewChild,
+  computed,
+  effect,
+  inject,
+  signal
+} from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Location } from '@angular/common';
-import { ChatService, Message } from './../services/ChatService';
-import { generateGUID } from './../common/GUID';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChatService, Message } from './../services/ChatService';
 import { UserAvatarComponent } from './../avatar/user-avatar.component ';
 import { ParseQuotePipe } from './parse-quote.pipe';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
-import { HttpClient } from '@angular/common/http';
-import { API_BASE_URL } from '../app.config';
 
 const QUOTE_DELIMITER = '[[[QUOTE:';
 const QUOTE_END = ']]]';
 const EMOJIS = [
-  // Smileys & Emotion (самые популярные)
   '😊', '😂', '❤️', '😍', '🔥', '🎉', '😎', '🤔', '😭', '🥺', '👋',
   '😄', '😁', '🥰', '😘', '🤗', '🤩', '😉', '😇', '🙂', '🤪', '😝',
 
-  // СЕРДЦА — ТОЛЬКО САМЫЕ НУЖНЫЕ
   '💖', '💕', '💔', '❤️‍🔥', '💌', '💋',
 
-  // ЖЕСТЫ — УВЕЛИЧЕНО КОЛИЧЕСТВО
   '👍', '👎', '👏', '🙏', '🤝', '💪', '🙌', '👌', '✌️', '🤟', '🤘',
   '🤙', '✊', '🤛', '🤜', '🤞', '✋', '🤚', '🤲', '👐', '🙋', '🙅',
   '🙆', '🙇', '🤦', '🤷', '💅', '🤏', '🫰', '👊', '🤌', '🤏', '✍️',
 
-  // Символы и события
-  '💯', '✨', '⭐', '❌', '✅', '⚠️', '💬', '🔕', '🔔', '🎯',
-
-  // Еда и напитки
-  //'☕', '🍕', '🍔', '🍰', '🍓', '🍫', '🍿',
-
-  // Природа и погода
-  //'🌸', '🌹', '🍀', '☀️', '🌙', '🌈', '🌺', '💫',
-
-  // Активности
-  //'🎮', '🎨', '🏃‍♂️', '🏃‍♀️', '🚴', '🏆', '🎸',
-
-  // Животные
-  //'🐱', '🐶', '🦊', '🐻', '🐨', '🐼', '🐧', '🦋'
+  '💯', '✨', '⭐', '❌', '✅', '⚠️', '💬', '🔕', '🔔', '🎯'
 ];
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, UserAvatarComponent, ParseQuotePipe,
-    MatMenuModule,
-    MatIconModule],
+  imports: [CommonModule, FormsModule, UserAvatarComponent, ParseQuotePipe, MatMenuModule, MatIconModule],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
-export class ChatView implements OnInit, OnDestroy {
-  @ViewChild('messageContainer') messageContainer!: ElementRef;
-  @ViewChild('messageInput') messageInput!: ElementRef<HTMLTextAreaElement>; 
+export class ChatView {
+  @ViewChild('messageContainer') messageContainer?: ElementRef<HTMLElement>;
+  @ViewChild('messageInput') messageInput?: ElementRef<HTMLTextAreaElement>;
+
   newMessage = '';
-  userId: any;
   chatService = inject(ChatService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private location = inject(Location);
-  private subscription: Subscription | undefined;
-  
+
   showMenu = signal(false);
   showEmojiPicker = signal(false);
   quotedMessage = signal<Message | null>(null);
+  sendError = signal<string | null>(null);
+  isSending = signal(false);
   emojis = EMOJIS;
 
-  // Вычисляем имя второго участника
-  otherParticipantName = computed(() => {
-    const messages = this.chatService.filteredMessages();    
-    const otherMessage = messages.find(msg => !msg.own && msg.userName);
-    return otherMessage?.userName || 'Участник';
+  participantName = computed(() => {
+    return this.chatService.otherUser()?.name || this.chatService.activeChat()?.name || 'Участник';
   });
 
-  participantName = signal<string>('Участник');
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private location = inject(Location);
+  private destroyRef = inject(DestroyRef);
 
-  // Вычисляем аватар
-  otherParticipantAvatar = computed(() => {
-    return 'assets/default-avatar.png';
-  });
-
-  constructor(private http: HttpClient,
-    @Inject(API_BASE_URL) private base: string) {
-    //this.userId = computed(() => { this.chatService.activeUserId() });
-    // Автоматическая отправка read receipts и скролл
-    effect(() => {      
-      this.userId = this.chatService.activeUserId();
-      this.chatService.filteredMessages().forEach(msg => {
-        if (!msg.own && msg.status === 'delivered') {
-          this.chatService.markAsRead(msg.id);
+  constructor() {
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const chatId = params.get('id');
+        if (!chatId) {
+          return;
         }
+
+        this.sendError.set(null);
+        void this.chatService.openChat(chatId);
       });
-      this.scrollToBottom();
-      if (this.chatService.chats().length === 0) {
-        this.router.navigate(['/chat']);
+
+    // Отмечаем входящие сообщения прочитанными и держим скролл внизу.
+    effect(() => {
+      const chatId = this.chatService.activeChatId();
+      const messages = this.chatService.filteredMessages();
+
+      if (chatId) {
+        for (const message of messages) {
+          if (!message.own && message.status === 'delivered') {
+            void this.chatService.markAsRead(chatId, message.id);
+          }
+        }
       }
-      this.loadParticipantProfile(this.userId);
-      console.log('effect ' + this.userId);
+
+      this.scrollToBottom();
     });
   }
 
-  private loadParticipantProfile(userId: string) {
-    console.log("[loadParticipantProfile] userId =", userId);
-
-    this.http.get<any>(`${this.base}/users/view?id=${userId}`, { withCredentials: true })
-      .subscribe({
-        next: (user) => {
-          console.log("[users/view] получен ответ:", user);
-          const name = user.caption || user.name || 'Участник';
-          console.log("[users/view] → устанавливаем имя:", name);
-          this.participantName.set(name);
-        },
-        error: (err) => {
-          console.log("[users/view] ошибка:", err);
-          const chat = this.chatService.chats().find(c => c.userId === userId);
-          const fallbackName = chat?.name || 'Участник';
-          console.log("[fallback] имя из чата:", fallbackName);
-          this.participantName.set(fallbackName);
-        }
-      });
-  }
-
   onAvatarClick(): void {
-    console.log('onAvatarClick()', this.chatService.otherUser()?.userId);
     const otherUserId = this.chatService.otherUser()?.userId;
     if (otherUserId) {
-      console.log('otherUserId', otherUserId);
-      this.router.navigate(['/vote', otherUserId]);
+      void this.router.navigate(['/vote', otherUserId]);
     }
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!event.target || !(event.target as HTMLElement).closest('.menu-container')) {
+    const target = event.target as HTMLElement | null;
+
+    if (!target?.closest('.menu-container')) {
       this.showMenu.set(false);
     }
-    // Закрываем эмодзи-пикер
-    if (!event.target || !(event.target as HTMLElement).closest('.emoji-picker, .emoji-button')) {
+
+    if (!target?.closest('.emoji-picker, .emoji-button')) {
       this.showEmojiPicker.set(false);
     }
   }
 
   goBack(): void {
     if (window.innerWidth <= 768) {
-      this.router.navigate(['/chat']);
+      void this.router.navigate(['/chat']);
     } else {
       this.location.back();
     }
   }
 
-  //toggleMenu(event: MouseEvent): void {
-  //  event.stopPropagation();
-  //  this.showMenu.update(value => !value);
-  //}
-
   toggleEmojiPicker(event?: MouseEvent): void {
-    if (event) {
-      event.stopPropagation();
-    }
+    event?.stopPropagation();
     this.showEmojiPicker.update(value => !value);
   }
 
   addEmoji(emoji: string): void {
     this.newMessage += emoji;
-    this.messageInput.nativeElement.focus();
-    this.onInput(); // обновить высоту textarea
+    this.messageInput?.nativeElement.focus();
+    this.onInput();
   }
 
-  analizeChat(): void {
-    this.subscription = this.route.paramMap.subscribe(params => {
-      const id = params.get("id");
-      if (id) {
-
-        this.chatService.activeChatId.set(id);
-        this.chatService.analizeChat(id);
-        //console.log('ngOnInit ' + this.userId);
-      }
-    });
-  }
-
-  deleteChat(): void {
-    console.log('Удалить чат');
-    const id = this.chatService.activeChatId();  // ← Берём текущий ID напрямую
-    if (id) {
-      this.chatService.deleteChat(id);
-    }
+  async analizeChat(): Promise<void> {
     this.showMenu.set(false);
+    const chatId = this.chatService.activeChatId();
+    if (chatId) {
+      await this.chatService.analizeChat(chatId);
+    }
+  }
+
+  async deleteChat(): Promise<void> {
+    this.showMenu.set(false);
+    const chatId = this.chatService.activeChatId();
+    if (!chatId) {
+      return;
+    }
+
+    const deleted = await this.chatService.deleteChat(chatId);
+    if (deleted) {
+      await this.router.navigate(['/chat']);
+    }
   }
 
   blockUser(): void {
-    console.log('Заблокировать пользователя');
     this.showMenu.set(false);
   }
 
   reportSpam(): void {
-    console.log('Сообщить о спаме');
     this.showMenu.set(false);
   }
 
   replyToMessage(message: Message): void {
     this.quotedMessage.set(message);
-  }
-
-  quoteMessage(message: Message): void {
-    const quote = `„ ${message.text}“\n`;
-    this.newMessage = this.newMessage ? `${quote}${this.newMessage}` : quote;
   }
 
   clearQuote(): void {
@@ -218,80 +174,63 @@ export class ChatView implements OnInit, OnDestroy {
     const keyboardEvent = event as KeyboardEvent;
     if (!keyboardEvent.shiftKey) {
       event.preventDefault();
-      this.send();
+      void this.send();
     }
   }
 
-  // Авто-изменение высоты textarea
   onInput(): void {
-    const textarea = this.messageInput.nativeElement;
-    textarea.style.height = 'auto';
-    /*textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';*/
-    const minHeight = 24; // Укажите высоту одной строки (соответствует вашему CSS)
-    const maxHeight = 120;
-
-    const newHeight = Math.max(minHeight, textarea.scrollHeight);
-
-    textarea.style.height = (newHeight > maxHeight ? maxHeight : newHeight) + 'px';
-  }
-
-  ngOnInit(): void {
-    scroll(0, 0);
-    this.subscription = this.route.paramMap.subscribe(params => {
-      const id = params.get("id");
-      if (id) {        
-        this.userId = this.chatService.activeUserId();
-        this.chatService.activeChatId.set(id);
-        //this.chatService.loadMessages(id);
-        //console.log('ngOnInit ' + this.userId);
-      }
-    });
-
-    //this.chatService.clearReadReceipts();
-
-    // Подключаемся к SignalR
-    //this.chatService.connect(this.chatService.activeChatId(), 'User');
-
-    // Загружаем историю
-    setTimeout(() => {
-      //this.chatService.loadMessages(this.chatService.activeChatId());
-    }, 500);
-  }
-
-  ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
-    // Покидаем чат при переходе на другой URL
-    const currentChatId = this.chatService.activeChatId();
-    if (currentChatId) {
-      this.chatService.leaveChat(currentChatId);
+    const textarea = this.messageInput?.nativeElement;
+    if (!textarea) {
+      return;
     }
+
+    textarea.style.height = 'auto';
+
+    const minHeight = 24;
+    const maxHeight = 120;
+    const newHeight = Math.max(minHeight, textarea.scrollHeight);
+    textarea.style.height = `${Math.min(newHeight, maxHeight)}px`;
   }
 
   async send(): Promise<void> {
-    if (this.newMessage.trim()) {
-      let messageText = this.newMessage;
-      const quote = this.quotedMessage();
-
-      // ДОБАВЛЯЕМ ЦИТАТУ В ТЕКСТ С ПОМОЩЬЮ СПЕЦСИМВОЛОВ
-      if (quote) {
-        messageText = `${QUOTE_DELIMITER}${quote.text}${QUOTE_END}\n${messageText}`;
-        this.quotedMessage.set(null); // Очищаем после добавления
-      }
-
-      await this.chatService.sendMessage(messageText);
-      this.newMessage = '';
-
-      if (this.messageInput) {
-        const textarea = this.messageInput.nativeElement;
-        textarea.style.height = 'auto';
-      }
+    const text = this.newMessage.trim();
+    if (!text || this.isSending()) {
+      return;
     }
+
+    let messageText = this.newMessage;
+    const quote = this.quotedMessage();
+
+    if (quote) {
+      messageText = `${QUOTE_DELIMITER}${quote.text}${QUOTE_END}\n${messageText}`;
+    }
+
+    this.isSending.set(true);
+    this.sendError.set(null);
+
+    const sent = await this.chatService.sendMessage(messageText);
+    this.isSending.set(false);
+
+    if (!sent) {
+      this.sendError.set('Не удалось отправить сообщение. Проверьте соединение.');
+      return;
+    }
+
+    this.newMessage = '';
+    this.quotedMessage.set(null);
+
+    const textarea = this.messageInput?.nativeElement;
+    if (textarea) {
+      textarea.style.height = 'auto';
+    }
+
+    this.scrollToBottom();
   }
 
   private scrollToBottom(): void {
     setTimeout(() => {
-      if (this.messageContainer) {
-        const element = this.messageContainer.nativeElement;
+      const element = this.messageContainer?.nativeElement;
+      if (element) {
         element.scrollTop = element.scrollHeight;
       }
     }, 0);

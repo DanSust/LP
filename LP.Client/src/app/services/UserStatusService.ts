@@ -10,61 +10,97 @@ interface UserStatus {
 
 @Injectable({ providedIn: 'root' })
 export class UserStatusService {
-  public userId: string = "";
+  public userId = '';
   public onlineUsers = signal<Set<string>>(new Set());
   public userStatuses = signal<Map<string, UserStatus>>(new Map());
   public onlineCount = computed(() => this.onlineUsers().size);
 
-  constructor(private connectionManager: SignalRConnectionManager) { }
+  private handlersRegistered = false;
+  private connectPromise: Promise<void> | null = null;
+  private onlineUsersPromise: Promise<void> | null = null;
 
+  constructor(private connectionManager: SignalRConnectionManager) {
+    this.connectionManager.onDisconnect(() => {
+      this.clearState();
+    });
 
-  async connect(userId: string): Promise<void> {    
-    await this.connectionManager.ensureConnection(); // ✅ Ждем подключения
-    //this.userId = this.connectionManager.userId ?? "";
-    await this.registerHandlers();
-    this.userId = this.connectionManager.userId ?? userId;
-    await this.requestOnlineUsers();
-    //await this.getUserStatus(this.userId);
+    // Список онлайн-пользователей нужно обновлять после каждого подключения.
+    this.connectionManager.onConnected(() => {
+      void this.requestOnlineUsers();
+    });
   }
 
-  // ✅ Единственный метод инициализации — регистрация обработчиков
-  private registerHandlers(): void {
+  /**
+   * Инициализация статусов. Вызывается один раз после авторизации.
+   * Повторные вызовы безопасны и не создают новые подключения.
+   */
+  connect(userId: string): Promise<void> {
+    if (this.connectPromise) {
+      return this.connectPromise;
+    }
+
+    this.connectPromise = this.connectInternal(userId).finally(() => {
+      this.connectPromise = null;
+    });
+
+    return this.connectPromise;
+  }
+
+  private async connectInternal(userId: string): Promise<void> {
+    await this.connectionManager.ensureConnection();
+    this.registerHandlersOnce();
+    this.userId = this.connectionManager.userId ?? userId;
+    await this.requestOnlineUsers();
+  }
+
+  private registerHandlersOnce(): void {
+    if (this.handlersRegistered) {
+      return;
+    }
+
     this.connectionManager.on('userStatusChanged', (data: { userId: string; status: boolean }) => {
-      console.log('📥 User status changed:', data);
+      if (!data?.userId) {
+        return;
+      }
       this.updateUserStatus(data.userId, data.status);
     });
 
     this.connectionManager.on('OnlineUsersList', (userIds: string[]) => {
-      console.log('📥 Online users list:', userIds);
       this.setOnlineUsers(userIds);
     });
 
-    console.log('✅ UserStatusService registered handlers');
+    this.handlersRegistered = true;
   }
 
-  // ✅ Методы API
   async getUserStatus(userId: string): Promise<boolean> {
     try {
-      console.log('GetUserStatus ' + userId);
       return await this.connectionManager.invoke('GetUserStatus', userId);
-    } catch (err) {
-      console.error('❌ Error getting user status:', err);
+    } catch {
       return false;
     }
   }
 
   async getOnlineUsers(): Promise<string[]> {
     try {
-      return await this.connectionManager.invoke('GetOnlineUsers');
-    } catch (err) {
-      console.error('❌ Error getting online users:', err);
+      const users = await this.connectionManager.invoke('GetOnlineUsers');
+      return Array.isArray(users) ? users.map(String) : [];
+    } catch {
       return [];
     }
   }
 
-  async requestOnlineUsers(): Promise<void> {
-    const users = await this.getOnlineUsers();
-    this.setOnlineUsers(users);
+  requestOnlineUsers(): Promise<void> {
+    if (this.onlineUsersPromise) {
+      return this.onlineUsersPromise;
+    }
+
+    this.onlineUsersPromise = this.getOnlineUsers()
+      .then(users => this.setOnlineUsers(users))
+      .finally(() => {
+        this.onlineUsersPromise = null;
+      });
+
+    return this.onlineUsersPromise;
   }
 
   isUserOnline(userId: string): boolean {
@@ -75,7 +111,13 @@ export class UserStatusService {
     return this.userStatuses().get(userId);
   }
 
-  // ✅ Внутренние методы (без изменений)
+  reset(): void {
+    this.userId = '';
+    this.connectPromise = null;
+    this.onlineUsersPromise = null;
+    this.clearState();
+  }
+
   private updateUserStatus(userId: string, isOnline: boolean): void {
     const statuses = new Map(this.userStatuses());
 
@@ -95,15 +137,15 @@ export class UserStatusService {
   }
 
   private setOnlineUsers(userIds: string[]): void {
-    this.onlineUsers.set(new Set(userIds));
+    const safeUserIds = Array.isArray(userIds) ? userIds.map(String) : [];
+    this.onlineUsers.set(new Set(safeUserIds));
+
     const statuses = new Map<string, UserStatus>();
-    userIds.forEach(id => statuses.set(id, { userId: id, isOnline: true }));
+    safeUserIds.forEach(id => statuses.set(id, { userId: id, isOnline: true }));
     this.userStatuses.set(statuses);
   }
 
-  // ✅ Очистка состояния при отключении
   private clearState(): void {
-    console.log('🧹 Clearing UserStatusService state on disconnect');
     this.onlineUsers.set(new Set());
     this.userStatuses.set(new Map());
   }

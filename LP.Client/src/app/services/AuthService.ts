@@ -42,11 +42,13 @@ export class AuthService {
 
     this.getUserId().subscribe({
       next: (result) => {
-        console.log(result);
-        const userId = result.userId || result.id || result.username;
+        const userId = result?.userId || result?.id || result?.username || null;
         this.userIdSubject.next(userId);
-        if (userId)
+        if (userId) {
           localStorage.setItem('userId', userId); // Optional: cache in localStorage
+        } else {
+          localStorage.removeItem('userId');
+        }
       },
       error: (error) => {
         console.error('Failed to load user ID:', error);

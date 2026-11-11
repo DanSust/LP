@@ -1,5 +1,20 @@
 <div class="card-stack" #activePhotoContainer [class.dragging]="isDragging()">
 
+  <!-- Состояния: загрузка и отсутствие профилей -->
+  @if (profileService.isLoading() && profiles().length === 0) {
+  <div class="vote-state" role="status" aria-live="polite">
+    <div class="vote-spinner" aria-hidden="true"></div>
+    <p>Подбираем профили…</p>
+  </div>
+  } @else if (profiles().length === 0 && !exitingProfile()) {
+  <div class="vote-state" role="status">
+    <mat-icon aria-hidden="true">favorite_border</mat-icon>
+    <h2>Пока нет новых людей</h2>
+    <p>Попробуйте изменить фильтры или загляните позже — новые профили появляются каждый день.</p>
+    <a class="vote-state-action" routerLink="/search">Перейти к поиску</a>
+  </div>
+  }
+
   <!-- Нет профилей -->
   <!--@if (profiles().length === 0 && !exitingProfile()) {
   <div class="no-profiles">
@@ -32,29 +47,39 @@
 
   <div class="card-actions" [class.hidden]="isFullscreen()" [class.unregistered]="!userId">
     <button class="action-btn dislike-btn"
+            type="button"
             (click)="onDislikeClick(); $event.stopPropagation()"
-            [disabled]="isAnimating()">
-      <span class="material-symbols-outlined" style="font-size: 42px;">
+            [disabled]="isAnimating()"
+            aria-label="Пропустить профиль">
+      <span class="material-symbols-outlined" style="font-size: 42px;" aria-hidden="true">
         thumb_down
       </span>
     </button>
     <button class="action-btn more-btn"
-            (click)="onChatClick(profile.id); $event.stopPropagation()">
-      <span class="material-symbols-outlined" style="font-size: 42px;">
+            type="button"
+            (click)="onChatClick(profile.id); $event.stopPropagation()"
+            aria-label="Написать сообщение">
+      <span class="material-symbols-outlined" style="font-size: 42px;" aria-hidden="true">
         mode_comment
       </span>
     </button>
     <button class="action-btn like-btn" 
+            type="button"
             (click)="onLikeClick(); $event.stopPropagation()"
-            [disabled]="isAnimating()">
-      <span class="material-symbols-outlined" style="font-size: 42px;">
+            [disabled]="isAnimating()"
+            aria-label="Поставить лайк">
+      <span class="material-symbols-outlined" style="font-size: 42px;" aria-hidden="true">
         heart_check
       </span>
       
     </button>
     @if (cameFromSearch() && !isFullscreen()) {
-    <button class="action-btn back-btn" (click)="goBackToSearch()" title="Вернуться к поиску">
-      <mat-icon>reply</mat-icon>
+    <button class="action-btn back-btn"
+            type="button"
+            (click)="goBackToSearch()"
+            title="Вернуться к поиску"
+            aria-label="Вернуться к поиску">
+      <mat-icon aria-hidden="true">reply</mat-icon>
     </button>
     }
     <!--<button class="action-btn favorite-btn"
@@ -71,11 +96,19 @@
            [class.fullscreen]="isFullscreen()"
            [style.transform]="getCurrentTransform()"
            [style.transition]="isDragging() ? 'none' : 'transform 0.3s ease-out'"
-           (click)="onPhotoClick($event)">
+           role="button"
+           tabindex="0"
+           [attr.aria-label]="isFullscreen() ? 'Выйти из полноэкранного режима' : 'Открыть фото на весь экран'"
+           (click)="onPhotoClick($event)"
+           (keydown)="onPhotoKeydown($event)">
         <!-- Кнопка закрыть только в полноэкранном режиме -->
         @if (isFullscreen()) {
-        <button class="close-btn" (click)="toggleFullscreen()" title="Закрыть">
-          <mat-icon>close</mat-icon>
+        <button class="close-btn"
+                type="button"
+                (click)="toggleFullscreen()"
+                title="Закрыть"
+                aria-label="Закрыть полноэкранный режим">
+          <mat-icon aria-hidden="true">close</mat-icon>
         </button>
         } @else {
         <!-- РЕЙТИНГ ЗДЕСЬ (перед городом) -->
@@ -101,13 +134,17 @@
         <!-- Стрелки -->
         @if (profile.photoUrls && profile.photoUrls.length > 1) {
         <button class="photo-arrow arrow-left"
+                type="button"
                 (click)="prevPhoto()"
-                [disabled]="isAnimating()">
+                [disabled]="isAnimating()"
+                aria-label="Предыдущее фото">
           ‹
         </button>
         <button class="photo-arrow arrow-right"
+                type="button"
                 (click)="nextPhoto()"
-                [disabled]="isAnimating()">
+                [disabled]="isAnimating()"
+                aria-label="Следующее фото">
           ›
         </button>
 

@@ -101,16 +101,23 @@ export class App implements OnInit, OnDestroy {
 
     // Subscribe to userId changes
     this.subscription = this.authService.userId$.subscribe(userId => {
-      if (userId)
-        this.userId = userId;
-      console.log('User ID loaded:', userId);
-      // setTimeout(() => { this.isLoading = false }, 1000, "Alice");
-      this.chatService.loadChats();
+      this.userId = userId;
+
+      if (!userId) {
+        return;
+      }
+
+      // Инициализация статусов и чатов выполняется один раз после авторизации.
+      // Оба сервиса сами защищены от повторных подключений.
+      void this.userStatusService.connect(userId);
+      void this.chatService.loadChats();
     });
   }
 
   logout(): void {
-    this.authService.logout();    
+    this.chatService.reset();
+    this.userStatusService.reset();
+    this.authService.logout();
   }
 
   ngOnDestroy(): void {

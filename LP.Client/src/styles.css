@@ -1,33 +1,36 @@
-$color-primary: #5d5c61;
-$color-secondary: #379683;
+/* ============================================================
+   Единая палитра и токены оформления
+   ============================================================ */
+:root {
+  /* Высота мобильной нижней навигации (используется в layout) */
+  --bottom-nav-h: 70px;
 
-@use '@angular/material' as mat;
+  /* Брендовая палитра */
+  --color-primary: #557a94;
+  --color-secondary: #7396ae;
+  --color-accent: #e91e63;
+  --color-blue: #03a9f4;
 
-html {
-  @include mat.theme((
-  color: (
-         primary: mat.$violet-palette,
-         theme-type: dark,
-         ),
-         ));
-}
+  /* Поверхности */
+  --gradient-top: #557a94;
+  --gradient-bottom: #7396ae;
+  --surface-dark: #456f7a;
+  --surface-light: #2d2d2d;
 
-@media (prefers-color-scheme: dark) {
-  html {
-    @include mat.theme((
-    color: (
-           primary: mat.$violet-palette,
-           theme-type: dark,
-           ),
-           ));
-  }
+  /* Текст: контраст не ниже 4.5:1 на брендовом фоне */
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.78);
+  --text-hint: rgba(255, 255, 255, 0.62);
+
+  /* Разделители и фокус */
+  --divider-color: rgba(255, 255, 255, 0.16);
+  --focus-ring: 0 0 0 3px rgba(255, 255, 255, 0.85);
 }
 
 /* You can add global styles to this file, and also import other style files */
 
-
 html {
-  background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   background-attachment: fixed; /* Чтобы не повторялся при скролле */
 }
 
@@ -37,8 +40,26 @@ body {
   width: 100%;
   /*overflow-x: hidden;*/
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   background-attachment: fixed; /* Чтобы не повторялся при скролле */
+}
+
+/* Единый видимый фокус для клавиатурной навигации */
+:where(a, button, [role='button'], input, select, textarea):focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Уважаем настройку уменьшения анимаций */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .full-width {

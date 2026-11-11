@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
 import { ProfileService } from './vote.service';
 import { Profile } from './vote.model';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -35,7 +36,7 @@ interface ExitingProfile {
 @Component({
   selector: 'vote-cards',
   standalone: true,
-  imports: [CommonModule, MatIconModule, RatingComponent],
+  imports: [CommonModule, RouterLink, MatIconModule, RatingComponent],
   templateUrl: './vote.component.html',
   styleUrls: ['./vote.component.scss']
 })
@@ -427,6 +428,18 @@ export class VoteComponent implements OnInit, AfterViewInit {
   //  });
   //}
 
+  onPhotoKeydown(event: KeyboardEvent): void {
+    // Не перехватываем клавиши у вложенных кнопок (стрелки, закрытие).
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.toggleFullscreen();
+    }
+  }
+
   onPhotoClick(event: MouseEvent): void {
     if (this.isDragging() || this.dragDelta() !== 0) {
       //console.log('Ignored: dragging');
@@ -534,7 +547,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     console.log("[onChatClick] userid:", this.authService.getCachedUserId());
     if (!this.authService.getCachedUserId()) {
       console.warn("Профиль не загружен");
-      this.toast.warning('Для начала диалога нужно зарегистрироваться');
+      this.toast.warning('Для начала диалога нужно зарегистрироваться <br> <a href="/auth" >Заходи</a>');
       return;
     }
 

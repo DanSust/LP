@@ -135,6 +135,11 @@ namespace LP.Server.Controllers
                         .Where(m => m.ChatId == chat.Id)
                         .OrderByDescending(m => m.Time)
                         .Select(m => m.Time)
+                        .FirstOrDefault(),
+                    LastMessage = _context.Messages
+                        .Where(m => m.ChatId == chat.Id)
+                        .OrderByDescending(m => m.Time)
+                        .Select(m => m.Text)
                         .FirstOrDefault()
                 })
                 .OrderByDescending(chat => chat.LastMessageTime)

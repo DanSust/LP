@@ -3,10 +3,10 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70px;
-  background: #7396AE ;//var(--gradient-top); // Фиолетовый фон с прозрачностью
+  height: var(--bottom-nav-h, 70px);
+  background: var(--color-secondary, #7396ae);
   backdrop-filter: blur(5px);
-  border-top: 1px solid #557A94;
+  border-top: 1px solid var(--color-primary, #557a94);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -33,8 +33,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   height: 100%;
-  color: rgba(255, 255, 255, 0.6); // Неактивный серый
+  min-height: 44px;
+  min-width: 44px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.78)); // Неактивный, но контрастный
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
@@ -45,10 +48,22 @@
   }
   // Активное состояние
   &.active {
-    color: antiquewhite; 
+    color: #fff;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 28px;
+      height: 3px;
+      border-radius: 0 0 3px 3px;
+      background: #fff;
+      transform: translateX(-50%);
+    }
 
     .nav-icon {
-      transform: translateY(-3px);
+      transform: translateY(-2px);
 
       .material-icons {
         filter: drop-shadow(0 0 8px rgba(233, 30, 99, 0.5));
@@ -56,14 +71,14 @@
     }
 
     .nav-label {
-      transform: scale(1.1);
+      transform: scale(1.05);
       opacity: 1;
     }
   }
   // Эффект при наведении
   @media (hover: hover) {
     &:hover:not(.active) {
-      color: rgba(255, 255, 255, 0.8);
+      color: #fff;
 
       .nav-icon {
         transform: translateY(-2px);
@@ -84,11 +99,12 @@
 }
 
 .nav-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
+  line-height: 1;
   transition: all 0.3s ease;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 /* Badge (уведомления) */
@@ -112,18 +128,22 @@
 
 .menu-item {
   .more-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary, rgba(255, 255, 255, 0.78));
     cursor: pointer;
 
     &:hover {
-      color: rgba(255, 255, 255, 0.9);
+      color: #fff;
+    }
+
+    .material-icons {
+      font-size: 24px;
     }
   }
 }

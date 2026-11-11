@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="toast" [class]="'toast-' + type">
       <span class="icon">{{ icon }}</span>
-      <span class="message">{{ message }}</span>
+      <span class="message" [innerHTML]="message"></span>
     </div>
   `,
   styles: [`
@@ -36,6 +36,11 @@ import { CommonModule } from '@angular/common';
     .toast-warning { background: linear-gradient(135deg, #ff9800, #f57c00); }
     .toast-info { background: linear-gradient(135deg, #2196f3, #1976d2); }
     .icon { font-size: 20px; }
+    .message a {
+  color: #fff;    
+  text-decoration: none;
+  font-weight: 600;
+}
     
     @keyframes slideIn {
       from { transform: translateX(100%); opacity: 0; }

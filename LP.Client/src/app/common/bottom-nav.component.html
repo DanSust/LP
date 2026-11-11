@@ -1,49 +1,51 @@
 <!-- bottom-nav.component.html -->
-<nav class="bottom-nav" *ngIf="true">
-  <div *ngFor="let item of navItems()"
-       class="nav-item"
-       [class.active]="!isMenuItem(item) && isActive(item.route)"
-       [class.menu-item]="isMenuItem(item)">
-
-    <!-- Обычная иконка -->
-    <div class="nav-icon" *ngIf="!isMenuItem(item)" (click)="onItemClick(item, $event)">
-      <span class="material-icons">{{ item.icon }}</span>
-      <span class="badge"
-            *ngIf="item.badge && item.badge > 0"
-            [class.badge-pulse]="item.badge > 3">
-        {{ item.badge > 9 ? '9+' : item.badge }}
-      </span>
-    </div>
-
-    <!-- Троеточие с меню - используем mousedown вместо click -->
-    <div class="nav-icon menu-wrapper"
-         *ngIf="isMenuItem(item)">
-      <button mat-icon-button
-              [matMenuTriggerFor]="moreMenu"
-              class="more-btn"
-              (mousedown)="$event.stopPropagation()"
-              (touchstart)="$event.stopPropagation()"
-              >
-        <span class="material-icons">{{ item.icon }}</span>
-      </button>
-    </div>
-  </div>
+<nav class="bottom-nav" aria-label="Основная навигация">
+  @for (item of navItems(); track item.label) {
+    @if (!isMenuItem(item)) {
+      <a class="nav-item"
+         [class.active]="isActive(item.route)"
+         [routerLink]="item.route"
+         [attr.aria-label]="item.badge && item.badge > 0 ? item.label + ': ' + item.badge + ' непрочитанных' : item.label"
+         [attr.aria-current]="isActive(item.route) ? 'page' : null">
+        <span class="nav-icon">
+          <span class="material-icons" aria-hidden="true">{{ item.icon }}</span>
+          @if (item.badge && item.badge > 0) {
+            <span class="badge" [class.badge-pulse]="item.badge > 3">
+              {{ item.badge > 9 ? '9+' : item.badge }}
+            </span>
+          }
+        </span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    } @else {
+      <div class="nav-item menu-item">
+        <button mat-icon-button
+                class="more-btn"
+                type="button"
+                [matMenuTriggerFor]="moreMenu"
+                aria-label="Ещё">
+          <span class="material-icons" aria-hidden="true">{{ item.icon }}</span>
+        </button>
+        <span class="nav-label">{{ item.label }}</span>
+      </div>
+    }
+  }
 </nav>
 
 <mat-menu #moreMenu="matMenu" class="bottom-nav-menu" xPosition="before">
-  <button mat-menu-item (click)="onAbout()">
+  <button mat-menu-item type="button" (click)="onAbout()">
     <mat-icon>info</mat-icon>
     <span>О сайте</span>
   </button>
-  <button mat-menu-item (click)="onNews()">
+  <button mat-menu-item type="button" (click)="onNews()">
     <mat-icon>feed</mat-icon>
     <span>Новости</span>
   </button>
-  <button mat-menu-item (click)="onProfile()">
+  <button mat-menu-item type="button" (click)="onProfile()">
     <mat-icon>person</mat-icon>
     <span>Профиль</span>
   </button>
-  <button mat-menu-item (click)="onLogout()">
+  <button mat-menu-item type="button" (click)="onLogout()">
     <mat-icon>logout</mat-icon>
     <span>Выход</span>
   </button>
