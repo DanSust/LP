@@ -7,6 +7,7 @@ Allow: /assets/terms.html
 Allow: /assets/privacy.html
 
 # Приватные и технические разделы
+Disallow: /admin
 Disallow: /auth
 Disallow: /authcallback
 Disallow: /confirm
@@ -25,3 +26,4 @@ Disallow: /api/Photos/
 Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&yclid&gclid /
 
 Sitemap: https://made4love.ru/sitemap.xml
+Sitemap: https://made4love.ru/events-sitemap.xml

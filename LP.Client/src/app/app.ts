@@ -130,6 +130,12 @@ export class App implements OnInit, OnDestroy {
     let route = this.router.routerState.snapshot.root;
     while (route.firstChild) route = route.firstChild;
 
+    // Страницы, которые выставляют мета-теги сами после загрузки данных
+    // (например, карточка события), нельзя перезаписывать значениями по умолчанию.
+    if (route.data['dynamicSeo'] === true) {
+      return;
+    }
+
     const path = this.router.url.split(/[?#]/, 1)[0] || '/';
     const canonicalPath = route.data['canonical'] as string | undefined;
     const seo = route.data['seo'] as SeoConfig | undefined;

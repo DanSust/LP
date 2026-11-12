@@ -1,0 +1,457 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <div>
+      <a routerLink="/" class="back-link">← На сайт</a>
+      <h1>События: админка</h1>
+      <p>Источники, импорт и модерация черновиков. Раздел закрыт от индексации.</p>
+    </div>
+    @if (isAuthorized) {
+      <button type="button" class="btn-ghost" (click)="logout()">Выйти</button>
+    }
+  </header>
+
+  @if (!isAuthorized) {
+    <section class="login-card">
+      <h2>Доступ по ключу</h2>
+      <p>
+        Ключ задаётся на сервере в <code>Events:AdminKey</code> и передаётся
+        в заголовке <code>X-Admin-Key</code>. Он хранится только в этой вкладке.
+      </p>
+      <form class="login-form" (ngSubmit)="login()">
+        <input
+          type="password"
+          name="adminKey"
+          [(ngModel)]="adminKey"
+          placeholder="X-Admin-Key"
+          autocomplete="off"
+        />
+        <button type="submit" class="btn-primary" [disabled]="isLoading">
+          {{ isLoading ? 'Проверяем…' : 'Войти' }}
+        </button>
+      </form>
+      @if (error) {
+        <p class="alert alert--error">{{ error }}</p>
+      }
+    </section>
+  } @else {
+    <div class="tabs">
+      <button
+        type="button"
+        class="tab"
+        [class.tab--active]="activeTab === 'sources'"
+        (click)="setTab('sources')"
+      >
+        Источники ({{ sources.length }})
+      </button>
+      <button
+        type="button"
+        class="tab"
+        [class.tab--active]="activeTab === 'events'"
+        (click)="setTab('events')"
+      >
+        События
+      </button>
+    </div>
+
+    @if (error) {
+      <p class="alert alert--error">{{ error }}</p>
+    }
+    @if (notice) {
+      <p class="alert alert--ok">{{ notice }}</p>
+    }
+
+    @if (activeTab === 'sources') {
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Источники событий</h2>
+            <p class="panel-hint">
+              RSS/Atom и JSON API забираются автоматически. Новые события попадают
+              в черновики и ждут модерации.
+            </p>
+          </div>
+          <button type="button" class="btn-primary" (click)="startCreateSource()">
+            Добавить источник
+          </button>
+        </div>
+
+        @if (showSourceForm) {
+          <form class="form-card" (ngSubmit)="saveSource()">
+            <h3>{{ editingSourceId ? 'Редактировать источник' : 'Новый источник' }}</h3>
+
+            <div class="form-grid">
+              <label>
+                <span>Название</span>
+                <input type="text" name="name" [(ngModel)]="sourceForm.name" required />
+              </label>
+
+              <label>
+                <span>Тип</span>
+                <select name="type" [(ngModel)]="sourceForm.type">
+                  <option value="Rss">RSS / Atom</option>
+                  <option value="Json">JSON API</option>
+                  <option value="Manual">Ручной</option>
+                </select>
+              </label>
+
+              @if (sourceForm.type !== 'Manual') {
+                <label class="span-2">
+                  <span>URL ленты или API</span>
+                  <input
+                    type="url"
+                    name="url"
+                    [(ngModel)]="sourceForm.url"
+                    placeholder="https://example.com/events.rss"
+                  />
+                </label>
+              }
+
+              <label>
+                <span>Город по умолчанию</span>
+                <input type="text" name="city" [(ngModel)]="sourceForm.city" placeholder="Москва" />
+              </label>
+
+              <label>
+                <span>Интервал проверки, мин</span>
+                <input
+                  type="number"
+                  name="syncIntervalMinutes"
+                  [(ngModel)]="sourceForm.syncIntervalMinutes"
+                  min="15"
+                />
+              </label>
+
+              <label class="span-2">
+                <span>Теги по умолчанию</span>
+                <input
+                  type="text"
+                  name="defaultTags"
+                  [(ngModel)]="sourceForm.defaultTags"
+                  placeholder="знакомства, офлайн"
+                />
+              </label>
+
+              @if (sourceForm.type === 'Json') {
+                <label class="span-2">
+                  <span>ConfigJson — маппинг полей</span>
+                  <textarea
+                    name="configJson"
+                    [(ngModel)]="sourceForm.configJson"
+                    rows="6"
+                    placeholder='{"itemsPath":"results","title":"name","startsAt":"date","city":"city"}'
+                  ></textarea>
+                </label>
+              }
+
+              <label class="checkbox">
+                <input type="checkbox" name="isEnabled" [(ngModel)]="sourceForm.isEnabled" />
+                <span>Источник включён</span>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" [disabled]="isLoading">Сохранить</button>
+              <button type="button" class="btn-ghost" (click)="cancelSourceForm()">Отмена</button>
+            </div>
+          </form>
+        }
+
+        @if (sources.length === 0) {
+          <p class="empty">Источников пока нет. Добавьте RSS-ленту или JSON API.</p>
+        } @else {
+          <div class="source-list">
+            @for (source of sources; track source.id) {
+              <article class="source-card">
+                <div class="source-main">
+                  <div class="source-title">
+                    <h3>{{ source.name }}</h3>
+                    <span class="badge" [class.badge--off]="!source.isEnabled">
+                      {{ source.isEnabled ? 'включён' : 'выключен' }}
+                    </span>
+                    <span class="badge badge--type">{{ sourceTypeLabel(source.type) }}</span>
+                  </div>
+
+                  @if (source.url) {
+                    <p class="source-url">{{ source.url }}</p>
+                  }
+
+                  <p class="source-meta">
+                    @if (source.city) {
+                      <span>📍 {{ source.city }}</span>
+                    }
+                    <span>Интервал: {{ source.syncIntervalMinutes }} мин</span>
+                    @if (source.lastSyncAt) {
+                      <span>Синхронизация: {{ source.lastSyncAt | date: 'd MMM yyyy, HH:mm' }}</span>
+                    }
+                  </p>
+
+                  @if (source.lastSyncStatus) {
+                    <p class="source-status">{{ source.lastSyncStatus }}</p>
+                  }
+                  @if (source.lastSyncError) {
+                    <p class="source-error">{{ source.lastSyncError }}</p>
+                  }
+                </div>
+
+                <div class="source-actions">
+                  <button type="button" class="btn-small" (click)="editSource(source)">Изменить</button>
+                  <button
+                    type="button"
+                    class="btn-small"
+                    (click)="testSource(source)"
+                    [disabled]="busySourceId === source.id"
+                  >
+                    Проверить
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-small"
+                    (click)="syncSource(source)"
+                    [disabled]="busySourceId === source.id"
+                  >
+                    Импорт
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-small btn-small--danger"
+                    (click)="deleteSource(source)"
+                    [disabled]="busySourceId === source.id"
+                  >
+                    Удалить
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+
+        @if (preview; as previewData) {
+          <section class="preview">
+            <div class="panel-head">
+              <h3>Проверка источника: {{ previewSourceName }}</h3>
+              <button type="button" class="btn-small" (click)="closePreview()">Закрыть</button>
+            </div>
+
+            @if (!previewData.success) {
+              <p class="alert alert--error">{{ previewData.error }}</p>
+            } @else {
+              <p class="preview-total">
+                Получено событий: <strong>{{ previewData.total }}</strong>.
+                Показаны первые {{ previewData.items.length }}.
+              </p>
+              <div class="preview-list">
+                @for (item of previewData.items; track $index) {
+                  <div class="preview-item">
+                    <p class="preview-title">{{ item.title }}</p>
+                    <p class="preview-meta">
+                      {{ item.startsAt | date: 'd MMM yyyy, HH:mm' }}
+                      @if (item.city) {
+                        · {{ item.city }}
+                      }
+                    </p>
+                    @if (item.sourceUrl) {
+                      <a [href]="item.sourceUrl" target="_blank" rel="noopener noreferrer">
+                        Открыть источник ↗
+                      </a>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </section>
+        }
+      </section>
+    }
+
+    @if (activeTab === 'events') {
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Модерация событий</h2>
+            <p class="panel-hint">
+              Опубликованные события видны на сайте и попадают в sitemap.
+              Черновики не индексируются.
+            </p>
+          </div>
+          <div class="panel-actions">
+            <select name="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="loadEvents()">
+              <option value="Draft">Черновики</option>
+              <option value="Published">Опубликованные</option>
+              <option value="Rejected">Отклонённые</option>
+              <option value="all">Все</option>
+            </select>
+            <button type="button" class="btn-primary" (click)="startCreateEvent()">
+              Создать вручную
+            </button>
+          </div>
+        </div>
+
+        @if (showEventForm) {
+          <form class="form-card" (ngSubmit)="saveEvent()">
+            <h3>{{ editingEventId ? 'Редактировать событие' : 'Новое событие' }}</h3>
+
+            <div class="form-grid">
+              <label class="span-2">
+                <span>Название</span>
+                <input type="text" name="title" [(ngModel)]="eventForm.title" required />
+              </label>
+
+              <label class="span-2">
+                <span>Краткое описание</span>
+                <input type="text" name="summary" [(ngModel)]="eventForm.summary" />
+              </label>
+
+              <label>
+                <span>Начало</span>
+                <input type="datetime-local" name="startsAt" [(ngModel)]="startsAtLocal" required />
+              </label>
+
+              <label>
+                <span>Окончание</span>
+                <input type="datetime-local" name="endsAt" [(ngModel)]="endsAtLocal" />
+              </label>
+
+              <label>
+                <span>Город</span>
+                <input type="text" name="city" [(ngModel)]="eventForm.city" placeholder="Москва" />
+              </label>
+
+              <label>
+                <span>Место</span>
+                <input type="text" name="venue" [(ngModel)]="eventForm.venue" placeholder="Парк Горького" />
+              </label>
+
+              <label class="span-2">
+                <span>Адрес</span>
+                <input type="text" name="address" [(ngModel)]="eventForm.address" />
+              </label>
+
+              <label class="span-2">
+                <span>Картинка (URL)</span>
+                <input type="url" name="imageUrl" [(ngModel)]="eventForm.imageUrl" />
+              </label>
+
+              <label class="span-2">
+                <span>Ссылка на источник</span>
+                <input type="url" name="sourceUrl" [(ngModel)]="eventForm.sourceUrl" />
+              </label>
+
+              <label class="span-2">
+                <span>Теги через запятую</span>
+                <input type="text" name="tags" [(ngModel)]="eventForm.tags" placeholder="свидание, прогулка" />
+              </label>
+
+              <label class="span-2">
+                <span>Описание</span>
+                <textarea name="description" [(ngModel)]="eventForm.description" rows="6"></textarea>
+              </label>
+
+              <label class="checkbox">
+                <input
+                  type="checkbox"
+                  name="publishImmediately"
+                  [(ngModel)]="eventForm.publishImmediately"
+                />
+                <span>Опубликовать сразу</span>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" [disabled]="isLoading">Сохранить</button>
+              <button type="button" class="btn-ghost" (click)="cancelEventForm()">Отмена</button>
+            </div>
+          </form>
+        }
+
+        @if (events.length === 0) {
+          <p class="empty">Событий с таким статусом нет.</p>
+        } @else {
+          <div class="event-list">
+            @for (event of events; track event.id) {
+              <article class="admin-event">
+                <div class="admin-event-main">
+                  <div class="admin-event-title">
+                    <h3>{{ event.title }}</h3>
+                    <span
+                      class="status"
+                      [class.status--draft]="event.status === 'Draft'"
+                      [class.status--published]="event.status === 'Published'"
+                      [class.status--rejected]="event.status === 'Rejected'"
+                    >
+                      {{ statusLabel(event.status) }}
+                    </span>
+                  </div>
+
+                  <p class="admin-event-meta">
+                    <span>{{ event.startsAt | date: 'd MMM yyyy, HH:mm' }}</span>
+                    @if (event.city) {
+                      <span>📍 {{ event.city }}</span>
+                    }
+                    @if (event.sourceName) {
+                      <span>Источник: {{ event.sourceName }}</span>
+                    }
+                  </p>
+
+                  @if (event.slug) {
+                    <p class="admin-event-slug">/events/{{ event.slug }}</p>
+                  }
+
+                  @if (event.rejectionReason) {
+                    <p class="admin-event-reason">Причина отклонения: {{ event.rejectionReason }}</p>
+                  }
+                </div>
+
+                <div class="admin-event-actions">
+                  @if (event.status === 'Draft') {
+                    <button type="button" class="btn-small btn-small--ok" (click)="publishEvent(event)">
+                      Опубликовать
+                    </button>
+                    <button type="button" class="btn-small" (click)="editEvent(event)">Изменить</button>
+                    <button type="button" class="btn-small btn-small--danger" (click)="startReject(event)">
+                      Отклонить
+                    </button>
+                  }
+
+                  @if (event.status === 'Published') {
+                    <a
+                      class="btn-small"
+                      [routerLink]="['/events', event.slug]"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Открыть
+                    </a>
+                    <button type="button" class="btn-small" (click)="editEvent(event)">Изменить</button>
+                    <button type="button" class="btn-small btn-small--danger" (click)="unpublishEvent(event)">
+                      Снять с публикации
+                    </button>
+                  }
+
+                  @if (event.status !== 'Published') {
+                    <button type="button" class="btn-small btn-small--danger" (click)="deleteEvent(event)">
+                      Удалить
+                    </button>
+                  }
+                </div>
+
+                @if (rejectingId === event.id) {
+                  <form class="reject-form" (ngSubmit)="confirmReject(event)">
+                    <input
+                      type="text"
+                      name="rejectReason"
+                      [(ngModel)]="rejectReason"
+                      placeholder="Причина отклонения"
+                      required
+                    />
+                    <button type="submit" class="btn-small btn-small--danger">Подтвердить</button>
+                    <button type="button" class="btn-small" (click)="cancelReject()">Отмена</button>
+                  </form>
+                }
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+  }
+</div>

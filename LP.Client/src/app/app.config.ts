@@ -24,6 +24,8 @@ import { VoteComponent } from './vote/vote.component';
 import { MatchComponent } from './match/match.component';
 import { SearchComponent } from './search/search.component';
 import { EventsViewComponent } from './events/events-view.component';
+import { EventDetailComponent } from './events/event-detail.component';
+import { AdminEventsComponent } from './admin/admin-events.component';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthService } from './services/AuthService';
 import { ConfirmComponent } from './auth/auth.confirm.component';
@@ -69,11 +71,36 @@ const appRoutes: Routes = [
     data: {
       indexable: true,
       canonical: '/events',
+      dynamicSeo: true,
       seo: {
         title: 'События и знакомства — Made4Love',
         description: 'События и встречи Made4Love: узнавайте о новых мероприятиях сервиса и находите людей, с которыми интересно провести время.'
       }
     }
+  },
+  {
+    path: "events/:slug",
+    component: EventDetailComponent,
+    data: {
+      indexable: true,
+      dynamicSeo: true
+    }
+  },
+  {
+    path: "admin/events",
+    component: AdminEventsComponent,
+    data: {
+      indexable: false,
+      seo: {
+        title: 'Админка событий — Made4Love',
+        description: 'Управление источниками и модерация событий Made4Love.'
+      }
+    }
+  },
+  {
+    path: "admin",
+    pathMatch: "full",
+    redirectTo: "admin/events"
   },
   { path: "auth", component: AuthComponent },
   { path: "confirm", component: ConfirmComponent },

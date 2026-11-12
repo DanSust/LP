@@ -1,33 +1,103 @@
-<div class="events-container">
-  <div class="events-header">
-    <h2>📢 События</h2>
-  </div>
+<div class="events-page">
+  <header class="events-hero">    
+    <h2>События и встречи</h2>
+    <p class="lead">
+      Реальные мероприятия для тех, кто ищет серьёзные отношения: встречи, лекции,
+      прогулки и вечеринки. Приходите знакомиться вживую.
+    </p>
+  </header>
 
-  <ng-container *ngIf="!isLoading; else loadingTemplate">
-    <mat-list *ngIf="events.length > 0; else emptyTemplate">
-      <div class="event-item" *ngFor="let event of events; let last = last">
-        <mat-list-item>
-          <div matListItemTitle class="event-title" style="color: white">{{event.title}}</div>
-          <div matListItemLine class="event-description">{{event.description}}</div>
-          <div matListItemLine class="event-date">{{ event.createdAt | date:'short' }}</div>
-        </mat-list-item>
-        <mat-divider *ngIf="!last"></mat-divider>
+  <main class="events-content">
+    @if (isLoading) {
+      <div class="events-grid" aria-label="Загрузка событий">
+        @for (item of [1, 2, 3, 4]; track item) {
+          <div class="event-card skeleton-card">
+            <div class="skeleton-media"></div>
+            <div class="skeleton-body">
+              <div class="skeleton-line skeleton-line--short"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line skeleton-line--medium"></div>
+            </div>
+          </div>
+        }
       </div>
-    </mat-list>
-
-    <ng-template #emptyTemplate>
-      <div class="empty-state">
-        <mat-icon class="empty-icon">event_busy</mat-icon>
-        <p>Нет событий</p>
+    } @else if (error) {
+      <div class="state state--error">
+        <mat-icon>cloud_off</mat-icon>
+        <p>{{ error }}</p>
+        <button type="button" class="btn-primary" (click)="retry()">Попробовать снова</button>
       </div>
-    </ng-template>
-  </ng-container>
+    } @else if (events.length === 0) {
+      <div class="state">
+        <mat-icon>event_busy</mat-icon>
+        <h2>Пока нет предстоящих событий</h2>
+        <p>
+          Мы публикуем только проверенные мероприятия от реальных организаторов.
+          Загляните позже.
+        </p>
+      </div>
+    } @else {
+      <div class="events-grid">
+        @for (event of events; track event.id) {
+          <article class="event-card">
+            <a class="card-link" [routerLink]="['/events', event.slug]">
+              <div class="card-media" [class.card-media--empty]="!event.imageUrl">
+                @if (event.imageUrl) {
+                  <img
+                    [src]="event.imageUrl"
+                    [alt]="event.title"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                  />
+                } @else {
+                  <span class="media-placeholder">📅</span>
+                }
+                <span class="date-chip">
+                  <span class="date-day">{{ event.startsAt | date: 'd' }}</span>
+                  <span class="date-month">{{ event.startsAt | date: 'MMM' }}</span>
+                </span>
+              </div>
 
-  <ng-template #loadingTemplate>
-    <div class="loading-container">
-      <div class="skeleton-line"></div>
-      <div class="skeleton-line"></div>
-      <div class="skeleton-line"></div>
-    </div>
-  </ng-template>
+              <div class="card-body">
+                <p class="card-time">{{ event.startsAt | date: 'EEEE, d MMMM · HH:mm' }}</p>
+                <h2>{{ event.title }}</h2>
+
+                @if (event.summary) {
+                  <p class="card-summary">{{ event.summary }}</p>
+                }
+
+                @if (event.city || event.venue) {
+                  <p class="card-place">
+                    @if (event.city) {
+                      <span>📍 {{ event.city }}</span>
+                    }
+                    @if (event.venue) {
+                      <span>{{ event.venue }}</span>
+                    }
+                  </p>
+                }
+
+                @if (event.tags.length > 0) {
+                  <div class="card-tags">
+                    @for (tagName of event.tags; track tagName) {
+                      <span class="tag">{{ tagName }}</span>
+                    }
+                  </div>
+                }
+
+                <span class="card-cta">Подробнее →</span>
+              </div>
+            </a>
+          </article>
+        }
+      </div>
+    }
+  </main>
+
+  <footer class="events-footer">
+    <p>
+      Хотите добавить своё событие? Напишите нам — мы публикуем мероприятия
+      от реальных организаторов после проверки.
+    </p>
+  </footer>
 </div>

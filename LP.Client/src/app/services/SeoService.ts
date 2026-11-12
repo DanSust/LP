@@ -9,6 +9,8 @@ export interface SeoConfig {
   imageAlt?: string;
   url?: string;
   robots?: string;
+  /** og:type, по умолчанию website */
+  type?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,6 +19,7 @@ export class SeoService {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
 
+  private readonly siteUrl = 'https://made4love.ru';
   private readonly defaultTitle = 'Made4Love — знакомства для серьёзных отношений';
   private readonly defaultDescription = 'Made4Love — знакомства для серьёзных отношений. Проверка совместимости, живой чат и денежный приз за свадьбу. Создайте анкету бесплатно.';
   private readonly defaultImage = 'https://made4love.ru/assets/social-preview.jpg';
@@ -25,9 +28,10 @@ export class SeoService {
   updateMetaTags(config: SeoConfig = {}): void {
     const title = this.formatTitle(config.title);
     const description = config.description || this.defaultDescription;
-    const canonicalUrl = new URL(config.url || '/', 'https://made4love.ru').href;
-    const imageUrl = new URL(config.image || this.defaultImage, 'https://made4love.ru').href;
+    const canonicalUrl = new URL(config.url || '/', this.siteUrl).href;
+    const imageUrl = new URL(config.image || this.defaultImage, this.siteUrl).href;
     const imageAlt = config.imageAlt || this.defaultImageAlt;
+    const ogType = config.type || 'website';
 
     this.document.documentElement.lang = 'ru';
 
@@ -35,7 +39,7 @@ export class SeoService {
     this.metaService.updateTag({ name: 'description', content: description });
     this.metaService.updateTag({ name: 'robots', content: config.robots || 'index,follow' });
 
-    this.metaService.updateTag({ property: 'og:type', content: 'website' });
+    this.metaService.updateTag({ property: 'og:type', content: ogType });
     this.metaService.updateTag({ property: 'og:site_name', content: 'Made4Love' });
     this.metaService.updateTag({ property: 'og:locale', content: 'ru_RU' });
     this.metaService.updateTag({ property: 'og:title', content: title });
@@ -59,6 +63,28 @@ export class SeoService {
       this.document.head.appendChild(canonical);
     }
     canonical.href = canonicalUrl;
+  }
+
+  /**
+   * Добавляет или обновляет JSON-LD разметку. Идентификатор нужен, чтобы
+   * при переходе между страницами не накапливались устаревшие схемы.
+   */
+  setJsonLd(id: string, data: unknown): void {
+    this.removeJsonLd(id);
+
+    const script = this.document.createElement('script');
+    script.id = id;
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(data);
+    this.document.head.appendChild(script);
+  }
+
+  removeJsonLd(id: string): void {
+    this.document.getElementById(id)?.remove();
+  }
+
+  absoluteUrl(path: string): string {
+    return new URL(path, this.siteUrl).href;
   }
 
   private formatTitle(title?: string): string {

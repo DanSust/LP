@@ -1,0 +1,139 @@
+<div class="detail-page">
+  <nav class="breadcrumbs" aria-label="Навигационная цепочка">
+    <a routerLink="/">Главная</a>
+    <span class="separator">/</span>
+    <a routerLink="/events">События</a>
+    @if (event) {
+      <span class="separator">/</span>
+      <span class="current">{{ event.title }}</span>
+    }
+  </nav>
+
+  @if (isLoading) {
+    <div class="detail-skeleton" aria-label="Загрузка события">
+      <div class="skeleton-line skeleton-line--title"></div>
+      <div class="skeleton-line skeleton-line--meta"></div>
+      <div class="skeleton-media"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line skeleton-line--medium"></div>
+    </div>
+  } @else if (notFound) {
+    <section class="state">
+      <mat-icon>search_off</mat-icon>
+      <h1>Событие не найдено</h1>
+      <p>Возможно, событие ещё не опубликовано или ссылка устарела.</p>
+      <a routerLink="/events" class="btn-primary">Смотреть все события</a>
+    </section>
+  } @else if (error) {
+    <section class="state">
+      <mat-icon>cloud_off</mat-icon>
+      <h1>Не удалось загрузить событие</h1>
+      <p>{{ error }}</p>
+      <button type="button" class="btn-primary" (click)="retry()">Попробовать снова</button>
+    </section>
+  } @else if (event) {
+    <article class="event-article">
+      <header class="article-head">
+        <p class="eyebrow">Событие Made4Love</p>
+        <h1>{{ event.title }}</h1>
+
+        <p class="article-meta">
+          <span class="meta-item">
+            🗓
+            @if (event.endsAt) {
+              @if (sameDay(event.startsAt, event.endsAt)) {
+                {{ event.startsAt | date: 'd MMMM yyyy, HH:mm' }} — {{ event.endsAt | date: 'HH:mm' }}
+              } @else {
+                {{ event.startsAt | date: 'd MMMM, HH:mm' }} — {{ event.endsAt | date: 'd MMMM yyyy, HH:mm' }}
+              }
+            } @else {
+              {{ event.startsAt | date: 'EEEE, d MMMM yyyy, HH:mm' }}
+            }
+          </span>
+
+          @if (event.city) {
+            <span class="meta-item">📍 {{ event.city }}</span>
+          }
+
+          @if (event.venue) {
+            <span class="meta-item">🏛 {{ event.venue }}</span>
+          }
+        </p>
+
+        @if (event.tags.length > 0) {
+          <div class="article-tags">
+            @for (tag of event.tags; track tag) {
+              <span class="tag">{{ tag }}</span>
+            }
+          </div>
+        }
+      </header>
+
+      @if (event.imageUrl) {
+        <figure class="article-image">
+          <img
+            [src]="event.imageUrl"
+            [alt]="event.title"
+            referrerpolicy="no-referrer"
+          />
+        </figure>
+      }
+
+      <div class="article-layout">
+        <div class="article-main">
+          @if (event.summary) {
+            <p class="summary">{{ event.summary }}</p>
+          }
+
+          @if (event.description) {
+            <div class="description">{{ event.description }}</div>
+          } @else {
+            <p class="description description--empty">
+              Подробное описание появится позже. Следите за обновлениями.
+            </p>
+          }
+
+          @if (event.sourceUrl) {
+            <p class="source">
+              Источник события:
+              <a [href]="event.sourceUrl" target="_blank" rel="noopener noreferrer nofollow">
+                перейти на сайт организатора ↗
+              </a>
+            </p>
+          }
+        </div>
+
+        <aside class="article-aside">
+          <h2>Когда и где</h2>
+          <dl>
+            <dt>Начало</dt>
+            <dd>{{ event.startsAt | date: 'd MMMM yyyy, HH:mm' }}</dd>
+
+            @if (event.endsAt) {
+              <dt>Окончание</dt>
+              <dd>{{ event.endsAt | date: 'd MMMM yyyy, HH:mm' }}</dd>
+            }
+
+            @if (event.city) {
+              <dt>Город</dt>
+              <dd>{{ event.city }}</dd>
+            }
+
+            @if (event.venue) {
+              <dt>Место</dt>
+              <dd>{{ event.venue }}</dd>
+            }
+
+            @if (event.address) {
+              <dt>Адрес</dt>
+              <dd>{{ event.address }}</dd>
+            }
+          </dl>
+
+          <a routerLink="/events" class="btn-ghost">Все события</a>
+        </aside>
+      </div>
+    </article>
+  }
+</div>

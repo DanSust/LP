@@ -6,6 +6,7 @@ using LP.Entity.Store;
 using LP.Server.Extensions;
 using LP.Server.OAuth;
 using LP.Server.Services;
+using LP.Server.Services.Events;
 using LP.Server.Services.ImageProcessing;
 using LP.Server.Services.Rating;
 using Microsoft.AspNetCore.Authentication;
@@ -205,6 +206,13 @@ class Program
         builder.Services.AddScoped<IRatingService, RatingService>();
         builder.Services.AddSingleton<IEmailService, EmailService>();
         builder.Services.AddHostedService<EmptyChatCleanupService>();
+
+        builder.Services.AddScoped<IEventSourceProvider, RssEventSourceProvider>();
+        builder.Services.AddScoped<IEventSourceProvider, JsonEventSourceProvider>();
+        builder.Services.AddScoped<IEventSourceProvider, ManualEventSourceProvider>();
+        builder.Services.AddScoped<EventSlugService>();
+        builder.Services.AddScoped<EventImportService>();
+        builder.Services.AddHostedService<EventImportBackgroundService>();
 
         //builder.Services.AddHttpClient<GoogleProvider>().AddLogger<IHttpClientLogger>();   // 
         

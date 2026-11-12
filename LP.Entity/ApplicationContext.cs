@@ -18,6 +18,7 @@
         public DbSet<Chat> Chats { get; set; } = null!;
         public DbSet<Vote> Votes { get; set; } = null!;
         public DbSet<Event> Events { get; set; } = null!;
+        public DbSet<EventSource> EventSources { get; set; } = null!;
         public DbSet<Reject> Rejects { get; set; } = null!;
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
@@ -60,6 +61,26 @@
             md.Entity<Message>(builder =>
             {
                 builder.HasIndex(v => new {v.ChatId, v.Time }).IsDescending(false, false);
+            });
+
+            md.Entity<EventSource>(builder =>
+            {
+                builder.Property(x => x.Type).HasConversion<string>().HasMaxLength(20);
+                builder.HasIndex(x => x.IsEnabled);
+            });
+
+            md.Entity<Event>(builder =>
+            {
+                builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+                builder.HasIndex(x => x.Slug).IsUnique();
+                builder.HasIndex(x => new { x.Status, x.StartsAt });
+                builder.HasIndex(x => new { x.SourceId, x.ExternalId })
+                    .IsUnique()
+                    .HasFilter("[ExternalId] IS NOT NULL");
+                builder.HasOne(x => x.Source)
+                    .WithMany(x => x.Events)
+                    .HasForeignKey(x => x.SourceId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             md.Entity<Reject>(entity =>
