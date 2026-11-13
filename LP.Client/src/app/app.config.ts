@@ -25,7 +25,10 @@ import { MatchComponent } from './match/match.component';
 import { SearchComponent } from './search/search.component';
 import { EventsViewComponent } from './events/events-view.component';
 import { EventDetailComponent } from './events/event-detail.component';
+import { JournalViewComponent } from './journal/journal-view.component';
+import { JournalDetailComponent } from './journal/journal-detail.component';
 import { AdminEventsComponent } from './admin/admin-events.component';
+import { AdminJournalComponent } from './admin/admin-journal.component';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthService } from './services/AuthService';
 import { ConfirmComponent } from './auth/auth.confirm.component';
@@ -87,6 +90,27 @@ const appRoutes: Routes = [
     }
   },
   {
+    path: "journal",
+    component: JournalViewComponent,
+    data: {
+      indexable: true,
+      canonical: '/journal',
+      dynamicSeo: true,
+      seo: {
+        title: 'Журнал Made4Love — отношения, города и события',
+        description: 'Журнал Made4Love: разборы, городские подборки и материалы о знакомствах и отношениях. Редакция проверяет каждый текст и указывает источник.'
+      }
+    }
+  },
+  {
+    path: "journal/:slug",
+    component: JournalDetailComponent,
+    data: {
+      indexable: true,
+      dynamicSeo: true
+    }
+  },
+  {
     path: "admin/events",
     component: AdminEventsComponent,
     data: {
@@ -94,6 +118,17 @@ const appRoutes: Routes = [
       seo: {
         title: 'Админка событий — Made4Love',
         description: 'Управление источниками и модерация событий Made4Love.'
+      }
+    }
+  },
+  {
+    path: "admin/journal",
+    component: AdminJournalComponent,
+    data: {
+      indexable: false,
+      seo: {
+        title: 'Админка журнала — Made4Love',
+        description: 'Редактура и модерация материалов журнала Made4Love.'
       }
     }
   },
@@ -164,6 +199,10 @@ export function getBaseHub() {
   return environment.hubUrl;
 }
 
+export function getBaseJournalUrl() {
+  return environment.journalApiUrl;
+}
+
 export function getEnvironment(): string {
   return environment.production ? 'production' : 'development';
 }
@@ -175,6 +214,7 @@ export function getDefaultAvatarUrl() {
 
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 export const API_HUB_URL = new InjectionToken<string>('API_HUB_URL');
+export const JOURNAL_API_BASE_URL = new InjectionToken<string>('JOURNAL_API_BASE_URL');
 export const APP_ENVIRONMENT = new InjectionToken<string>('APP_ENVIRONMENT');
 export const DEFAULT_AVATAR_URL = new InjectionToken<string>('DEFAULT_AVATAR_URL');
 registerLocaleData(localeRu);
@@ -184,6 +224,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     { provide: API_BASE_URL, useFactory: getBaseUrl },
     { provide: API_HUB_URL, useFactory: getBaseHub },
+    { provide: JOURNAL_API_BASE_URL, useFactory: getBaseJournalUrl },
     //{ provide: API_BASE_URL, useValue: environment.apiUrl },
     //{ provide: API_HUB_URL, useValue: environment.hubUrl },
     { provide: APP_ENVIRONMENT, useFactory: getEnvironment },

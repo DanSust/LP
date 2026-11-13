@@ -3,6 +3,7 @@ export const environment = {
   production: false,
   //apiUrl: 'https://127.0.0.1:7010/api',
   apiUrl: 'https://127.0.0.1/api',
+  journalApiUrl: '/journal-api',
   //apiUrl: '/api',
   //hubUrl: 'https://127.0.0.1:5000',
   hubUrl: 'https://127.0.0.1/hub',

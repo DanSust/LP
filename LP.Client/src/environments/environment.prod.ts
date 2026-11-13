@@ -1,6 +1,7 @@
 export const environment = {
   production: true,
   apiUrl: 'https://made4love.ru/api',  // HTTPS для продакшена
+  journalApiUrl: 'https://made4love.ru/api',
   hubUrl: 'https://made4love.ru/hub',
   useHttps: true,
   apiVersion: 'v1',

@@ -1,6 +1,17 @@
 console.log('>>> PROXY CONFIG LOADED <<<');
 
 export default {
+  '/journal-api': {
+    target: 'https://127.0.0.1:7020',
+    changeOrigin: true,
+    secure: false,
+    rewrite: (path) => path.replace(/^\/journal-api/, ''),
+    configure: (proxy, options) => {
+      proxy.on('error', (err, req, res) => {
+        console.log('[Journal Proxy Error]', err.message);
+      });
+    }
+  },
   '/api': {
     target: 'https://127.0.0.1:7010',
     changeOrigin: true,

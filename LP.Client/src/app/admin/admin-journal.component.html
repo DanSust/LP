@@ -1,0 +1,712 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <div>
+      <a routerLink="/admin/events" class="back-link">← События</a>
+      <h1>Журнал: админка</h1>
+      <p>
+        Черновики, редактура и модерация материалов. Публикация возможна только
+        после проверки фактов, атрибуции и прав на изображение.
+      </p>
+    </div>
+    @if (isAuthorized) {
+      <div class="panel-actions">
+        <a routerLink="/journal" class="btn-ghost" target="_blank" rel="noopener">
+          Открыть журнал
+        </a>
+        <button type="button" class="btn-ghost" (click)="logout()">Выйти</button>
+      </div>
+    }
+  </header>
+
+  @if (!isAuthorized) {
+    <section class="login-card">
+      <h2>Доступ по ключу</h2>
+      <p>
+        Ключ задаётся на сервере в <code>Journal:AdminKey</code> (или
+        <code>Events:AdminKey</code>) и передаётся в заголовке
+        <code>X-Admin-Key</code>. Он хранится только в этой вкладке.
+      </p>
+      <form class="login-form" (ngSubmit)="login()">
+        <input
+          type="password"
+          name="adminKey"
+          [(ngModel)]="adminKey"
+          placeholder="X-Admin-Key"
+          autocomplete="off"
+        />
+        <button type="submit" class="btn-primary" [disabled]="isLoading">
+          {{ isLoading ? 'Проверяем…' : 'Войти' }}
+        </button>
+      </form>
+      @if (error) {
+        <p class="alert alert--error">{{ error }}</p>
+      }
+    </section>
+  } @else {
+    @if (error) {
+      <p class="alert alert--error">{{ error }}</p>
+    }
+    @if (notice) {
+      <p class="alert alert--ok">{{ notice }}</p>
+    }
+
+    <nav class="admin-tabs">
+      <button
+        type="button"
+        class="admin-tab"
+        [class.admin-tab--active]="activeTab === 'items'"
+        (click)="setTab('items')"
+      >
+        Материалы
+      </button>
+      <button
+        type="button"
+        class="admin-tab"
+        [class.admin-tab--active]="activeTab === 'sources'"
+        (click)="setTab('sources')"
+      >
+        Источники
+      </button>
+    </nav>
+
+    @if (activeTab === 'items') {
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Черновик из ссылки</h2>
+          <p class="panel-hint">
+            @if (config.aiConfigured) {
+              AI соберёт черновик по материалу источника, проверит пересечение
+              с оригиналом и покажет результат. Модель:
+              <code>{{ config.aiModel }}</code>.
+            } @else {
+              AI не настроен: задайте <code>Journal:AiEnabled</code>,
+              <code>AiApiKey</code>, <code>AiBaseUrl</code> и <code>AiModel</code>
+              на сервере. Журнал полностью работает и без AI — создайте материал
+              вручную.
+            }
+          </p>
+        </div>
+      </div>
+
+      <div class="form-grid draft-grid">
+        <label class="span-2">
+          <span>Ссылка на первоисточник</span>
+          <input
+            type="url"
+            name="draftUrl"
+            [(ngModel)]="draftUrl"
+            placeholder="https://example.com/article"
+          />
+        </label>
+
+        <label>
+          <span>Тема</span>
+          <input
+            type="text"
+            name="draftTopic"
+            [(ngModel)]="draftTopic"
+            placeholder="Отношения"
+          />
+        </label>
+
+        <label>
+          <span>Город</span>
+          <input type="text" name="draftCity" [(ngModel)]="draftCity" placeholder="Москва" />
+        </label>
+
+        <label class="span-2">
+          <span>Пожелания редактора</span>
+          <input
+            type="text"
+            name="draftInstructions"
+            [(ngModel)]="draftInstructions"
+            placeholder="Например: сделать акцент на офлайн-знакомствах"
+          />
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="isGenerating || !config.aiConfigured"
+          (click)="generateDraft()"
+        >
+          {{ isGenerating ? 'Собираем черновик…' : 'Собрать черновик' }}
+        </button>
+        <button type="button" class="btn-ghost" (click)="startCreate()">
+          Создать вручную
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Материалы</h2>
+          <p class="panel-hint">
+            Опубликованные материалы видны на сайте и попадают в sitemap.
+            Черновики и отклонённые записи не индексируются. Пересечение с
+            источником допустимо до {{ config.maxSimilarityPercent }}%.
+          </p>
+        </div>
+        <div class="panel-actions">
+          <select name="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="loadItems()">
+            <option value="Draft">Черновики</option>
+            <option value="Published">Опубликованные</option>
+            <option value="Rejected">Отклонённые</option>
+            <option value="all">Все</option>
+          </select>
+          <button type="button" class="btn-primary" (click)="startCreate()">
+            Создать материал
+          </button>
+        </div>
+      </div>
+
+      @if (showForm) {
+        <form class="form-card" (ngSubmit)="save()">
+          <h3>{{ editingId ? 'Редактировать материал' : 'Новый материал' }}</h3>
+
+          <div class="form-grid">
+            <label class="span-2">
+              <span>Заголовок</span>
+              <input type="text" name="title" [(ngModel)]="form.title" required />
+            </label>
+
+            <label class="span-2">
+              <span>Краткое описание</span>
+              <input type="text" name="summary" [(ngModel)]="form.summary" />
+            </label>
+
+            <label class="span-2">
+              <span>Текст материала (абзацы через пустую строку)</span>
+              <textarea name="body" [(ngModel)]="form.body" rows="12" required></textarea>
+            </label>
+
+            <label>
+              <span>Тема</span>
+              <input type="text" name="topic" [(ngModel)]="form.topic" placeholder="Отношения" />
+            </label>
+
+            <label>
+              <span>Город</span>
+              <input type="text" name="city" [(ngModel)]="form.city" placeholder="Москва" />
+            </label>
+
+            <label class="span-2">
+              <span>Теги через запятую</span>
+              <input
+                type="text"
+                name="tags"
+                [(ngModel)]="form.tags"
+                placeholder="свидания, психология"
+              />
+            </label>
+
+            <label>
+              <span>Автор</span>
+              <input
+                type="text"
+                name="authorName"
+                [(ngModel)]="form.authorName"
+                placeholder="Редакция Made4Love"
+              />
+            </label>
+
+            <label>
+              <span>Пересечение с источником, %</span>
+              <input
+                type="number"
+                name="similarityPercent"
+                [(ngModel)]="form.similarityPercent"
+                min="0"
+                max="100"
+              />
+            </label>
+
+            <label class="span-2">
+              <span>Картинка (URL)</span>
+              <input type="url" name="heroImageUrl" [(ngModel)]="form.heroImageUrl" />
+            </label>
+
+            <label class="span-2">
+              <span>Права на изображение</span>
+              <input
+                type="text"
+                name="imageLicense"
+                [(ngModel)]="form.imageLicense"
+                placeholder="Своё фото / пресс-служба / лицензия"
+              />
+            </label>
+          </div>
+
+          <h4 class="form-section-title">Атрибуция источника</h4>
+
+          <div class="form-grid">
+            <label>
+              <span>Название источника</span>
+              <input type="text" name="sourceName" [(ngModel)]="form.sourceName" />
+            </label>
+
+            <label>
+              <span>Ссылка на первоисточник</span>
+              <input type="url" name="sourceUrl" [(ngModel)]="form.sourceUrl" />
+            </label>
+
+            <label class="span-2">
+              <span>Заголовок источника</span>
+              <input type="text" name="originalTitle" [(ngModel)]="form.originalTitle" />
+            </label>
+
+            <label>
+              <span>Дата публикации в источнике</span>
+              <input
+                type="datetime-local"
+                name="sourcePublishedAt"
+                [(ngModel)]="sourcePublishedAtLocal"
+              />
+            </label>
+
+            <label>
+              <span>AI-модель</span>
+              <input
+                type="text"
+                name="aiModel"
+                [(ngModel)]="form.aiModel"
+                placeholder="заполняется автоматически"
+              />
+            </label>
+
+            <label class="span-2">
+              <span>Заметки редактора (внутренние)</span>
+              <textarea name="editorNotes" [(ngModel)]="form.editorNotes" rows="3"></textarea>
+            </label>
+          </div>
+
+          <h4 class="form-section-title">Чек-лист перед публикацией</h4>
+
+          <div class="checklist">
+            <label class="checkbox">
+              <input type="checkbox" name="factsChecked" [(ngModel)]="form.factsChecked" />
+              <span>Факты проверены по источнику</span>
+            </label>
+
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                name="attributionChecked"
+                [(ngModel)]="form.attributionChecked"
+              />
+              <span>Источник указан или материал полностью оригинальный</span>
+            </label>
+
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                name="imageRightsChecked"
+                [(ngModel)]="form.imageRightsChecked"
+              />
+              <span>Права на изображение подтверждены</span>
+            </label>
+
+            <label class="checkbox">
+              <input type="checkbox" name="aiGenerated" [(ngModel)]="form.aiGenerated" />
+              <span>Черновик подготовлен с помощью ИИ</span>
+            </label>
+          </div>
+
+          @if (form.aiGenerated) {
+            <p class="panel-hint">
+              Для AI-черновика обязательна проверка на пересечение с источником.
+              @if (form.promptVersion) {
+                Версия промпта: <code>{{ form.promptVersion }}</code>.
+              }
+            </p>
+          }
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="isLoading">Сохранить</button>
+            <button type="button" class="btn-ghost" (click)="cancelForm()">Отмена</button>
+          </div>
+        </form>
+      }
+
+      @if (items.length === 0) {
+        <p class="empty">Материалов с таким статусом нет.</p>
+      } @else {
+        <div class="event-list">
+          @for (item of items; track item.id) {
+            <article class="admin-event">
+              <div class="admin-event-main">
+                <div class="admin-event-title">
+                  <h3>{{ item.title }}</h3>
+                  <span
+                    class="status"
+                    [class.status--draft]="item.status === 'Draft'"
+                    [class.status--published]="item.status === 'Published'"
+                    [class.status--rejected]="item.status === 'Rejected'"
+                  >
+                    {{ statusLabel(item.status) }}
+                  </span>
+                  @if (item.aiGenerated) {
+                    <span class="badge badge--type">AI-черновик</span>
+                  }
+                </div>
+
+                <p class="admin-event-meta">
+                  <span>Обновлён {{ item.updatedAt | date: 'd MMM yyyy, HH:mm' }}</span>
+                  @if (item.publishedAt) {
+                    <span>Опубликован {{ item.publishedAt | date: 'd MMM yyyy' }}</span>
+                  }
+                  @if (item.city) {
+                    <span>📍 {{ item.city }}</span>
+                  }
+                  @if (item.similarityPercent != null) {
+                    <span
+                      [class.metric--danger]="item.similarityPercent > config.maxSimilarityPercent"
+                    >
+                      Пересечение: {{ item.similarityPercent }}%
+                    </span>
+                  }
+                </p>
+
+                @if (item.sourceName || item.sourceUrl) {
+                  <p class="admin-event-meta">
+                    <span>Источник: {{ item.sourceName || 'без названия' }}</span>
+                    @if (item.sourceUrl) {
+                      <a [href]="item.sourceUrl" target="_blank" rel="noopener noreferrer nofollow">
+                        открыть ↗
+                      </a>
+                    }
+                  </p>
+                }
+
+                @if (item.slug) {
+                  <p class="admin-event-slug">/journal/{{ item.slug }}</p>
+                }
+
+                @if (item.rejectionReason) {
+                  <p class="admin-event-reason">Причина отклонения: {{ item.rejectionReason }}</p>
+                }
+              </div>
+
+              <div class="admin-event-actions">
+                @if (item.status === 'Draft') {
+                  <button
+                    type="button"
+                    class="btn-small btn-small--ok"
+                    [disabled]="busyId === item.id"
+                    (click)="publish(item)"
+                  >
+                    Опубликовать
+                  </button>
+                  <button type="button" class="btn-small" (click)="editItem(item)">Изменить</button>
+                  <button
+                    type="button"
+                    class="btn-small btn-small--danger"
+                    (click)="startReject(item)"
+                  >
+                    Отклонить
+                  </button>
+                }
+
+                @if (item.status === 'Published') {
+                  <a
+                    class="btn-small"
+                    [routerLink]="['/journal', item.slug]"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Открыть
+                  </a>
+                  <button type="button" class="btn-small" (click)="editItem(item)">Изменить</button>
+                  <button
+                    type="button"
+                    class="btn-small btn-small--danger"
+                    [disabled]="busyId === item.id"
+                    (click)="unpublish(item)"
+                  >
+                    Снять с публикации
+                  </button>
+                }
+
+                @if (item.status === 'Rejected') {
+                  <button type="button" class="btn-small" (click)="editItem(item)">Изменить</button>
+                  <button
+                    type="button"
+                    class="btn-small btn-small--ok"
+                    [disabled]="busyId === item.id"
+                    (click)="publish(item)"
+                  >
+                    Опубликовать
+                  </button>
+                }
+
+                @if (item.status !== 'Published') {
+                  <button
+                    type="button"
+                    class="btn-small btn-small--danger"
+                    [disabled]="busyId === item.id"
+                    (click)="deleteItem(item)"
+                  >
+                    Удалить
+                  </button>
+                }
+              </div>
+
+              @if (rejectingId === item.id) {
+                <form class="reject-form" (ngSubmit)="confirmReject(item)">
+                  <input
+                    type="text"
+                    name="rejectReason"
+                    [(ngModel)]="rejectReason"
+                    placeholder="Причина отклонения"
+                    required
+                  />
+                  <button type="submit" class="btn-small btn-small--danger">Подтвердить</button>
+                  <button type="button" class="btn-small" (click)="cancelReject()">Отмена</button>
+                </form>
+              }
+            </article>
+          }
+        </div>
+      }
+    </section>
+    }
+
+    @if (activeTab === 'sources') {
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Источники журнала</h2>
+            <p class="panel-hint">
+              Сервис LP.Journal периодически обходит RSS/Atom-ленты и HTML-страницы
+              и создаёт только черновики. Автопубликации нет: каждый материал
+              проверяет редактор. Интервал — не чаще раза в 15 минут.
+            </p>
+          </div>
+          <div class="panel-actions">
+            <button
+              type="button"
+              class="btn-ghost"
+              [disabled]="isSyncing"
+              (click)="syncAllSources()"
+            >
+              {{ isSyncing ? 'Обходим…' : 'Обойти все' }}
+            </button>
+            <button type="button" class="btn-primary" (click)="startCreateSource()">
+              Добавить источник
+            </button>
+          </div>
+        </div>
+
+        @if (showSourceForm) {
+          <form class="form-card" (ngSubmit)="saveSource()">
+            <h3>{{ editingSourceId ? 'Редактировать источник' : 'Новый источник' }}</h3>
+
+            <div class="form-grid">
+              <label>
+                <span>Название</span>
+                <input type="text" name="sourceName" [(ngModel)]="sourceForm.name" required />
+              </label>
+
+              <label>
+                <span>Тип</span>
+                <select name="sourceType" [(ngModel)]="sourceForm.type">
+                  <option value="Rss">RSS / Atom</option>
+                  <option value="Html">HTML-страница</option>
+                </select>
+              </label>
+
+              <label class="span-2">
+                <span>URL</span>
+                <input
+                  type="url"
+                  name="sourceUrl"
+                  [(ngModel)]="sourceForm.url"
+                  placeholder="https://example.com/feed"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Тема по умолчанию</span>
+                <input type="text" name="sourceTopic" [(ngModel)]="sourceForm.topic" />
+              </label>
+
+              <label>
+                <span>Город</span>
+                <input type="text" name="sourceCity" [(ngModel)]="sourceForm.city" />
+              </label>
+
+              <label class="span-2">
+                <span>Теги по умолчанию</span>
+                <input type="text" name="sourceTags" [(ngModel)]="sourceForm.defaultTags" />
+              </label>
+
+              <label>
+                <span>Интервал, минут</span>
+                <input
+                  type="number"
+                  name="syncInterval"
+                  [(ngModel)]="sourceForm.syncIntervalMinutes"
+                  min="15"
+                  max="10080"
+                />
+              </label>
+
+              <label>
+                <span>Материалов за проход</span>
+                <input
+                  type="number"
+                  name="maxItems"
+                  [(ngModel)]="sourceForm.maxItemsPerSync"
+                  min="1"
+                  max="50"
+                />
+              </label>
+
+              <label class="span-2">
+                <span>IncludePattern для HTML (regex, необязательно)</span>
+                <input
+                  type="text"
+                  name="includePattern"
+                  [(ngModel)]="sourceForm.includePattern"
+                  placeholder="/news/|/articles/"
+                />
+              </label>
+            </div>
+
+            <div class="checklist">
+              <label class="checkbox">
+                <input type="checkbox" name="sourceEnabled" [(ngModel)]="sourceForm.isEnabled" />
+                <span>Источник включён</span>
+              </label>
+
+              <label class="checkbox">
+                <input type="checkbox" name="sourceAiDrafts" [(ngModel)]="sourceForm.aiDrafts" />
+                <span>Разрешить AI-черновики (если AI настроен)</span>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" [disabled]="isLoading">Сохранить</button>
+              <button type="button" class="btn-ghost" (click)="cancelSourceForm()">Отмена</button>
+            </div>
+          </form>
+        }
+
+        @if (sourceTestResult?.success) {
+          <div class="source-test">
+            <h4>Последняя проверка: {{ sourceTestResult?.itemCount }} материалов</h4>
+            <ul>
+              @for (sample of sourceTestResult?.items ?? []; track $index) {
+                <li>
+                  @if (sample.url) {
+                    <a [href]="sample.url" target="_blank" rel="noopener noreferrer nofollow">
+                      {{ sample.title }}
+                    </a>
+                  } @else {
+                    {{ sample.title }}
+                  }
+                  @if (sample.publishedAt) {
+                    <span class="admin-event-meta">
+                      {{ sample.publishedAt | date: 'd MMM yyyy, HH:mm' }}
+                    </span>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (sources.length === 0) {
+          <p class="empty">Источников пока нет. Добавьте RSS-ленту или HTML-страницу.</p>
+        } @else {
+          <div class="event-list">
+            @for (source of sources; track source.id) {
+              <article class="admin-event">
+                <div class="admin-event-main">
+                  <div class="admin-event-title">
+                    <h3>{{ source.name }}</h3>
+                    <span class="badge badge--type">{{ sourceTypeLabel(source.type) }}</span>
+                    <span
+                      class="status"
+                      [class.status--published]="source.isEnabled"
+                      [class.status--rejected]="!source.isEnabled"
+                    >
+                      {{ source.isEnabled ? 'включён' : 'выключен' }}
+                    </span>
+                  </div>
+
+                  <p class="admin-event-meta">
+                    <a [href]="source.url || '#'" target="_blank" rel="noopener noreferrer nofollow">
+                      {{ source.url }}
+                    </a>
+                  </p>
+
+                  <p class="admin-event-meta">
+                    <span>Интервал: {{ source.syncIntervalMinutes }} мин</span>
+                    <span>За проход: {{ source.maxItemsPerSync }}</span>
+                    @if (source.topic) {
+                      <span>Тема: {{ source.topic }}</span>
+                    }
+                    @if (source.city) {
+                      <span>📍 {{ source.city }}</span>
+                    }
+                  </p>
+
+                  <p class="admin-event-meta">
+                    @if (source.lastSyncAt) {
+                      <span>Обновлён {{ source.lastSyncAt | date: 'd MMM yyyy, HH:mm' }}</span>
+                    } @else {
+                      <span>Ещё не обходился</span>
+                    }
+                    @if (source.lastSyncStatus) {
+                      <span>{{ source.lastSyncStatus }}</span>
+                    }
+                  </p>
+
+                  @if (source.lastSyncError) {
+                    <p class="admin-event-reason">{{ source.lastSyncError }}</p>
+                  }
+                </div>
+
+                <div class="admin-event-actions">
+                  <button
+                    type="button"
+                    class="btn-small"
+                    [disabled]="testingSourceId === source.id"
+                    (click)="testSource(source)"
+                  >
+                    {{ testingSourceId === source.id ? 'Проверяем…' : 'Проверить' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-small btn-small--ok"
+                    [disabled]="isSyncing"
+                    (click)="syncSource(source)"
+                  >
+                    Обойти
+                  </button>
+                  <button type="button" class="btn-small" (click)="editSource(source)">
+                    Изменить
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-small btn-small--danger"
+                    [disabled]="busyId === source.id"
+                    (click)="deleteSource(source)"
+                  >
+                    Удалить
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+  }
+</div>

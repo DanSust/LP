@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.23" />
     <PackageReference Include="Microsoft.Build" Version="18.3.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
       <PrivateAssets>all</PrivateAssets>
@@ -43,6 +44,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.1" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.23" />
   </ItemGroup>
 
   <ItemGroup>

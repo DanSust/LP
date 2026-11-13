@@ -1,0 +1,125 @@
+<div class="detail-page">
+  <nav class="breadcrumbs" aria-label="Навигационная цепочка">
+    <a routerLink="/">Главная</a>
+    <span class="separator">/</span>
+    <a routerLink="/journal">Журнал</a>
+    @if (item) {
+      <span class="separator">/</span>
+      <span class="current">{{ item.title }}</span>
+    }
+  </nav>
+
+  @if (isLoading) {
+    <div class="detail-skeleton" aria-label="Загрузка материала">
+      <div class="skeleton-line skeleton-line--title"></div>
+      <div class="skeleton-line skeleton-line--meta"></div>
+      <div class="skeleton-media"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line skeleton-line--medium"></div>
+    </div>
+  } @else if (notFound) {
+    <section class="state">
+      <mat-icon>search_off</mat-icon>
+      <h1>Материал не найден</h1>
+      <p>Возможно, он ещё не опубликован или ссылка устарела.</p>
+      <a routerLink="/journal" class="btn-primary">Перейти в журнал</a>
+    </section>
+  } @else if (error) {
+    <section class="state">
+      <mat-icon>cloud_off</mat-icon>
+      <h1>Не удалось загрузить материал</h1>
+      <p>{{ error }}</p>
+      <button type="button" class="btn-primary" (click)="retry()">Попробовать снова</button>
+    </section>
+  } @else if (item) {
+    <article class="article">
+      <header class="article-head">
+        @if (item.topic) {
+          <p class="eyebrow">{{ item.topic }}</p>
+        } @else {
+          <p class="eyebrow">Журнал Made4Love</p>
+        }
+
+        <h1>{{ item.title }}</h1>
+
+        <p class="article-meta">
+          <span class="meta-item">{{ item.authorName || 'Редакция Made4Love' }}</span>
+
+          @if (item.publishedAt) {
+            <span class="meta-item">{{ item.publishedAt | date: 'd MMMM yyyy' }}</span>
+          }
+
+          <span class="meta-item">{{ readingMinutes }} мин чтения</span>
+
+          @if (item.city) {
+            <span class="meta-item">📍 {{ item.city }}</span>
+          }
+        </p>
+
+        @if (item.tags.length > 0) {
+          <div class="article-tags">
+            @for (tag of item.tags; track tag) {
+              <span class="tag">{{ tag }}</span>
+            }
+          </div>
+        }
+      </header>
+
+      @if (item.heroImageUrl) {
+        <figure class="article-image">
+          <img [src]="item.heroImageUrl" [alt]="item.title" referrerpolicy="no-referrer" />
+          @if (item.imageLicense) {
+            <figcaption class="image-credit">{{ item.imageLicense }}</figcaption>
+          }
+        </figure>
+      }
+
+      <div class="article-layout">
+        <div class="article-main">
+          @if (item.summary) {
+            <p class="summary">{{ item.summary }}</p>
+          }
+
+          @for (paragraph of paragraphs; track $index) {
+            <p class="paragraph">{{ paragraph }}</p>
+          }
+
+          @if (item.sourceUrl) {
+            <aside class="attribution">
+              <p class="attribution-title">Источник</p>
+              <p class="attribution-source">
+                <a [href]="item.sourceUrl" target="_blank" rel="noopener noreferrer nofollow">
+                  {{ item.sourceName || 'Первоисточник' }} ↗
+                </a>
+              </p>
+              @if (item.originalTitle) {
+                <p class="attribution-original">«{{ item.originalTitle }}»</p>
+              }
+              @if (item.sourcePublishedAt) {
+                <p class="attribution-date">
+                  Опубликовано в источнике: {{ item.sourcePublishedAt | date: 'd MMMM yyyy' }}
+                </p>
+              }
+            </aside>
+          }
+
+          @if (item.aiGenerated) {
+            <p class="ai-note">
+              Черновик подготовлен с помощью ИИ и проверен редактором Made4Love.
+            </p>
+          }
+        </div>
+
+        <aside class="article-aside">
+          <h2>Читайте также</h2>
+          <p class="aside-text">
+            Реальные встречи и мероприятия для тех, кто ищет серьёзные отношения.
+          </p>
+          <a routerLink="/events" class="btn-ghost">Смотреть события</a>
+          <a routerLink="/journal" class="aside-link">Все материалы журнала</a>
+        </aside>
+      </div>
+    </article>
+  }
+</div>

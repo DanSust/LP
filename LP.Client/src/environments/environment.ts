@@ -4,6 +4,7 @@ export const environment = {
   //apiUrl: 'https://127.0.0.1/api',
   //hubUrl: 'https://127.0.0.1/chat',
   apiUrl: '/api',
+  journalApiUrl: '/journal-api',
   hubUrl: '/hub',
   useHttps: true,
   apiVersion: 'v1',

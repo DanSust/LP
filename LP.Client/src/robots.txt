@@ -3,6 +3,7 @@ User-agent: *
 Allow: /
 Allow: /about
 Allow: /events
+Allow: /journal
 Allow: /assets/terms.html
 Allow: /assets/privacy.html
 
@@ -27,3 +28,4 @@ Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&yclid&gclid
 
 Sitemap: https://made4love.ru/sitemap.xml
 Sitemap: https://made4love.ru/events-sitemap.xml
+Sitemap: https://made4love.ru/journal-sitemap.xml

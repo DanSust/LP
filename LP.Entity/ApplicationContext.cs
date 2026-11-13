@@ -19,6 +19,8 @@
         public DbSet<Vote> Votes { get; set; } = null!;
         public DbSet<Event> Events { get; set; } = null!;
         public DbSet<EventSource> EventSources { get; set; } = null!;
+        public DbSet<NewsItem> NewsItems { get; set; } = null!;
+        public DbSet<JournalSource> JournalSources { get; set; } = null!;
         public DbSet<Reject> Rejects { get; set; } = null!;
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
@@ -79,6 +81,27 @@
                     .HasFilter("[ExternalId] IS NOT NULL");
                 builder.HasOne(x => x.Source)
                     .WithMany(x => x.Events)
+                    .HasForeignKey(x => x.SourceId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            md.Entity<JournalSource>(builder =>
+            {
+                builder.Property(x => x.Type).HasConversion<string>().HasMaxLength(20);
+                builder.HasIndex(x => x.IsEnabled);
+            });
+
+            md.Entity<NewsItem>(builder =>
+            {
+                builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+                builder.HasIndex(x => x.Slug).IsUnique();
+                builder.HasIndex(x => new { x.Status, x.PublishedAt });
+                builder.HasIndex(x => new { x.Status, x.Topic });
+                builder.HasIndex(x => new { x.SourceId, x.ExternalId })
+                    .IsUnique()
+                    .HasFilter("[SourceId] IS NOT NULL AND [ExternalId] IS NOT NULL");
+                builder.HasOne(x => x.Source)
+                    .WithMany(x => x.Items)
                     .HasForeignKey(x => x.SourceId)
                     .OnDelete(DeleteBehavior.SetNull);
             });

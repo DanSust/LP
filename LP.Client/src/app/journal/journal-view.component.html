@@ -1,0 +1,96 @@
+<div class="journal-page">
+  <header class="journal-hero">
+    <p class="eyebrow">Журнал Made4Love</p>
+    <h1>Отношения, города и события</h1>
+    <p class="lead">
+      Разборы, городские подборки и материалы о знакомствах без клише.
+      Каждый текст проверен редакцией, источник указан.
+    </p>
+  </header>
+
+  <main class="journal-content">
+    @if (isLoading) {
+      <div class="journal-grid" aria-label="Загрузка журнала">
+        @for (item of [1, 2, 3, 4]; track item) {
+          <div class="journal-card skeleton-card">
+            <div class="skeleton-media"></div>
+            <div class="skeleton-body">
+              <div class="skeleton-line skeleton-line--short"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line skeleton-line--medium"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (error) {
+      <div class="state state--error">
+        <mat-icon>cloud_off</mat-icon>
+        <p>{{ error }}</p>
+        <button type="button" class="btn-primary" (click)="retry()">Попробовать снова</button>
+      </div>
+    } @else if (items.length === 0) {
+      <div class="state">
+        <mat-icon>menu_book</mat-icon>
+        <h2>Журнал скоро пополнится</h2>
+        <p>
+          Мы готовим первые материалы. Пока можно посмотреть афишу реальных
+          событий Made4Love.
+        </p>
+        <a routerLink="/events" class="btn-primary">Смотреть события</a>
+      </div>
+    } @else {
+      <div class="journal-grid">
+        @for (item of items; track item.id) {
+          <article class="journal-card">
+            <a class="card-link" [routerLink]="['/journal', item.slug]">
+              <div class="card-media" [class.card-media--empty]="!item.heroImageUrl">
+                @if (item.heroImageUrl) {
+                  <img
+                    [src]="item.heroImageUrl"
+                    [alt]="item.title"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                  />
+                } @else {
+                  <span class="media-placeholder">📖</span>
+                }
+
+                @if (item.topic) {
+                  <span class="topic-chip">{{ item.topic }}</span>
+                }
+              </div>
+
+              <div class="card-body">
+                @if (item.publishedAt) {
+                  <p class="card-date">{{ item.publishedAt | date: 'd MMMM yyyy' }}</p>
+                }
+
+                <h2>{{ item.title }}</h2>
+
+                @if (item.summary) {
+                  <p class="card-summary">{{ item.summary }}</p>
+                }
+
+                <div class="card-meta">
+                  <span>{{ item.authorName || 'Редакция Made4Love' }}</span>
+                  @if (item.city) {
+                    <span>· {{ item.city }}</span>
+                  }
+                </div>
+
+                <span class="card-cta">Читать →</span>
+              </div>
+            </a>
+          </article>
+        }
+      </div>
+    }
+  </main>
+
+  <footer class="journal-footer">
+    <p>
+      Журнал Made4Love — это редакционные материалы, а не новостная лента.
+      Мы указываем первоисточники и не публикуем чужие тексты целиком.
+    </p>
+  </footer>
+</div>

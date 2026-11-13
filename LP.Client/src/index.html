@@ -5,7 +5,7 @@
   <script>
     (function () {
       var path = window.location.pathname.replace(/\/+$/, '') || '/';
-      var staticShellRoutes = ['/', '/index.html', '/about', '/events', '/404.html'];
+      var staticShellRoutes = ['/', '/index.html', '/about', '/events', '/journal', '/404.html'];
       if (staticShellRoutes.indexOf(path) === -1) {
         document.documentElement.classList.add('hide-seo-shell');
       }

@@ -6,7 +6,10 @@
       <p>Источники, импорт и модерация черновиков. Раздел закрыт от индексации.</p>
     </div>
     @if (isAuthorized) {
-      <button type="button" class="btn-ghost" (click)="logout()">Выйти</button>
+      <div class="panel-actions">
+        <a routerLink="/admin/journal" class="btn-ghost">Журнал</a>
+        <button type="button" class="btn-ghost" (click)="logout()">Выйти</button>
+      </div>
     }
   </header>
 
