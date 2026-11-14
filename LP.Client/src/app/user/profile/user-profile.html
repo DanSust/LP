@@ -95,6 +95,9 @@
                  required
                  formControlName="TownName"
                  [matAutocomplete]="auto">
+          <mat-error *ngIf="form.get('TownName')?.hasError('townRequired')">
+            выберите город из списка
+          </mat-error>
           <button mat-icon-button
                   matSuffix
                   type="button"

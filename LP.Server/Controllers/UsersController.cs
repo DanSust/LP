@@ -348,9 +348,25 @@ namespace LP.Server.Controllers
             profile.SendEmail = model.GetProperty("SendEmail").GetBoolean();
             profile.SendTelegram = model.GetProperty("SendTelegram").GetBoolean();
             profile.WithPhoto = model.GetProperty("WithPhoto").GetBoolean();
+            profile.WithEmail = model.GetProperty("WithEmail").GetBoolean();
             profile.WithLikes = model.GetProperty("WithLikes").GetBoolean();
             profile.Aim = Enum.Parse<Aim>(model.GetProperty("Aim").GetString());
-            profile.CityId = model.GetProperty("TownName").GetProperty("id").GetGuid();
+
+            // Город приходит объектом TownName { id, name }. Если его нет —
+            // пробуем запасное поле Town, чтобы не ронять сохранение.
+            if (model.TryGetProperty("TownName", out var townProp) &&
+                townProp.ValueKind == JsonValueKind.Object &&
+                townProp.TryGetProperty("id", out var townIdProp) &&
+                townIdProp.TryGetGuid(out var parsedTownId))
+            {
+                profile.CityId = parsedTownId;
+            }
+            else if (model.TryGetProperty("Town", out var townFallback) &&
+                     townFallback.ValueKind == JsonValueKind.String &&
+                     Guid.TryParse(townFallback.GetString(), out var fallbackTownId))
+            {
+                profile.CityId = fallbackTownId;
+            }
 
             // Delete all interests
             await _context.UserInterests

@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Inject, ViewEncapsulation, ViewChild } from '@angular/core';
 import { AsyncPipe, CommonModule } from '@angular/common';
-import { FormBuilder, FormsModule, Validators, ReactiveFormsModule, FormControl, FormArray, FormGroup } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormsModule, Validators, ReactiveFormsModule, FormControl, FormArray, FormGroup, ValidationErrors } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormField, MatInputModule, MatError } from '@angular/material/input';
@@ -28,6 +28,12 @@ import { City, NearestCityResponse } from './../../Interfaces/CityLocation';
 import { LocationService, LocationCoords } from './../../services/LocationService';
 import { SplashScreenComponent } from '../../splash/splash.component';
 import { BaseComponent } from '../../common/base.component';
+
+/** Город должен быть выбран из списка (объект с id), а не введён произвольным текстом. */
+function townSelectedValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  return value && typeof value === 'object' && value.id ? null : { townRequired: true };
+}
 
 @Component({
   selector: 'user-profile',
@@ -120,35 +126,31 @@ export class UserProfile extends BaseComponent {
       Weight: 60,
       Height: 170,
       Description: '',
-      TownName: ['', Validators.required],
+      TownName: ['', [Validators.required, townSelectedValidator]],
       Town: null,      
       AgeFrom: 18,
       AgeTo: 100,
-      Aim: 1,
+      Aim: '1',
       questions: this.fb.array([])
     });  
   }
 
   protected override onInit(): void {
-    // 🔥 Autocomplete остается reactive (не блокирует загрузку)
-    this.filteredTowns = this.form.controls["TownName"].valueChanges.pipe(
-      startWith(''),
-      map(value => this._filterTowns(value || ''))
-    );
+    // 🔥 Autocomplete остается reactive (не блокирует загрузку).
+    // После загрузки городов подписка пересоздаётся в setupCityAutocomplete().
+    this.setupCityAutocomplete();
   }
 
   protected async LoadData(): Promise<void> {
     // 🔥 Этап 1: Параллельная загрузка независимых данных (cookies, interests, cities)
     const [cookiesResult, interestsResult, citiesResult] = await Promise.all([
-      firstValueFrom(this.http.get<{ userId: string }>(this.base + '/Users/cookies')),
+      firstValueFrom(this.http.get<{ userId: string }>(this.base + '/Users/cookies', { withCredentials: true })),
       firstValueFrom(this.http.get<InterestDTO[]>(this.base + '/Interests/list')),
       firstValueFrom(this.http.get<TownDTO[]>(this.base + '/City/list', { withCredentials: true }))
     ]);
 
     // ✅ Сохраняем результаты первой волны
-    console.log(cookiesResult.userId);
     this.interests = interestsResult;
-    this.updateSelectedCount();
     this.towns = citiesResult;
     this.setupCityAutocomplete();
 
@@ -192,19 +194,19 @@ export class UserProfile extends BaseComponent {
       Email: userInfo.email,
       Caption: userInfo.caption,
       Sex: userInfo.sex ? '1' : '0',
-      IsActive: userInfo.isPaused ? false : true,
-      SendEmail: userInfo.sendEmail ? false : true,
-      SendTelegram: userInfo.sendTelegram ? false : true,
-      WithPhotos: userInfo.withPhotos ? false : true,
-      WithEmail: userInfo.withEmail ? false : true,
-      WithLikes: userInfo.withLikes ? false : true,
+      IsActive: !userInfo.isPaused,
+      SendEmail: !!userInfo.sendEmail,
+      SendTelegram: !!userInfo.sendTelegram,
+      WithPhoto: !!userInfo.withPhoto,
+      WithEmail: !!userInfo.withEmail,
+      WithLikes: !!userInfo.withLikes,
       Birthday: userInfo.birthday,
       Weight: userInfo.weight || 60,
       Height: userInfo.height || 170,
       Description: userInfo.description || '',
       AgeFrom: userInfo.ageFrom || 18,
       AgeTo: userInfo.ageTo || 100,
-      Aim: userInfo.aim !== undefined ? String(userInfo.aim) : '1'
+      Aim: userInfo.aim !== undefined && userInfo.aim !== null ? String(userInfo.aim) : '1'
     });
 
     // ✅ Сбрасываем и устанавливаем интересы
@@ -218,6 +220,10 @@ export class UserProfile extends BaseComponent {
         fitem.selected = true;
       }
     }
+
+    // Счётчик и снимок выбора считаем уже после применения интересов из профиля.
+    this.updateSelectedCount();
+    this.form.markAsPristine();
   }
 
   protected override onLoadError(error: unknown): void {
@@ -252,8 +258,23 @@ export class UserProfile extends BaseComponent {
       return;
     }
 
+    const emailControl = this.form.get('Email');
+    const email = (emailControl?.value || '').trim();
+
+    if (!email) {
+      emailControl?.markAsTouched();
+      this.toast.warning('Сначала укажите email');
+      return;
+    }
+
+    if (emailControl?.invalid) {
+      emailControl.markAsTouched();
+      this.toast.warning('Проверьте адрес email');
+      return;
+    }
+
     const params = {
-      email: this.form.value.Email,
+      email,
       link: this.base+'/Email/confirm'
     };
 
@@ -341,8 +362,8 @@ export class UserProfile extends BaseComponent {
     const newSelectedIds = event.value as string[];
 
     if (newSelectedIds.length > this.maxInterests) {
-      // Восстанавливаем предыдущее состояние
-      event.source.value = this.previousSelectedIds;
+      // Восстанавливаем предыдущее состояние в самом списке чипов.
+      event.source.writeValue(this.previousSelectedIds);
       this.toast.show(`Максимум ${this.maxInterests} интересов`);
       return;
     }
@@ -405,18 +426,22 @@ export class UserProfile extends BaseComponent {
     }, 0);
   }
 
-  pause() {
+  pause(): void {
+    const desiredState = this.form.get('IsActive')?.value;
+
     this.http.post(this.base + '/Users/pause/', null, { withCredentials: true })
       .subscribe({
-      next: (response) => {        
-      },
-      error: (error) => {
-        console.error('POST request failed:', error);
-      }
-    });
+        next: () => {},
+        error: (error) => {
+          console.error('POST request failed:', error);
+          // Сервер не изменил состояние — возвращаем переключатель назад.
+          this.form.patchValue({ IsActive: !desiredState }, { emitEvent: false });
+          this.toast.show('Не удалось изменить статус профиля');
+        }
+      });
   }
 
-  save() {
+  save(): void {
     // 1. Проверка на валидность
     if (this.form.invalid) {
       // Подсвечиваем все невалидные поля (делаем их touched)
@@ -430,44 +455,65 @@ export class UserProfile extends BaseComponent {
       return;
     }
 
-    if (this.form.valid) {
-      const birthday = new Date(this.form.value.Birthday);
-      
-      // ✅ Конвертируем обратно для API
-      birthday.setMinutes(birthday.getMinutes() - birthday.getTimezoneOffset());
-      
-      const questionsFromForm = this.questionsFormArray.value
-        .filter((q: any) => q.question?.trim())
-        .map((q: any, index: number) => ({
-          id: q.id,
-          question: q.question,
-          order: index
-        }));
+    // Город обязан быть выбран из автокомплита: сервер ждёт объект с id.
+    const townName = this.form.value.TownName as TownDTO;
+    if (!townName || typeof townName !== 'object' || !townName.id) {
+      this.form.get('TownName')?.markAsTouched();
+      this.toast.warning('Выберите город из списка');
+      this.stepper.selectedIndex = 0;
+      return;
+    }
 
-      // Получаем ID города из формы
-      const townId = this.form.value.Town || (this.form.value.TownName as TownDTO)?.id || '';
+    const birthday = new Date(this.form.value.Birthday);
 
-      this.isSaving = true;
-      this.http.post<any>(this.base + '/Users/save', {
-        ...this.form.value,
-        Town: townId,
-        Birthday: birthday.toISOString().split('T')[0],
-        interests: this.interests,
-        questions: questionsFromForm  
-      }, { withCredentials: true })
-        .subscribe({
-          next: (response) => {
-            //this.response = response.message;
-            //console.log(response);
-            this.toast.show(response.message);
-            this.isSaving = false;
+    // ✅ Конвертируем обратно для API
+    birthday.setMinutes(birthday.getMinutes() - birthday.getTimezoneOffset());
+
+    const questionsFromForm = this.questionsFormArray.value
+      .filter((q: any) => q.question?.trim())
+      .map((q: any, index: number) => ({
+        id: q.id,
+        question: q.question,
+        order: index
+      }));
+
+    const value = this.form.value;
+
+    this.isSaving = true;
+    this.http.post<any>(this.base + '/Users/save', {
+      Email: value.Email,
+      Caption: value.Caption,
+      Sex: value.Sex,
+      IsActive: value.IsActive,
+      SendEmail: value.SendEmail,
+      SendTelegram: value.SendTelegram,
+      WithPhoto: value.WithPhoto,
+      WithEmail: value.WithEmail,
+      WithLikes: value.WithLikes,
+      Birthday: birthday.toISOString().split('T')[0],
+      Weight: value.Weight,
+      Height: value.Height,
+      Description: value.Description,
+      TownName: townName,
+      Town: townName.id,
+      AgeFrom: value.AgeFrom,
+      AgeTo: value.AgeTo,
+      Aim: value.Aim,
+      interests: this.interests,
+      questions: questionsFromForm
+    }, { withCredentials: true })
+      .subscribe({
+        next: (response) => {
+          this.toast.show(response.message);
+          this.form.markAsPristine();
+          this.isSaving = false;
         },
         error: (error) => {
           console.error('POST request failed:', error);
+          this.toast.show('Не удалось сохранить профиль');
           this.isSaving = false;
         }
       });
-    }
   }
 
   private scrollToFirstInvalidControl() {
