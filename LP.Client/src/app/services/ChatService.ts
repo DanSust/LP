@@ -59,6 +59,8 @@ export class ChatService {
   public readonly activeChatId = signal('');
   public readonly activeUserId = signal('');
   public readonly isLoadingChats = signal(false);
+  /** Идёт вход в чат и загрузка истории сообщений. */
+  public readonly isLoadingMessages = signal(false);
   public readonly unreadMessageCount = computed(() =>
     this.chats().reduce((sum, chat) => sum + (chat.unreadMessagesCount || 0), 0)
   );
@@ -234,26 +236,32 @@ export class ChatService {
       return;
     }
 
-    if (!this.chatsLoaded) {
-      await this.loadChats();
+    this.isLoadingMessages.set(true);
+
+    try {
+      if (!this.chatsLoaded) {
+        await this.loadChats();
+      }
+
+      let chat = this.chats().find(item => item.id === chatId);
+
+      // Чат мог быть только что создан из карточки пользователя.
+      if (!chat && this.chatsLoaded) {
+        await this.loadChats(true);
+        chat = this.chats().find(item => item.id === chatId);
+      }
+
+      this.activeChatId.set(chatId);
+
+      if (chat) {
+        this.activeUserId.set(chat.userId);
+      }
+
+      await this.joinChat(chatId);
+      await this.markChatAsRead(chatId);
+    } finally {
+      this.isLoadingMessages.set(false);
     }
-
-    let chat = this.chats().find(item => item.id === chatId);
-
-    // Чат мог быть только что создан из карточки пользователя.
-    if (!chat && this.chatsLoaded) {
-      await this.loadChats(true);
-      chat = this.chats().find(item => item.id === chatId);
-    }
-
-    this.activeChatId.set(chatId);
-
-    if (chat) {
-      this.activeUserId.set(chat.userId);
-    }
-
-    await this.joinChat(chatId);
-    await this.markChatAsRead(chatId);
   }
 
   // ---------------------------------------------------------------------------

@@ -12,6 +12,7 @@ import { formatDistance, getPeopleWord } from './../common/usefull.utils';
 import { PageStateService } from './../services/PageStateService';
 import { PageState } from './../Interfaces/PageState';
 import { generateGUID } from '../common/GUID';
+import { SplashScreenComponent } from '../splash/splash.component';
 
 type TabType = 'mutual' | 'viewed' | 'likesMe' | 'iLike';
 
@@ -24,7 +25,7 @@ interface PaginationState {
 @Component({
   selector: 'match-component',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatButtonModule, MatMenuModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatMenuModule, MatIconModule, MatProgressSpinnerModule, SplashScreenComponent],
   templateUrl: './match.component.html',
   styleUrl: './match.component.scss'
 })
@@ -41,6 +42,8 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
   allImages: ImageData[] = [];
   isLoading = true;
   isLoadingMore = false;
+  /** Splash показываем только при первом открытии страницы, не при смене вкладок. */
+  showSplash = true;
 
   currentPage: number = 1;
   pageSize: number = 20; // Количество элементов на странице
@@ -126,7 +129,8 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Восстанавливаем изображения
     this.allImages = [...state.images];
-    this.isLoading = false;        
+    this.isLoading = false;
+    this.showSplash = false;
     
     // Отмечаем, что нужно восстановить скролл    
     this.shouldRestoreScroll = true;
@@ -219,6 +223,7 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
           if (isInitialLoad) {
             this.allImages = data;
             this.isLoading = false;
+            this.showSplash = false;
             this.attachScrollListener();
           } else {
             if (data.length > 0) {
@@ -243,6 +248,7 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
           //console.error('Failed to load images:', err);
           if (isInitialLoad) {
             this.isLoading = false;
+            this.showSplash = false;
           } else {
             this.isLoadingMore = false;
           }

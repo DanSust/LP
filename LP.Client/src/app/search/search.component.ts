@@ -27,6 +27,7 @@ import { PageState } from '../Interfaces/PageState';
 import { catchError, generate, map, Observable, of, startWith } from 'rxjs';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { generateGUID } from '../common/GUID';
+import { SplashScreenComponent } from '../splash/splash.component';
 
 interface Interest {
   id: string;
@@ -65,7 +66,8 @@ interface SearchFilters {
     MatAutocompleteModule,
     MatInputModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SplashScreenComponent
   ],
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss'
@@ -384,6 +386,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
         error: (err) => {
           console.error('Failed to load cities:', err);
           this.availableCities = [];
+          this.isLoading = false;
         }
       });
   }
@@ -402,9 +405,11 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
               //this.loadImages(true);
             }
           }
+          this.isLoading = false;
         },
         error: (err) => {
-          console.error('Failed to load profile:', err);          
+          console.error('Failed to load profile:', err);
+          this.isLoading = false;
         }
       });
   }

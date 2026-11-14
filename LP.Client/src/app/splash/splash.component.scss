@@ -1,103 +1,367 @@
+:host {
+  /* Фирменная палитра сайта */
+  --splash-primary: #557A94;
+  --splash-secondary: #7396AE;
+  --splash-pink: #f83173;
+  --splash-magenta: #e91e63;
+  --splash-blue: #03a9f4;
+  --splash-soft-pink: #ffd1e2;
+  display: contents;
+}
+
 .splash {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 9999;
-  transition: opacity 0.4s ease, visibility 0.4s ease;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #fff;
+  /* Тот же градиент, что у auth / coming-soon / bottom-nav */
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(233, 30, 99, 0.16), transparent 62%),
+    radial-gradient(90% 70% at 100% 100%, rgba(3, 169, 244, 0.14), transparent 60%),
+    linear-gradient(135deg, var(--splash-primary) 0%, var(--splash-secondary) 100%);
+  background-attachment: fixed;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.55s ease, visibility 0.55s ease;
 
-  &.fade-out {
+  &.is-hidden {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
   }
 }
 
-.content {
-  text-align: center;
+.splash__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(circle at 50% 45%, #000 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 0%, transparent 72%);
+  opacity: 0.45;
+}
+
+.splash__aurora {
+  position: absolute;
+  width: 70vmax;
+  height: 70vmax;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: 0.55;
+  pointer-events: none;
+
+  &--pink {
+    top: -32vmax;
+    left: -20vmax;
+    background: radial-gradient(circle, rgba(248, 49, 115, 0.34) 0%, transparent 62%);
+    animation: splash-drift-pink 16s ease-in-out infinite alternate;
+  }
+
+  &--blue {
+    right: -24vmax;
+    bottom: -36vmax;
+    background: radial-gradient(circle, rgba(3, 169, 244, 0.3) 0%, transparent 62%);
+    animation: splash-drift-blue 19s ease-in-out infinite alternate;
+  }
+}
+
+.splash__content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  padding: 32px;
+  text-align: center;
+  animation: splash-content-in 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-.logo {
-  font-size: 48px;
-  font-weight: 300;
-  letter-spacing: 2px;
+.splash__heart-wrap {
+  position: relative;
+  width: clamp(76px, 16vw, 104px);
+  height: clamp(82px, 17vw, 110px);
+  margin-bottom: 10px;
+  animation: splash-beat 1.7s ease-in-out infinite;
+}
 
-  .made {
-    color: #ff6b9d;
-  }
+.splash__heart {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 22px rgba(248, 49, 115, 0.45));
+}
 
-  .four {
-    color: #03a9f4;
-    font-weight: 700;
-    font-size: 56px;
-  }
+.splash__ecg {
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: clamp(150px, 32vw, 210px);
+  transform: translateX(-50%);
+  overflow: visible;
 
-  .love {
-    color: #4fc3f7;
+  path {
+    fill: none;
+    stroke: var(--splash-soft-pink);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 340;
+    stroke-dashoffset: 340;
+    filter: drop-shadow(0 0 6px rgba(248, 49, 115, 0.85));
+    animation: splash-ecg 2.6s ease-in-out infinite;
   }
 }
 
-.hearts {
+.splash__logo {
   display: flex;
-  gap: 16px;
-  font-size: 32px;
+  align-items: baseline;
+  gap: 1px;
+  font-family: 'Montserrat', 'Roboto', 'Helvetica Neue', sans-serif;
+  font-size: clamp(42px, 9vw, 68px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  user-select: none;
+}
 
-  .heart {
-    animation: pulse 1.2s ease-in-out infinite;
+.splash__logo-made {
+  color: #fff;
+  text-shadow: 0 0 28px rgba(255, 255, 255, 0.25);
+}
+
+.splash__logo-four {
+  margin: 0 2px;
+  font-weight: 900;
+  font-size: 1.16em;
+  background: linear-gradient(120deg, var(--splash-pink), var(--splash-magenta) 50%, var(--splash-blue));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: splash-gradient 5s ease infinite;
+}
+
+.splash__logo-love {
+  color: var(--splash-soft-pink);
+  text-shadow: 0 0 28px rgba(248, 49, 115, 0.35);
+}
+
+.splash__tagline {
+  margin: 10px 0 26px;
+  padding-left: 0.34em;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: clamp(9px, 1.6vw, 11px);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+
+.splash__progress {
+  position: relative;
+  width: min(280px, 64vw);
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+
+  &.is-indeterminate .splash__progress-fill {
+    width: 40% !important;
+    animation: splash-indeterminate 1.5s ease-in-out infinite;
+  }
+}
+
+.splash__progress-fill {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--splash-pink), var(--splash-magenta) 50%, var(--splash-blue));
+  box-shadow: 0 0 16px rgba(248, 49, 115, 0.5);
+  transition: width 0.35s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    transform: translateX(-100%);
+    animation: splash-shimmer 1.8s ease-in-out infinite;
+  }
+}
+
+.splash__text {
+  display: inline-flex;
+  align-items: baseline;
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+}
+
+.splash__dots {
+  display: inline-flex;
+  margin-left: 2px;
+
+  span {
+    animation: splash-dot 1.3s ease-in-out infinite;
 
     &:nth-child(2) {
-      animation-delay: 0.6s;
+      animation-delay: 0.16s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.32s;
     }
   }
 }
 
-.progress-container {
-  width: 250px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+@keyframes splash-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.progress-bar {
-  height: 4px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.fill {
-  height: 100%;
-  background: linear-gradient(90deg, #ff6b9d, #03a9f4);
-  border-radius: 2px;
-  transition: width 0.2s ease;
-  box-shadow: 0 0 10px rgba(3, 169, 244, 0.5);
-}
-
-.percent {
-  color: rgba(255,255,255,0.6);
-  font-size: 12px;
-}
-
-.text {
-  color: rgba(255,255,255,0.6);
-  font-size: 14px;
-  margin: 0;
-}
-
-@keyframes pulse {
-  0%, 100% {
+@keyframes splash-beat {
+  0%,
+  100% {
     transform: scale(1);
-    opacity: 0.7;
+  }
+
+  18% {
+    transform: scale(1.08);
+  }
+
+  32% {
+    transform: scale(0.99);
+  }
+
+  46% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes splash-ecg {
+  0% {
+    stroke-dashoffset: 340;
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  55%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes splash-gradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
   }
 
   50% {
-    transform: scale(1.2);
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes splash-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes splash-indeterminate {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes splash-dot {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
     opacity: 1;
+  }
+}
+
+@keyframes splash-drift-pink {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(6vmax, 4vmax, 0) scale(1.08);
+  }
+}
+
+@keyframes splash-drift-blue {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(-5vmax, -4vmax, 0) scale(1.1);
+  }
+}
+
+@media (max-width: 480px) {
+  .splash__content {
+    padding: 24px;
+  }
+
+  .splash__tagline {
+    margin-bottom: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash,
+  .splash__content,
+  .splash__heart-wrap,
+  .splash__ecg path,
+  .splash__logo-four,
+  .splash__progress-fill,
+  .splash__progress-fill::after,
+  .splash__dots span,
+  .splash__aurora {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .splash__ecg path {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  .splash.is-hidden {
+    display: none;
   }
 }

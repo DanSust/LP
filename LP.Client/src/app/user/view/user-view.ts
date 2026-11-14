@@ -1,39 +1,37 @@
-import { Component, Inject, Input, OnInit } from '@angular/core';
+import { Component, Inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
 import { API_BASE_URL } from './../../app.config';
+import { BaseComponent } from './../../common/base.component';
+import { SplashScreenComponent } from './../../splash/splash.component';
 
 @Component({
   selector: 'user-profile-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SplashScreenComponent],
   templateUrl: './user-view.html',
   styleUrl: './user-view.scss'
 })
-export class UserView implements OnInit {
+export class UserView extends BaseComponent {
   @Input() userId: string | null = null; // Можно передавать ID профиля
 
   profile: any = null;
-  isLoading: boolean = true;
 
   constructor(
     private http: HttpClient,
-    @Inject(API_BASE_URL) private base: string) { }
+    @Inject(API_BASE_URL) private base: string) {
+    super();
+  }
 
-  ngOnInit() {
+  protected LoadData(): Observable<any> {
     // Если userId не передан, показываем текущего пользователя
     const id = this.userId || 'current';
 
-    this.http.get<any>(`${this.base}/Users/view/${id}`, { withCredentials: true })
-      .subscribe({
-        next: (data) => {
-          this.profile = data;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Failed to load profile:', error);
-          this.isLoading = false;
-        }
-      });
+    return this.http
+      .get<any>(`${this.base}/Users/view/${id}`, { withCredentials: true })
+      .pipe(tap((data) => {
+        this.profile = data;
+      }));
   }
 }

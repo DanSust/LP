@@ -1,3 +1,5 @@
+<app-splash-screen [visible]="isLoading" text="Загружаем журнал" />
+
 <div class="journal-page">
   <header class="journal-hero">
     <p class="eyebrow">Журнал Made4Love</p>
@@ -9,20 +11,7 @@
   </header>
 
   <main class="journal-content">
-    @if (isLoading) {
-      <div class="journal-grid" aria-label="Загрузка журнала">
-        @for (item of [1, 2, 3, 4]; track item) {
-          <div class="journal-card skeleton-card">
-            <div class="skeleton-media"></div>
-            <div class="skeleton-body">
-              <div class="skeleton-line skeleton-line--short"></div>
-              <div class="skeleton-line"></div>
-              <div class="skeleton-line skeleton-line--medium"></div>
-            </div>
-          </div>
-        }
-      </div>
-    } @else if (error) {
+    @if (error) {
       <div class="state state--error">
         <mat-icon>cloud_off</mat-icon>
         <p>{{ error }}</p>

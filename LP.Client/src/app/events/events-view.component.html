@@ -1,3 +1,5 @@
+<app-splash-screen [visible]="isLoading" text="Загружаем события" />
+
 <div class="events-page">
   <header class="events-hero">    
     <h2>События и встречи</h2>
@@ -8,20 +10,7 @@
   </header>
 
   <main class="events-content">
-    @if (isLoading) {
-      <div class="events-grid" aria-label="Загрузка событий">
-        @for (item of [1, 2, 3, 4]; track item) {
-          <div class="event-card skeleton-card">
-            <div class="skeleton-media"></div>
-            <div class="skeleton-body">
-              <div class="skeleton-line skeleton-line--short"></div>
-              <div class="skeleton-line"></div>
-              <div class="skeleton-line skeleton-line--medium"></div>
-            </div>
-          </div>
-        }
-      </div>
-    } @else if (error) {
+    @if (error) {
       <div class="state state--error">
         <mat-icon>cloud_off</mat-icon>
         <p>{{ error }}</p>

@@ -6,11 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { Subject, catchError, finalize, map, of, switchMap, takeUntil, tap } from 'rxjs';
 import { JournalService, PublicNewsDetail } from '../services/JournalService';
 import { SeoService } from '../services/SeoService';
+import { SplashScreenComponent } from '../splash/splash.component';
 
 @Component({
   selector: 'app-journal-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule],
+  imports: [CommonModule, RouterLink, MatIconModule, SplashScreenComponent],
   templateUrl: './journal-detail.component.html',
   styleUrls: ['../events/event-detail.component.scss', './journal-detail.component.scss']
 })

@@ -1,64 +1,56 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { Subject, catchError, finalize, of, takeUntil } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { JournalService, PublicNewsListItem } from '../services/JournalService';
 import { SeoService } from '../services/SeoService';
+import { BaseComponent } from '../common/base.component';
+import { SplashScreenComponent } from '../splash/splash.component';
 
 @Component({
   selector: 'app-journal-view',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule],
+  imports: [CommonModule, RouterLink, MatIconModule, SplashScreenComponent],
   templateUrl: './journal-view.component.html',
   styleUrls: ['./journal-view.component.scss']
 })
-export class JournalViewComponent implements OnInit, OnDestroy {
+export class JournalViewComponent extends BaseComponent {
   private readonly journalService = inject(JournalService);
   private readonly seoService = inject(SeoService);
-  private readonly destroy$ = new Subject<void>();
 
   items: PublicNewsListItem[] = [];
-  isLoading = true;
   error: string | null = null;
 
-  ngOnInit(): void {
+  protected override onInit(): void {
     scroll(0, 0);
     this.updateSeo();
-    this.load();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  protected override onDestroy(): void {
     this.seoService.removeJsonLd('journal-list-jsonld');
   }
 
-  retry(): void {
-    this.load();
+  protected override onLoadStart(): void {
+    this.error = null;
   }
 
-  private load(): void {
-    this.isLoading = true;
-    this.error = null;
+  protected override onLoadError(error: unknown): void {
+    console.error('Failed to load journal', error);
+    this.error = 'Не удалось загрузить журнал. Попробуйте обновить страницу.';
+  }
 
-    this.journalService
-      .list()
-      .pipe(
-        catchError((error: unknown) => {
-          console.error('Failed to load journal', error);
-          this.error = 'Не удалось загрузить журнал. Попробуйте обновить страницу.';
-          return of([] as PublicNewsListItem[]);
-        }),
-        finalize(() => {
-          this.isLoading = false;
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((items) => {
+  retry(): void {
+    void this.reload();
+  }
+
+  protected LoadData(): Observable<PublicNewsListItem[]> {
+    return this.journalService.list().pipe(
+      tap((items) => {
         this.items = items;
         this.updateSeo();
-      });
+      })
+    );
   }
 
   private updateSeo(): void {

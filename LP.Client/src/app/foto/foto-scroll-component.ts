@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -10,7 +10,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from './../services/AuthService';
 import { NavigationService } from './../services/NavigationService';
 import { NotificationBellComponent } from './../common/notification-bell.component';
-import { first } from 'rxjs';
+import { Observable, tap } from 'rxjs';
+import { BaseComponent } from './../common/base.component';
 
 @Component({
   selector: 'foto-scroll-component',
@@ -25,9 +26,8 @@ import { first } from 'rxjs';
   templateUrl: './foto-scroll-component.html',
   styleUrl: './foto-scroll-component.scss'  
 })
-export class FotoScrollComponent {
+export class FotoScrollComponent extends BaseComponent {
   images: any[] = [];
-  isLoading = true;
   isMenuOpen = false;
 
   baseURL = "";
@@ -45,11 +45,11 @@ export class FotoScrollComponent {
     @Inject(PLATFORM_ID) private platformId: Object)
 
   {
+    super();
     this.baseURL = base;
   }
 
-
-  ngOnInit() {               // вызывается после конструктора
+  protected LoadData(): void | Observable<string[]> {
     //this.userId = this.route.snapshot.paramMap.get('id') ?? undefined;
 
     //this.authService.userId$
@@ -65,17 +65,11 @@ export class FotoScrollComponent {
       return;
     }
 
-    this.http.get<string[]>(this.baseURL + '/Photos/scroll', { withCredentials: true })
-      .subscribe({
-        next: (u) => {
-        this.images = u;
-        this.isLoading = false;
-      },
-        error: (error) => {
-          console.error('Failed to load FotoScrollComponent:', error);
-          
-        }
-    });
+    return this.http
+      .get<string[]>(this.baseURL + '/Photos/scroll', { withCredentials: true })
+      .pipe(tap((images) => {
+        this.images = images;
+      }));
   }
 
   private shouldLoadImages(): boolean {

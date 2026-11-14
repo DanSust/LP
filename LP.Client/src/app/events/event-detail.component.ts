@@ -6,11 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { Subject, catchError, finalize, map, of, switchMap, takeUntil, tap } from 'rxjs';
 import { EventService, PublicEventDetail } from '../services/EventService';
 import { SeoService } from '../services/SeoService';
+import { SplashScreenComponent } from '../splash/splash.component';
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule],
+  imports: [CommonModule, RouterLink, MatIconModule, SplashScreenComponent],
   templateUrl: './event-detail.component.html',
   styleUrls: ['./event-detail.component.scss']
 })

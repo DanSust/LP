@@ -1,7 +1,15 @@
-// splash-screen.component.ts
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+/**
+ * Фирменный splash-экран Made4Love.
+ *
+ * Показывается поверх страницы, пока компонент загружает данные.
+ * Пример:
+ * ```html
+ * <app-splash-screen [visible]="isLoading" text="Загружаем журнал" />
+ * ```
+ */
 @Component({
   selector: 'app-splash-screen',
   standalone: true,
@@ -10,8 +18,15 @@ import { CommonModule } from '@angular/common';
   styleUrl: './splash.component.scss'
 })
 export class SplashScreenComponent {
+  /** Показывать ли splash. При false экран плавно исчезает. */
   visible = input.required<boolean>();
-  progress = input<number>(0);
+
+  /** Прогресс 0–100. Если не задан — показывается бегущая полоса. */
+  progress = input<number | null>(null);
+
+  /** Показывать ли полосу прогресса. */
   showProgress = input<boolean>(true);
-  text = input<string>('Загрузка...');
+
+  /** Подпись под логотипом. */
+  text = input<string>('Загружаем данные');
 }

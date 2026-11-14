@@ -1,25 +1,67 @@
-<div class="splash" [class.fade-out]="!visible()">
-  <div class="content">
-    <div class="logo">
-      <span class="made">made</span>
-      <span class="four">4</span>
-      <span class="love">love</span>
+<div
+  class="splash"
+  [class.is-hidden]="!visible()"
+  role="status"
+  aria-live="polite"
+  [attr.aria-busy]="visible()"
+  [attr.aria-label]="text()"
+>
+  <div class="splash__aurora splash__aurora--pink" aria-hidden="true"></div>
+  <div class="splash__aurora splash__aurora--blue" aria-hidden="true"></div>
+  <div class="splash__grid" aria-hidden="true"></div>
+
+  <div class="splash__content">
+    <div class="splash__heart-wrap" aria-hidden="true">
+      <svg class="splash__heart" viewBox="0 0 64 58">
+        <defs>
+          <linearGradient id="splash-heart-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f83173" />
+            <stop offset="52%" stop-color="#e91e63" />
+            <stop offset="100%" stop-color="#03a9f4" />
+          </linearGradient>
+          <filter id="splash-heart-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <path
+          d="M32 55C32 55 4 38 4 20C4 10 12 4 21 4C26 4 30 7 32 11C34 7 38 4 43 4C52 4 60 10 60 20C60 38 32 55 32 55Z"
+          fill="url(#splash-heart-gradient)"
+          filter="url(#splash-heart-glow)"
+        />
+      </svg>
+
+      <svg class="splash__ecg" viewBox="0 0 220 40">
+        <path d="M0 20H55L66 8L78 33L90 13L102 20H140L151 9L163 31L175 15L187 20H220" />
+      </svg>
     </div>
 
-    <div class="hearts">
-      <span class="heart">💗</span>
-      <span class="heart">💙</span>
+    <div class="splash__logo" aria-label="made4love">
+      <span class="splash__logo-made">made</span>
+      <span class="splash__logo-four">4</span>
+      <span class="splash__logo-love">love</span>
     </div>
+
+    <p class="splash__tagline">знакомства со смыслом</p>
 
     @if (showProgress()) {
-    <div class="progress-container">
-      <div class="progress-bar">
-        <div class="fill" [style.width.%]="progress()"></div>
+      <div
+        class="splash__progress"
+        [class.is-indeterminate]="progress() === null"
+        aria-hidden="true"
+      >
+        <div
+          class="splash__progress-fill"
+          [style.width.%]="progress() ?? 100"
+        ></div>
       </div>
-      <span class="percent">{{ progress() | number:'1.0-0' }}%</span>
-    </div>
     }
 
-    <p class="text">{{ text() }}</p>
+    <p class="splash__text">
+      {{ text() }}<span class="splash__dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+    </p>
   </div>
 </div>

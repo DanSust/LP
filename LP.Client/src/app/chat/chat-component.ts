@@ -19,6 +19,7 @@ import { ParseQuotePipe } from './parse-quote.pipe';
 import { getEmptyChatExpiry } from './chat-expiry';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
+import { SplashScreenComponent } from './../splash/splash.component';
 
 const QUOTE_DELIMITER = '[[[QUOTE:';
 const QUOTE_END = ']]]';
@@ -38,7 +39,7 @@ const EMOJIS = [
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, UserAvatarComponent, ParseQuotePipe, MatMenuModule, MatIconModule],
+  imports: [CommonModule, FormsModule, UserAvatarComponent, ParseQuotePipe, MatMenuModule, MatIconModule, SplashScreenComponent],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })

@@ -1,64 +1,56 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { Subject, catchError, finalize, of, takeUntil } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { EventService, PublicEventListItem } from '../services/EventService';
 import { SeoService } from '../services/SeoService';
+import { BaseComponent } from '../common/base.component';
+import { SplashScreenComponent } from '../splash/splash.component';
 
 @Component({
   selector: 'app-events-view',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule],
+  imports: [CommonModule, RouterLink, MatIconModule, SplashScreenComponent],
   templateUrl: './events-view.component.html',
   styleUrls: ['./events-view.component.scss']
 })
-export class EventsViewComponent implements OnInit, OnDestroy {
+export class EventsViewComponent extends BaseComponent {
   private readonly eventService = inject(EventService);
   private readonly seoService = inject(SeoService);
-  private readonly destroy$ = new Subject<void>();
 
   events: PublicEventListItem[] = [];
-  isLoading = true;
   error: string | null = null;
 
-  ngOnInit(): void {
+  protected override onInit(): void {
     scroll(0, 0);
     this.updateSeo();
-    this.loadEvents();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  protected override onDestroy(): void {
     this.seoService.removeJsonLd('events-list-jsonld');
   }
 
-  retry(): void {
-    this.loadEvents();
+  protected override onLoadStart(): void {
+    this.error = null;
   }
 
-  private loadEvents(): void {
-    this.isLoading = true;
-    this.error = null;
+  protected override onLoadError(error: unknown): void {
+    console.error('Failed to load public events', error);
+    this.error = 'Не удалось загрузить события. Попробуйте обновить страницу.';
+  }
 
-    this.eventService
-      .list({ pageSize: 100 })
-      .pipe(
-        catchError((error: unknown) => {
-          console.error('Failed to load public events', error);
-          this.error = 'Не удалось загрузить события. Попробуйте обновить страницу.';
-          return of([] as PublicEventListItem[]);
-        }),
-        finalize(() => {
-          this.isLoading = false;
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((events) => {
+  retry(): void {
+    void this.reload();
+  }
+
+  protected LoadData(): Observable<PublicEventListItem[]> {
+    return this.eventService.list({ pageSize: 100 }).pipe(
+      tap((events) => {
         this.events = events;
         this.updateSeo();
-      });
+      })
+    );
   }
 
   private updateSeo(): void {

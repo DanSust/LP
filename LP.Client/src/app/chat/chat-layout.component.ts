@@ -2,6 +2,7 @@ import { Component, DestroyRef, HostListener, inject, signal } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { ChatListComponent } from './chat-list.component';
 import { ChatService } from './../services/ChatService';
+import { SplashScreenComponent } from './../splash/splash.component';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -9,8 +10,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-chat-layout',
   standalone: true,
-  imports: [CommonModule, ChatListComponent, RouterOutlet],
+  imports: [CommonModule, ChatListComponent, RouterOutlet, SplashScreenComponent],
   template: `
+    <app-splash-screen [visible]="chatService.isLoadingChats()" text="Загружаем чаты" />
+
     <div class="container">
       <!-- На десктопе: всегда показываем оба блока -->
       <!-- На мобильном: показываем либо список чатов, либо чат -->
@@ -74,7 +77,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   `]
 })
 export class ChatLayoutComponent {
-  private chatService = inject(ChatService);
+  readonly chatService = inject(ChatService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 

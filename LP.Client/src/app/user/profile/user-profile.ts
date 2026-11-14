@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, ViewEncapsulation, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, ViewEncapsulation, ViewChild } from '@angular/core';
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, Validators, ReactiveFormsModule, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -27,6 +27,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { City, NearestCityResponse } from './../../Interfaces/CityLocation';
 import { LocationService, LocationCoords } from './../../services/LocationService';
 import { SplashScreenComponent } from '../../splash/splash.component';
+import { BaseComponent } from '../../common/base.component';
 
 @Component({
   selector: 'user-profile',
@@ -58,7 +59,7 @@ import { SplashScreenComponent } from '../../splash/splash.component';
   ]
 })
 
-export class UserProfile implements OnInit {
+export class UserProfile extends BaseComponent {
   form: ReturnType<typeof this.fb.group>;
   interests: InterestDTO[] = [];
   towns: TownDTO[] = [];
@@ -103,6 +104,7 @@ export class UserProfile implements OnInit {
     private locationService: LocationService,
     @Inject(API_BASE_URL) private base: string)
   {
+    super();
     //console.log(base);
     this.form = this.fb.group({
       Email: ['', Validators.required],
@@ -127,106 +129,100 @@ export class UserProfile implements OnInit {
     });  
   }
 
-  ngOnInit() {
-    // 🔥 Этап 1: Параллельная загрузка независимых данных (cookies, interests, cities)
-    const cookies$ = this.http.get<{ userId: string }>(this.base + '/Users/cookies');
-    const interests$ = this.http.get<InterestDTO[]>(this.base + '/Interests/list');
-    const cities$ = this.http.get<TownDTO[]>(this.base + '/City/list', { withCredentials: true });
-
-    Promise.all([
-      firstValueFrom(cookies$),
-      firstValueFrom(interests$),
-      firstValueFrom(cities$)
-    ])
-      .then(([cookiesResult, interestsResult, citiesResult]) => {
-        // ✅ Сохраняем результаты первой волны
-        console.log(cookiesResult.userId);
-        this.interests = interestsResult;
-        this.updateSelectedCount();
-        this.towns = citiesResult;
-        this.setupCityAutocomplete();
-
-        // 🔥 Этап 2: Параллельная загрузка зависимых данных (questions, user info)
-        const questions$ = this.http.get<QuestionsDTO[]>(
-          this.base + '/Questions/list',
-          { withCredentials: true }
-        );
-        const userInfo$ = this.http.get<any>(
-          this.base + '/Users/info/',
-          { withCredentials: true }
-        );
-
-        return Promise.all([
-          firstValueFrom(questions$),
-          firstValueFrom(userInfo$)
-        ]);
-      })
-      .then(([questions, userInfo]) => {
-        // ✅ Обрабатываем вопросы
-        while (this.questionsFormArray.length !== 0) {
-          this.questionsFormArray.removeAt(0);
-        }
-
-        if (questions && questions.length > 0) {
-          questions.forEach(q => this.addQuestion(q));
-        } else {
-          this.addQuestion(); // Add empty question
-        }
-
-        // ✅ Обрабатываем данные пользователя
-        const town = this.towns.find(t => t.id === userInfo.townId);
-
-        if (town) {
-          this.form.patchValue({
-            TownName: town,
-            Town: town.id
-          });
-        }
-
-        this.provider = userInfo.provider;
-        this.isConfirmed = userInfo.isConfirmed;
-
-        this.form.patchValue({
-          Email: userInfo.email,
-          Caption: userInfo.caption,
-          Sex: userInfo.sex ? '1' : '0',
-          IsActive: userInfo.isPaused ? false : true,
-          SendEmail: userInfo.sendEmail ? false : true,
-          SendTelegram: userInfo.sendTelegram ? false : true,
-          WithPhotos: userInfo.withPhotos ? false : true,
-          WithEmail: userInfo.withEmail ? false : true,
-          WithLikes: userInfo.withLikes ? false : true,
-          Birthday: userInfo.birthday,
-          Weight: userInfo.weight || 60,
-          Height: userInfo.height || 170,
-          Description: userInfo.description || '',
-          AgeFrom: userInfo.ageFrom || 18,
-          AgeTo: userInfo.ageTo || 100,
-          Aim: userInfo.aim !== undefined ? String(userInfo.aim) : '1'
-        });
-
-        // ✅ Сбрасываем и устанавливаем интересы
-        for (const item of this.interests) {
-          item.selected = false;
-        }
-
-        for (const item of userInfo.interests) {
-          const fitem = this.interests.find(iitem => iitem.id === item.id);
-          if (fitem) {
-            fitem.selected = true;
-          }
-        }
-      })
-      .catch(error => {
-        console.error('Failed to load profile data:', error);
-        this.toast.show('Ошибка загрузки данных профиля');
-      });
-
+  protected override onInit(): void {
     // 🔥 Autocomplete остается reactive (не блокирует загрузку)
     this.filteredTowns = this.form.controls["TownName"].valueChanges.pipe(
       startWith(''),
       map(value => this._filterTowns(value || ''))
     );
+  }
+
+  protected async LoadData(): Promise<void> {
+    // 🔥 Этап 1: Параллельная загрузка независимых данных (cookies, interests, cities)
+    const [cookiesResult, interestsResult, citiesResult] = await Promise.all([
+      firstValueFrom(this.http.get<{ userId: string }>(this.base + '/Users/cookies')),
+      firstValueFrom(this.http.get<InterestDTO[]>(this.base + '/Interests/list')),
+      firstValueFrom(this.http.get<TownDTO[]>(this.base + '/City/list', { withCredentials: true }))
+    ]);
+
+    // ✅ Сохраняем результаты первой волны
+    console.log(cookiesResult.userId);
+    this.interests = interestsResult;
+    this.updateSelectedCount();
+    this.towns = citiesResult;
+    this.setupCityAutocomplete();
+
+    // 🔥 Этап 2: Параллельная загрузка зависимых данных (questions, user info)
+    const [questions, userInfo] = await Promise.all([
+      firstValueFrom(this.http.get<QuestionsDTO[]>(
+        this.base + '/Questions/list',
+        { withCredentials: true }
+      )),
+      firstValueFrom(this.http.get<any>(
+        this.base + '/Users/info/',
+        { withCredentials: true }
+      ))
+    ]);
+
+    // ✅ Обрабатываем вопросы
+    while (this.questionsFormArray.length !== 0) {
+      this.questionsFormArray.removeAt(0);
+    }
+
+    if (questions && questions.length > 0) {
+      questions.forEach(q => this.addQuestion(q));
+    } else {
+      this.addQuestion(); // Add empty question
+    }
+
+    // ✅ Обрабатываем данные пользователя
+    const town = this.towns.find(t => t.id === userInfo.townId);
+
+    if (town) {
+      this.form.patchValue({
+        TownName: town,
+        Town: town.id
+      });
+    }
+
+    this.provider = userInfo.provider;
+    this.isConfirmed = userInfo.isConfirmed;
+
+    this.form.patchValue({
+      Email: userInfo.email,
+      Caption: userInfo.caption,
+      Sex: userInfo.sex ? '1' : '0',
+      IsActive: userInfo.isPaused ? false : true,
+      SendEmail: userInfo.sendEmail ? false : true,
+      SendTelegram: userInfo.sendTelegram ? false : true,
+      WithPhotos: userInfo.withPhotos ? false : true,
+      WithEmail: userInfo.withEmail ? false : true,
+      WithLikes: userInfo.withLikes ? false : true,
+      Birthday: userInfo.birthday,
+      Weight: userInfo.weight || 60,
+      Height: userInfo.height || 170,
+      Description: userInfo.description || '',
+      AgeFrom: userInfo.ageFrom || 18,
+      AgeTo: userInfo.ageTo || 100,
+      Aim: userInfo.aim !== undefined ? String(userInfo.aim) : '1'
+    });
+
+    // ✅ Сбрасываем и устанавливаем интересы
+    for (const item of this.interests) {
+      item.selected = false;
+    }
+
+    for (const item of userInfo.interests) {
+      const fitem = this.interests.find(iitem => iitem.id === item.id);
+      if (fitem) {
+        fitem.selected = true;
+      }
+    }
+  }
+
+  protected override onLoadError(error: unknown): void {
+    console.error('Failed to load profile data:', error);
+    this.toast.show('Ошибка загрузки данных профиля');
   }
 
   setupCityAutocomplete(): void {
