@@ -1,6 +1,7 @@
-import { Component, inject, input, OnChanges, SimpleChanges, Renderer2, ElementRef, Injector, runInInjectionContext } from '@angular/core';
+import { Component, inject, input, OnChanges, SimpleChanges, Renderer2, ElementRef, Injector, runInInjectionContext, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserStatusService } from './../services/UserStatusService';
+import { API_BASE_URL } from '../app.config';
 
 @Component({
   selector: 'app-user-avatar',
@@ -24,6 +25,11 @@ export class UserAvatarComponent implements OnChanges {
   currentAvatarSrc: string | null = null;
   defaultAvatar = 'assets/default-avatar.svg';
 
+  constructor(    
+    @Inject(API_BASE_URL) private base: string
+  ) {
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['userId']) {
       const id = this.userId();
@@ -36,7 +42,7 @@ export class UserAvatarComponent implements OnChanges {
   }
 
   private loadRealAvatar(id: string): void {
-    const realUrl = `Photos/avatar/${id}`;
+    const realUrl = `${this.base}/Photos/avatar/${id}`;
     const img = new Image();
 
     // Когда картинка успешно загрузилась
