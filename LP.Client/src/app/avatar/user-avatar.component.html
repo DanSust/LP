@@ -1,12 +1,10 @@
 <div class="avatar-wrapper">
   <div class="avatar-container">
-    <img [src]="avatarUrl()"
+    <img [src]="currentAvatarSrc || defaultAvatar"
          [alt]="name()"
          decoding="async"
-         class="chat-avatar"
-         (error)="onImageError()">
+         class="chat-avatar">
     <div class="status-indicator" [class.online]="isOnline()"></div>
   </div>
   <div class="chat-name">{{ name() }}</div>
 </div>
-

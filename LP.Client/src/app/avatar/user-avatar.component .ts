@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect, computed, input } from '@angular/core';
+import { Component, inject, input, OnChanges, SimpleChanges, Renderer2, ElementRef, Injector, runInInjectionContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserStatusService } from './../services/UserStatusService';
 
@@ -9,27 +9,59 @@ import { UserStatusService } from './../services/UserStatusService';
   templateUrl: 'user-avatar.component.html',
   styleUrl: 'user-avatar.component.scss'
 })
-export class UserAvatarComponent {
+export class UserAvatarComponent implements OnChanges {
   readonly userId = input<string>('');
   readonly name = input<string>('');
 
-  private avatarUrlSignal = signal<string>('');
-  public avatarUrl = this.avatarUrlSignal.asReadonly();
-
   private statService = inject(UserStatusService);
+  private renderer = inject(Renderer2);
+  private el = inject(ElementRef);
+  private injector = inject(Injector);
 
-  isOnline = computed(() => this.statService.onlineUsers().has(this.userId()));
+  isOnline = () => this.statService.onlineUsers().has(this.userId());
 
-  constructor() {
-    effect(() => {
+  // Ссылка на реальную картинку
+  currentAvatarSrc: string | null = null;
+  defaultAvatar = 'assets/default-avatar.svg';
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['userId']) {
       const id = this.userId();
+      this.currentAvatarSrc = null; // Сбрасываем при смене пользователя
+
       if (id) {
-        this.avatarUrlSignal.set(`Photos/avatar/${id}`);
+        this.loadRealAvatar(id);
       }
-    });
+    }
   }
 
-  onImageError(): void {
-    this.avatarUrlSignal.set('assets/default-avatar.svg');
+  private loadRealAvatar(id: string): void {
+    const realUrl = `Photos/avatar/${id}`;
+    const img = new Image();
+
+    // Когда картинка успешно загрузилась
+    img.onload = () => {
+      // Используем runInInjectionContext, так как коллбэк может выполняться вне контекста Angular
+      runInInjectionContext(this.injector, () => {
+        this.currentAvatarSrc = realUrl;
+        this.updateImage();
+      });
+    };
+
+    // Если картинки нет (404), ничего не делаем - останется дефолтная
+    img.onerror = () => {
+      // Опционально: можно залогировать, что аватарки нет
+    };
+
+    img.src = realUrl;
+  }
+
+  private updateImage(): void {
+    // Находим img элемент внутри нашего компонента и обновляем src
+    const imgElement = this.el.nativeElement.querySelector('img');
+    if (imgElement) {
+      this.renderer.setAttribute(imgElement, 'src', this.currentAvatarSrc || this.defaultAvatar);
+      // Убираем возможные классы прозрачности, если вы добавляли их
+    }
   }
 }
