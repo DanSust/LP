@@ -40,7 +40,9 @@ namespace LP.Server.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == recipientId);
             
-            if (!recipientProfile.WithLikes)
+            // Профиль может отсутствовать (например, у служебного пользователя) —
+            // тогда ограничение не применяем.
+            if (recipientProfile is null || !recipientProfile.WithLikes)
                 return true;
 
             // Иначе нужен взаимный лайк

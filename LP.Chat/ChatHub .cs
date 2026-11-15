@@ -229,9 +229,36 @@ public class ChatHub : Hub
         if (chat != null)
         {
             var otherUserId = (chat.UserId == userId) ? chat.Owner : chat.UserId;
+            var isBotDialog = await botService.IsBotDialogActive(otherUserId, userId);
+
+            // Настройка получателя «Писать только при взаимных лайках»
+            // действует и на уже созданные чаты, а не только при создании.
+            // Диалог с ботом ограничением не считаем.
+            if (!isBotDialog)
+            {
+                var recipientProfile = await db.Profiles
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.UserId == otherUserId);
+
+                if (recipientProfile?.WithLikes == true)
+                {
+                    var mutualLikes = await db.Votes
+                        .AsNoTracking()
+                        .CountAsync(v =>
+                            ((v.Owner == userId && v.Like == otherUserId) ||
+                             (v.Owner == otherUserId && v.Like == userId)) &&
+                            v.IsLike &&
+                            !v.IsReject);
+
+                    if (mutualLikes < 2)
+                    {
+                        throw new HubException("Для переписки нужен взаимный лайк");
+                    }
+                }
+            }
 
             // Если это ответ в активном диалоге с ботом
-            if (await botService.IsBotDialogActive(otherUserId, userId))
+            if (isBotDialog)
             {
                 message.MessageType = 3; // Ответ на бота
             }

@@ -61,6 +61,8 @@ export class ChatService {
   public readonly isLoadingChats = signal(false);
   /** Идёт вход в чат и загрузка истории сообщений. */
   public readonly isLoadingMessages = signal(false);
+  /** Причина последней неудачной отправки сообщения (для UI). */
+  public readonly lastSendError = signal<string | null>(null);
   public readonly unreadMessageCount = computed(() =>
     this.chats().reduce((sum, chat) => sum + (chat.unreadMessagesCount || 0), 0)
   );
@@ -357,6 +359,7 @@ export class ChatService {
 
     this.addMessage(message);
     this.updateChatLastMessage(message);
+    this.lastSendError.set(null);
 
     try {
       await this.connectionManager.invoke('SendMessage', chatId, clientMessageId, trimmed);
@@ -364,6 +367,14 @@ export class ChatService {
       return true;
     } catch (error) {
       console.error('Не удалось отправить сообщение', error);
+
+      const rawMessage = error instanceof Error ? error.message : String(error);
+      this.lastSendError.set(
+        rawMessage.includes('взаимный лайк')
+          ? 'Нужен взаимный лайк, чтобы написать этому пользователю'
+          : 'Не удалось отправить сообщение. Проверьте соединение.'
+      );
+
       this.messages.update(messages =>
         messages.map(item =>
           item.id === clientMessageId ? { ...item, failed: true } : item

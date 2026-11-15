@@ -129,39 +129,81 @@
       <!-- Детали -->
       <div class="details-wrapper">
         <div class="profile-details">
-          <!--<h3>{{ profile.name }}, {{ profile.age }}</h3>-->
-
-          <div class="detail-item">
-            <span class="detail-label">📍 {{ profile.city || 'Не указано' }}</span>
-          </div>
-
-          @if (profile.interests && profile.interests.length > 0) {
-          <div class="detail-item">
-
-            <span class="detail-value">
-              <span class="detail-label">🎯</span>
-              @for (interest of profile.interests; track interest.id; let last = $last) {
-              <span class="interest-tag">
-                <img [src]="'assets' + interest.path" [alt]="interest.name" loading="lazy" decoding="async" class="interest-icon" />
-                {{ interest.name }}
+          @if (hasProfileDetails(profile)) {
+          <!-- Быстрые факты -->
+          @if (profile.city || profile.height || profile.weight || profile.zodiac) {
+          <div class="facts-grid">
+            @if (profile.city) {
+            <div class="fact">
+              <span class="fact-icon material-symbols-outlined">location_on</span>
+              <span class="fact-text">
+                <span class="fact-label">Город</span>
+                <span class="fact-value">{{ profile.city }}</span>
               </span>
+            </div>
+            }
 
-              }
-            </span>
+            @if (profile.height) {
+            <div class="fact">
+              <span class="fact-icon material-symbols-outlined">straighten</span>
+              <span class="fact-text">
+                <span class="fact-label">Рост</span>
+                <span class="fact-value">{{ profile.height }} см</span>
+              </span>
+            </div>
+            }
+
+            @if (profile.weight) {
+            <div class="fact">
+              <span class="fact-icon material-symbols-outlined">monitor_weight</span>
+              <span class="fact-text">
+                <span class="fact-label">Вес</span>
+                <span class="fact-value">{{ profile.weight }} кг</span>
+              </span>
+            </div>
+            }
+
+            @if (profile.zodiac) {
+            <div class="fact">
+              <span class="fact-icon material-symbols-outlined">auto_awesome</span>
+              <span class="fact-text">
+                <span class="fact-label">Зодиак</span>
+                <span class="fact-value">{{ profile.zodiac }}</span>
+              </span>
+            </div>
+            }
           </div>
           }
 
-          <div class="detail-item">
-            <span class="detail-label">👤 {{ profile.height || '' }} см. {{ profile.weight || '' }} кг.</span>
-          </div>
+          <!-- Интересы -->
+          @if (profile.interests && profile.interests.length > 0) {
+          <section class="details-section">
+            <h4 class="section-title">Интересы</h4>
+            <div class="interests-list">
+              @for (interest of profile.interests; track interest.id) {
+              <span class="interest-tag">
+                <img [src]="'assets' + interest.path"
+                     [alt]="interest.name"
+                     loading="lazy"
+                     decoding="async"
+                     class="interest-icon" />
+                {{ interest.name }}
+              </span>
+              }
+            </div>
+          </section>
+          }
 
-          <div class="detail-item">
-            <span class="detail-label">♈ {{ profile.zodiac || 'Не указано' }}</span>
-          </div>
-
-          <div class="detail-item">
-            <span class="detail-label" style="font-weight: 300">💼 {{ profile.description || 'Не указано' }}</span>
-          </div>
+          <!-- О себе -->
+          @if (profile.description) {
+          <section class="details-section">
+            <h4 class="section-title">О себе</h4>
+            <p class="profile-description">{{ profile.description }}</p>
+          </section>
+          }
+          } @else {
+          <p class="details-empty">Пользователь пока не заполнил информацию о себе</p>
+          }
         </div>
       </div>
     </div>

@@ -67,6 +67,10 @@ export class ProfileService {
             name: p.name,
             city: p.city,
             age: this.calculateAge(p.birthday),
+            height: p.height || undefined,
+            weight: p.weight || undefined,
+            description: p.description || '',
+            zodiac: getZodiacSign(p.birthday),
             photoUrls: p.photos?.map((photo: any) => ({
               id: photo.id,
               path: `${this.baseUrl}/Photos/image/${photo.id}`

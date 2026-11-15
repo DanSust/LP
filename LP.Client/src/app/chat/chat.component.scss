@@ -258,6 +258,23 @@
   }
 }
 
+.send-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(233, 30, 99, .18);
+  border-top: 1px solid rgba(233, 30, 99, .4);
+  color: #ffd1e2;
+  font-size: 13px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
 .input-area {
   flex-shrink: 0;
   display: flex;

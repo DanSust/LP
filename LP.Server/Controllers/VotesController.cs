@@ -280,7 +280,7 @@ namespace LP.Server.Controllers
                 if (!randomIdsN.Any())
                     return Ok(new List<object>());
 
-                // Загружаем данные (город, фото, интересы) – аналогично основной ветке
+                // Загружаем данные (город, профиль, фото, интересы) – аналогично основной ветке
                 var userDataN = await _context.Users
                     .Where(u => randomIdsN.Contains(u.Id))
                     .Select(u => new
@@ -291,6 +291,10 @@ namespace LP.Server.Controllers
                         CityName = _context.Profiles
                             .Where(p => p.UserId == u.Id)
                             .Select(p => _context.Cities.Where(c => c.Id == p.CityId).Select(c => c.Name).FirstOrDefault())
+                            .FirstOrDefault(),
+                        Profile = _context.Profiles
+                            .Where(p => p.UserId == u.Id)
+                            .Select(p => new { p.Height, p.Weight, p.Description })
                             .FirstOrDefault()
                     })
                     .AsNoTracking()
@@ -316,6 +320,9 @@ namespace LP.Server.Controllers
                     Name = u.Caption,
                     City = u.CityName,
                     Birthday = u.Birthday,
+                    Height = u.Profile != null ? u.Profile.Height : 0,
+                    Weight = u.Profile != null ? u.Profile.Weight : 0,
+                    Description = u.Profile != null ? u.Profile.Description : string.Empty,
                     Photos = photosN.Where(p => p.UserId == u.Id).Select(p => new { p.Id, p.Path }).ToList(),
                     Interests = interestsN.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name, i.Path }).ToList()
                 }).ToList();
@@ -336,30 +343,26 @@ namespace LP.Server.Controllers
             shownIds.Add(userId);
 
             // Базовый запрос
-            var query = _context.Users
+            IQueryable<User> query = _context.Users
                 .AsNoTracking()
-                .Where(x => x.Username != "admin" 
-                            && !shownIds.Contains(x.Id) 
+                .Where(x => x.Username != "admin"
+                            && !shownIds.Contains(x.Id)
                             && x.IsPaused == false
-                            && x.Sex != user.Sex)
-                .OrderBy(u => EF.Functions.Random());
+                            && x.Sex != user.Sex);
 
-            // Если у текущего пользователя стоит WithEmail - фильтруем только с подтвержденным Email
+            // Настройка «Только подтверждённые email»: показываем анкеты
+            // с подтверждённой почтой.
             //if (currentUserProfile?.WithEmail == true)
             //{
             //    query = query.Where(x => x.EmailConfirmation != null && x.EmailConfirmation.IsConfirmed);
             //}
 
-            //// Если у текущего пользователя стоит WithPhoto - фильтруем только тех, у кого есть фото
-            //if (currentUserProfile?.WithPhoto == true)
-            //{
-            //    query = query.Where(x => _context.Photos.Any(p => p.User.Id == x.Id));
-            //}
-
-
-            var debugView = query.Expression.ToString();
-            var sql = query.ToQueryString();
-            
+            // Настройка «Партнёры только с фото»: показываем анкеты,
+            // у которых есть хотя бы одно загруженное фото.
+            if (currentUserProfile?.WithPhoto == true)
+            {
+                query = query.Where(x => _context.Photos.Any(p => p.User.Id == x.Id));
+            }
 
             var randomIds = await query
                 .OrderBy(u => Guid.NewGuid())
@@ -370,7 +373,7 @@ namespace LP.Server.Controllers
             if (!randomIds.Any())
                 return Ok(new List<object>());
 
-            // 2. Данные пользователей с городами (один запрос)
+            // 2. Данные пользователей с городами и профилем (один запрос)
             var userData = await _context.Users
                 .Where(u => randomIds.Contains(u.Id))
                 .Select(u => new
@@ -381,6 +384,10 @@ namespace LP.Server.Controllers
                     CityName = _context.Profiles
                         .Where(p => p.UserId == u.Id)
                         .Select(p => _context.Cities.Where(c => c.Id == p.CityId).Select(c => c.Name).FirstOrDefault())
+                        .FirstOrDefault(),
+                    Profile = _context.Profiles
+                        .Where(p => p.UserId == u.Id)
+                        .Select(p => new { p.Height, p.Weight, p.Description })
                         .FirstOrDefault()
                 })
                 .AsNoTracking()
@@ -409,6 +416,9 @@ namespace LP.Server.Controllers
                 Name = u.Caption,
                 City = u.CityName,
                 Birthday = u.Birthday,
+                Height = u.Profile != null ? u.Profile.Height : 0,
+                Weight = u.Profile != null ? u.Profile.Weight : 0,
+                Description = u.Profile != null ? u.Profile.Description : string.Empty,
                 Photos = photos.Where(p => p.UserId == u.Id).Select(p => new { p.Id, p.Path }).ToList(),
                 Interests = interests.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name, i.Path }).ToList()
             }).ToList();

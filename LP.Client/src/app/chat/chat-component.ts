@@ -225,7 +225,7 @@ export class ChatView {
     this.isSending.set(false);
 
     if (!sent) {
-      this.sendError.set('Не удалось отправить сообщение. Проверьте соединение.');
+      this.sendError.set(this.chatService.lastSendError() ?? 'Не удалось отправить сообщение. Проверьте соединение.');
       return;
     }
 

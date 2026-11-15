@@ -80,6 +80,18 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   getAgeWord = getAgeWord;
 
+  /** Есть ли у профиля данные, которые стоит показывать в блоке «Детали». */
+  hasProfileDetails(profile: Profile): boolean {
+    return !!(
+      profile.city ||
+      profile.height ||
+      profile.weight ||
+      profile.zodiac ||
+      profile.description ||
+      (profile.interests && profile.interests.length > 0)
+    );
+  }
+
   constructor(
     private http: HttpClient,
     @Inject(API_BASE_URL) private base: string,

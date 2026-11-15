@@ -112,6 +112,13 @@
   </div>
   }
 
+  @if (sendError()) {
+  <div class="send-error">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ sendError() }}</span>
+  </div>
+  }
+
   <div class="input-area">
     <!-- ОБЕРТКА ДЛЯ TEXTAREA С ЭМОДЗИ -->
     <div class="textarea-wrapper">
