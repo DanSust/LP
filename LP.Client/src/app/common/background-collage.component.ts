@@ -1,5 +1,5 @@
 // background-collage.component.ts
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, ElementRef, Inject, OnInit, PLATFORM_ID, Renderer2 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { API_BASE_URL } from './../app.config';
 
@@ -15,10 +15,16 @@ export class BackCollageComponent implements OnInit {
 
   constructor(
     @Inject(API_BASE_URL) public baseUrl: string,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private elementRef: ElementRef<HTMLElement>,
+    private renderer: Renderer2
   ) { }
 
   ngOnInit(): void {
+    // Коллаж должен жить на уровне body, перед app-root, чтобы быть фоном
+    // всей страницы, а не только центральной колонки приложения.
+    this.moveToBody();
+
     // 1. Сначала проверяем, нужно ли ВООБЩЕ что-то делать
     if (!this.shouldLoadImages()) {
       this.photoUrls = []; // Гарантируем пустоту
@@ -30,6 +36,21 @@ export class BackCollageComponent implements OnInit {
       //`/Photos/back/${i + 1}.jpg`
     );
     this.photoUrls = this.shuffleArray(urls);
+  }
+
+  /** Переносит хост-элемент компонента прямо в <body> перед <app-root>. */
+  private moveToBody(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const host = this.elementRef.nativeElement;
+    const appRoot = document.querySelector('app-root');
+    if (!appRoot || host.parentElement === document.body) {
+      return;
+    }
+
+    this.renderer.insertBefore(document.body, host, appRoot);
   }
 
   private shouldLoadImages(): boolean {

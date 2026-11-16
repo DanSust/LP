@@ -1,3 +1,7 @@
+<!-- Стартовый splash поверх приложения. Inline-режим держит его
+     в пределах app-root, поэтому коллаж по бокам остаётся видимым. -->
+<app-splash-screen [visible]="showBootSplash" [inline]="true" text="Загружаем сайт" />
+
 @if (!isMobile) {
 <app-back-collage></app-back-collage>
 <div class="overlay"></div>

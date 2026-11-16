@@ -32,6 +32,24 @@
     visibility: hidden;
     pointer-events: none;
   }
+
+  /* Splash внутри app-root: закрывает только центральную колонку,
+     фон и коллаж по бокам остаются видимыми. */
+  &.splash--inline {
+    position: fixed;
+    inset: auto;
+    top: 0;
+    left: 50%;
+    width: 65vw;
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-50%);
+    background-attachment: scroll;
+
+    @media (max-width: 768px) {
+      width: 100vw;
+    }
+  }
 }
 
 .splash__grid {

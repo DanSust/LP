@@ -17,6 +17,7 @@ import { HttpClient } from "@angular/common/http";
 import { API_BASE_URL } from './app.config';
 import { ComingSoonComponent } from './promo/coming-soon.component';
 import { SeoConfig, SeoService } from './services/SeoService';
+import { SplashScreenComponent } from './splash/splash.component';
 
 
 @Component({
@@ -31,7 +32,8 @@ import { SeoConfig, SeoService } from './services/SeoService';
     BottomNavComponent,
     FotoScrollComponent,
     BackCollageComponent,
-    ComingSoonComponent
+    ComingSoonComponent,
+    SplashScreenComponent
   ],
   //schemas: [CUSTOM_ELEMENTS_SCHEMA], // ✅ Add this
   templateUrl: './app.html',
@@ -44,6 +46,11 @@ export class App implements OnInit, OnDestroy {
   userId: string | null = null;
   isLoading = false;
   isMobile = false;
+
+  /** Стартовый splash внутри app-root: показывается поверх приложения,
+      пока оно делает первый рендер. Коллаж по бокам при этом виден. */
+  showBootSplash = true;
+  private bootSplashTimer?: number;
 
   // === НАСТРОЙКИ РЕЖИМА РАЗРАБОТКИ ===
   isDevelopmentMode = false; //localStorage.getItem('is_admin') !== 'true'
@@ -71,6 +78,11 @@ export class App implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    // Плавно убираем стартовый splash после первого рендера приложения.
+    this.bootSplashTimer = window.setTimeout(() => {
+      this.showBootSplash = false;
+    }, 700);
+
     this.updateSeoForCurrentRoute();
     this.routeSeoSubscription = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
@@ -121,6 +133,9 @@ export class App implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.bootSplashTimer) {
+      clearTimeout(this.bootSplashTimer);
+    }
     this.subscription?.unsubscribe();
     this.routeSeoSubscription?.unsubscribe();
     this.channel.close();
