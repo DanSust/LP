@@ -12,7 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   standalone: true,
   imports: [CommonModule, ChatListComponent, RouterOutlet, SplashScreenComponent],
   template: `
-    <app-splash-screen [visible]="chatService.isLoadingChats()" text="Загружаем чаты" />
+    <app-splash-screen [visible]="chatService.isLoadingChats()" [inline]="true" text="Загружаем чаты" />
 
     <div class="container">
       <!-- На десктопе: всегда показываем оба блока -->

@@ -1,3 +1,8 @@
+<app-splash-screen
+  [visible]="profileService.isLoading() && profiles().length === 0"
+  [inline]="true"
+  text="Загружаем анкеты" />
+
 <div class="card-stack" #activePhotoContainer [class.dragging]="isDragging()">
 
   <!-- Нет профилей -->

@@ -24,6 +24,7 @@ import { AuthService } from '../services/AuthService';
 import { RatingComponent } from '../../app/user/rating/user-rating.component';
 import { getAgeWord } from './../common/usefull.utils';
 import { Subscription } from 'rxjs';
+import { SplashScreenComponent } from './../splash/splash.component';
 
 interface ExitingProfile {
   id: string;
@@ -35,7 +36,7 @@ interface ExitingProfile {
 @Component({
   selector: 'vote-cards',
   standalone: true,
-  imports: [CommonModule, MatIconModule, RatingComponent],
+  imports: [CommonModule, MatIconModule, RatingComponent, SplashScreenComponent],
   templateUrl: './vote.component.html',
   styleUrls: ['./vote.component.scss']
 })
