@@ -194,6 +194,15 @@ namespace LP.Server.Controllers
                 return StatusCode(500, new { message = "Ошибка при поиске: " + ex.Message });
             }
 
+            // Заблокированные и отмеченные как спам не должны попадать в мэтчи.
+            var hiddenMatchIds = (await _context.HiddenUserIds(userId).ToListAsync()).ToHashSet();
+            if (hiddenMatchIds.Count > 0)
+            {
+                allMatches = allMatches
+                    .Where(m => !hiddenMatchIds.Contains(m.UserId))
+                    .ToList();
+            }
+
             var totalCount = allMatches.Count;
 
             if (totalCount == 0)
@@ -334,6 +343,10 @@ namespace LP.Server.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == userId);
 
+            // Заблокированные в любую сторону и пользователи, на которых
+            // текущий пользователь пожаловался как на спам, в ленте не показываются.
+            var hiddenIds = await _context.HiddenUserIds(userId).ToListAsync();
+
             var shownIds = await _context.Votes
                 .AsNoTracking()
                 .Where(s => s.Owner == userId)
@@ -346,6 +359,7 @@ namespace LP.Server.Controllers
             IQueryable<User> query = _context.Users
                 .AsNoTracking()
                 .Where(x => x.Username != "admin"
+                            && !hiddenIds.Contains(x.Id)
                             && !shownIds.Contains(x.Id)
                             && x.IsPaused == false
                             && x.Sex != user.Sex);
@@ -452,6 +466,9 @@ namespace LP.Server.Controllers
                 if (user == null)
                     return Unauthorized();
 
+                // Скрываем заблокированных и тех, на кого пожаловались как на спам.
+                var hiddenIds = await _context.HiddenUserIds(userId).ToListAsync();
+
                 // Вычисляем даты для фильтра по возрасту
                 var today = DateOnly.FromDateTime(DateTime.Now);
                 var minBirthDate = today.AddYears(-filters.AgeMax);
@@ -480,6 +497,7 @@ namespace LP.Server.Controllers
                     .AsNoTracking()
                     .Where(u => u.Id != userId
                                 && u.Username != "admin"
+                                && !hiddenIds.Contains(u.Id)
                                 && u.Birthday >= minBirthDate
                                 && u.Birthday <= maxBirthDate
                                 && u.Sex != user.Sex)

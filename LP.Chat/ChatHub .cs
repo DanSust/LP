@@ -229,6 +229,13 @@ public class ChatHub : Hub
         if (chat != null)
         {
             var otherUserId = (chat.UserId == userId) ? chat.Owner : chat.UserId;
+
+            // Блокировка в любую сторону запрещает отправку сообщений.
+            if (await db.IsBlockedEitherWayAsync(userId, otherUserId))
+            {
+                throw new HubException("Переписка с этим пользователем недоступна");
+            }
+
             var isBotDialog = await botService.IsBotDialogActive(otherUserId, userId);
 
             // Настройка получателя «Писать только при взаимных лайках»

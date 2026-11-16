@@ -34,6 +34,21 @@ namespace LP.Server.Controllers
         {
             var currentUserId = UserId;
 
+            if (Id == Guid.Empty || Id == currentUserId)
+            {
+                return BadRequest(new { error = "Некорректный пользователь" });
+            }
+
+            // Блокировка в любую сторону запрещает переписку и создание чата.
+            if (await _context.IsBlockedEitherWayAsync(currentUserId, Id))
+            {
+                return BadRequest(new
+                {
+                    error = "Переписка с этим пользователем недоступна",
+                    code = "USER_BLOCKED"
+                });
+            }
+
             // Проверяем ограничение WithLikes через сервис
             var canChat = await _likeService.CanSendMessageAsync(currentUserId, Id);
             if (!canChat)
@@ -150,9 +165,14 @@ namespace LP.Server.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> List()
         {
+            // Чаты с заблокированными пользователями (в любую сторону) не показываем.
+            var blockedIds = await _context.BlockedUserIds(UserId).ToListAsync();
+
             //return Ok(await _context.Chats.Where(x=>x.Owner == UserId || x.UserId == UserId).OrderByDescending(x => x.Time).ToListAsync());
             var chats = await _context.Chats
-                .Where(chat => chat.Owner == UserId || chat.UserId == UserId)
+                .Where(chat => (chat.Owner == UserId || chat.UserId == UserId) &&
+                               !blockedIds.Contains(chat.Owner) &&
+                               !blockedIds.Contains(chat.UserId))
                 .Select(chat => new
                 {
                     chat.Id,

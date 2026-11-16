@@ -594,6 +594,8 @@ export class VoteComponent implements OnInit, AfterViewInit {
           }
           if (err.error?.code === 'MUTUAL_LIKE_REQUIRED') {
             this.toast.warning('💕 Нужен взаимный лайк, чтобы начать переписку');
+          } else if (err.error?.code === 'USER_BLOCKED') {
+            this.toast.warning('Переписка с этим пользователем недоступна');
           } else {
             console.error('Ошибка:', err);
           }

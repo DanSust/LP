@@ -372,7 +372,9 @@ export class ChatService {
       this.lastSendError.set(
         rawMessage.includes('взаимный лайк')
           ? 'Нужен взаимный лайк, чтобы написать этому пользователю'
-          : 'Не удалось отправить сообщение. Проверьте соединение.'
+          : rawMessage.includes('недоступна')
+            ? 'Переписка с этим пользователем недоступна'
+            : 'Не удалось отправить сообщение. Проверьте соединение.'
       );
 
       this.messages.update(messages =>
@@ -448,6 +450,53 @@ export class ChatService {
       return true;
     } catch (error) {
       console.error('Не удалось удалить чат', error);
+      return false;
+    }
+  }
+
+  /**
+   * Блокирует пользователя: сервер запрещает переписку в обе стороны,
+   * а чат пропадает из списка.
+   */
+  public async blockUser(userId: string): Promise<boolean> {
+    if (!userId) {
+      return false;
+    }
+
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.base}/Rejects/block/${userId}`, null, { withCredentials: true })
+      );
+
+      this.removeChatsWithUser(userId);
+      return true;
+    } catch (error) {
+      console.error('Не удалось заблокировать пользователя', error);
+      return false;
+    }
+  }
+
+  /**
+   * Отправляет жалобу на спам. Повторные жалобы в течение суток
+   * сервер объединяет в одну запись.
+   */
+  public async reportSpam(userId: string, caption?: string): Promise<boolean> {
+    if (!userId) {
+      return false;
+    }
+
+    try {
+      await firstValueFrom(
+        this.http.post(
+          `${this.base}/Rejects/spam/${userId}`,
+          { caption: caption ?? null },
+          { withCredentials: true }
+        )
+      );
+
+      return true;
+    } catch (error) {
+      console.error('Не удалось отправить жалобу на спам', error);
       return false;
     }
   }
@@ -547,6 +596,27 @@ export class ChatService {
     }
 
     this.messages.set(remaining);
+  }
+
+  private removeChatsWithUser(userId: string): void {
+    const chatIds = this.chats()
+      .filter(chat => chat.userId === userId)
+      .map(chat => chat.id);
+
+    if (!chatIds.length) {
+      return;
+    }
+
+    for (const chatId of chatIds) {
+      this.removeChatMessages(chatId);
+    }
+
+    this.chats.update(chats => chats.filter(chat => chat.userId !== userId));
+
+    if (chatIds.includes(this.activeChatId())) {
+      this.activeChatId.set('');
+      this.activeUserId.set('');
+    }
   }
 
   private updateMessageStatus(messageId: string, status: MessageStatus): void {

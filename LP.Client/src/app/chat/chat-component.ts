@@ -20,6 +20,8 @@ import { getEmptyChatExpiry } from './chat-expiry';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { SplashScreenComponent } from './../splash/splash.component';
+import { ToastService } from './../common/toast.service';
+import { ConfirmDialogService } from './../common/confirm-dialog.service';
 
 const QUOTE_DELIMITER = '[[[QUOTE:';
 const QUOTE_END = ']]]';
@@ -49,6 +51,8 @@ export class ChatView {
 
   newMessage = '';
   chatService = inject(ChatService);
+  private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   showMenu = signal(false);
   showEmojiPicker = signal(false);
@@ -161,18 +165,99 @@ export class ChatView {
       return;
     }
 
+    const other = this.chatService.otherUser();
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Удалить чат?',
+      message: other?.name
+        ? `Переписка с ${other.name} будет удалена без возможности восстановления.`
+        : 'Переписка будет удалена без возможности восстановления.',
+      details: [
+        'История сообщений удалится безвозвратно',
+        'У собеседника чат тоже исчезнет'
+      ],
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      tone: 'danger',
+      icon: 'trash'
+    });
+    if (!confirmed) {
+      return;
+    }
+
     const deleted = await this.chatService.deleteChat(chatId);
     if (deleted) {
+      this.toast.success('Чат удалён');
       await this.router.navigate(['/chat']);
+    } else {
+      this.toast.error('Не удалось удалить чат');
     }
   }
 
-  blockUser(): void {
+  async blockUser(): Promise<void> {
     this.showMenu.set(false);
+
+    const other = this.chatService.otherUser();
+    if (!other?.userId) {
+      return;
+    }
+
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Заблокировать пользователя?',
+      message: `${other.name} больше не сможет писать вам.`,
+      details: [
+        'Чат исчезнет из списка у вас обоих',
+        'Профиль не будет показываться в ленте'
+      ],
+      confirmText: 'Заблокировать',
+      cancelText: 'Отмена',
+      tone: 'danger',
+      icon: 'block'
+    });
+    if (!confirmed) {
+      return;
+    }
+
+    const blocked = await this.chatService.blockUser(other.userId);
+    if (blocked) {
+      this.toast.success('Пользователь заблокирован');
+      await this.router.navigate(['/chat']);
+    } else {
+      this.toast.error('Не удалось заблокировать пользователя');
+    }
   }
 
-  reportSpam(): void {
+  async reportSpam(): Promise<void> {
     this.showMenu.set(false);
+
+    const other = this.chatService.otherUser();
+    if (!other?.userId) {
+      return;
+    }
+
+    const result = await this.confirmDialog.ask({
+      title: 'Пожаловаться на спам?',
+      message: `Жалоба на ${other.name} уйдёт на проверку.`,
+      details: ['Профиль скроется из вашей ленты'],
+      confirmText: 'Отправить жалобу',
+      cancelText: 'Отмена',
+      tone: 'warning',
+      icon: 'flag',
+      comment: {
+        label: 'Комментарий (необязательно)',
+        placeholder: 'Что именно показалось спамом?',
+        maxLength: 500
+      }
+    });
+    if (!result.confirmed) {
+      return;
+    }
+
+    const reported = await this.chatService.reportSpam(other.userId, result.comment || undefined);
+    if (reported) {
+      this.toast.success('Жалоба отправлена');
+    } else {
+      this.toast.error('Не удалось отправить жалобу');
+    }
   }
 
   replyToMessage(message: Message): void {
