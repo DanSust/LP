@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Inject, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, inject, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -7,15 +7,12 @@ import { FotoScrollComponent } from './foto/foto-scroll-component';
 import { BottomNavComponent } from './common/bottom-nav.component';
 import { BackCollageComponent } from './common/background-collage.component';
 import { AuthService } from './services/AuthService';
-import { AuthComponent } from './auth/auth.component';
 import { UserStatusService } from './services/UserStatusService';
 import { ChatService } from './services/ChatService';
 import { NavigationService } from './services/NavigationService';
 import { filter, Subscription } from 'rxjs';
-import { routes } from './app.routes';
 import { HttpClient } from "@angular/common/http";
 import { API_BASE_URL } from './app.config';
-import { ComingSoonComponent } from './promo/coming-soon.component';
 import { SeoConfig, SeoService } from './services/SeoService';
 import { SplashScreenComponent } from './splash/splash.component';
 
@@ -32,7 +29,6 @@ import { SplashScreenComponent } from './splash/splash.component';
     BottomNavComponent,
     FotoScrollComponent,
     BackCollageComponent,
-    ComingSoonComponent,
     SplashScreenComponent
   ],
   //schemas: [CUSTOM_ELEMENTS_SCHEMA], // ✅ Add this

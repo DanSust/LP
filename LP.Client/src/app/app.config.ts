@@ -1,6 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, InjectionToken, inject } from '@angular/core';
 import { CanActivateFn, provideRouter, Router, Routes, withExperimentalAutoCleanupInjectors } from '@angular/router';
-import { routes } from './app.routes';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import localeRu from '@angular/common/locales/ru';
 import { LOCALE_ID } from '@angular/core';
@@ -10,32 +9,9 @@ import { DateAdapter, MAT_DATE_LOCALE } from '@angular/material/core';
 import { registerLocaleData } from '@angular/common';
 
 import { AboutComponent } from "./common/about.component";
-import { NotFoundComponent } from "./not-found.component";
-import { UserLocationComponent } from "./user/location/user-location";
-import { UserProfile } from './user/profile/user-profile';
-import { UserView } from './user/view/user-view';
-import { ChatView } from './chat/chat-component';
-import { ChatLayoutComponent } from './chat/chat-layout.component';
-import { ChatAboutComponent } from './chat/chat-about.component';
-import { ChatListComponent } from './chat/chat-list.component';
-import { AuthCallbackComponent } from './auth/auth.callback';
-import { AuthComponent } from './auth/auth.component';
-import { VoteComponent } from './vote/vote.component';
-import { MatchComponent } from './match/match.component';
-import { SearchComponent } from './search/search.component';
-import { EventsViewComponent } from './events/events-view.component';
-import { EventDetailComponent } from './events/event-detail.component';
-import { JournalViewComponent } from './journal/journal-view.component';
-import { JournalDetailComponent } from './journal/journal-detail.component';
-import { AdminEventsComponent } from './admin/admin-events.component';
-import { AdminJournalComponent } from './admin/admin-journal.component';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthService } from './services/AuthService';
-import { ConfirmComponent } from './auth/auth.confirm.component';
-import { ComingSoonComponent } from './promo/coming-soon.component';
 import { environment } from '../environments/environment';
-import { FotoScrollComponent } from './foto/foto-scroll-component';
-import { SoPulseComponent } from './promo/so-pulse.component';
 
 const appRoutes: Routes = [
   {
@@ -50,27 +26,27 @@ const appRoutes: Routes = [
       }
     }
   },
-  { path: "location", component: UserLocationComponent },
-  { path: "soon", component: ComingSoonComponent },
-  { path: "profile", component: UserProfile, canActivate: [AuthGuard] },
-  { path: "scroll", component: FotoScrollComponent, /*canActivate: [AuthGuard] */}, 
-  { path: "vote", component: VoteComponent, /*canActivate: [AuthGuard]*/ },
-  { path: "vote/:id", component: VoteComponent, /*canActivate: [AuthGuard] */},
+  { path: "location", loadComponent: () => import('./user/location/user-location').then(m => m.UserLocationComponent) },
+  { path: "soon", loadComponent: () => import('./promo/coming-soon.component').then(m => m.ComingSoonComponent) },
+  { path: "profile", loadComponent: () => import('./user/profile/user-profile').then(m => m.UserProfile), canActivate: [AuthGuard] },
+  { path: "scroll", loadComponent: () => import('./foto/foto-scroll-component').then(m => m.FotoScrollComponent) }, 
+  { path: "vote", loadComponent: () => import('./vote/vote.component').then(m => m.VoteComponent) },
+  { path: "vote/:id", loadComponent: () => import('./vote/vote.component').then(m => m.VoteComponent) },
   //{ path: "chat/:id", component: ChatView, canActivate: [AuthGuard] },
   { path: 'chat',
-    component: ChatLayoutComponent,
+    loadComponent: () => import('./chat/chat-layout.component').then(m => m.ChatLayoutComponent),
     canActivate: [AuthGuard],
     children: [
-      { path: '', component: ChatAboutComponent },
-      { path: ':id', component: ChatView }
+      { path: '', loadComponent: () => import('./chat/chat-about.component').then(m => m.ChatAboutComponent) },
+      { path: ':id', loadComponent: () => import('./chat/chat-component').then(m => m.ChatView) }
     ]
   },
-  { path: "authcallback", component: AuthCallbackComponent },  
-  { path: "match", component: MatchComponent, canActivate: [AuthGuard] },
-  { path: "search", component: SearchComponent, /*canActivate: [AuthGuard]*/ },
+  { path: "authcallback", loadComponent: () => import('./auth/auth.callback').then(m => m.AuthCallbackComponent) },
+  { path: "match", loadComponent: () => import('./match/match.component').then(m => m.MatchComponent), canActivate: [AuthGuard] },
+  { path: "search", loadComponent: () => import('./search/search.component').then(m => m.SearchComponent) },
   {
     path: "events",
-    component: EventsViewComponent,
+    loadComponent: () => import('./events/events-view.component').then(m => m.EventsViewComponent),
     data: {
       indexable: true,
       canonical: '/events',
@@ -83,7 +59,7 @@ const appRoutes: Routes = [
   },
   {
     path: "events/:slug",
-    component: EventDetailComponent,
+    loadComponent: () => import('./events/event-detail.component').then(m => m.EventDetailComponent),
     data: {
       indexable: true,
       dynamicSeo: true
@@ -91,7 +67,7 @@ const appRoutes: Routes = [
   },
   {
     path: "journal",
-    component: JournalViewComponent,
+    loadComponent: () => import('./journal/journal-view.component').then(m => m.JournalViewComponent),
     data: {
       indexable: true,
       canonical: '/journal',
@@ -104,7 +80,7 @@ const appRoutes: Routes = [
   },
   {
     path: "journal/:slug",
-    component: JournalDetailComponent,
+    loadComponent: () => import('./journal/journal-detail.component').then(m => m.JournalDetailComponent),
     data: {
       indexable: true,
       dynamicSeo: true
@@ -112,7 +88,7 @@ const appRoutes: Routes = [
   },
   {
     path: "admin/events",
-    component: AdminEventsComponent,
+    loadComponent: () => import('./admin/admin-events.component').then(m => m.AdminEventsComponent),
     data: {
       indexable: false,
       seo: {
@@ -123,7 +99,7 @@ const appRoutes: Routes = [
   },
   {
     path: "admin/journal",
-    component: AdminJournalComponent,
+    loadComponent: () => import('./admin/admin-journal.component').then(m => m.AdminJournalComponent),
     data: {
       indexable: false,
       seo: {
@@ -137,8 +113,8 @@ const appRoutes: Routes = [
     pathMatch: "full",
     redirectTo: "admin/events"
   },
-  { path: "auth", component: AuthComponent },
-  { path: "confirm", component: ConfirmComponent },
+  { path: "auth", loadComponent: () => import('./auth/auth.component').then(m => m.AuthComponent) },
+  { path: "confirm", loadComponent: () => import('./auth/auth.confirm.component').then(m => m.ConfirmComponent) },
   /*{ path: "home", component: SoPulseComponent },*/
   { path: "logout",
     canActivate: [() => {
@@ -173,7 +149,7 @@ const appRoutes: Routes = [
   //},
   {
     path: "**",
-    component: NotFoundComponent,
+    loadComponent: () => import('./not-found.component').then(m => m.NotFoundComponent),
     data: {
       indexable: false,
       seo: {
