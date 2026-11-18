@@ -99,40 +99,59 @@
   animation: splash-content-in 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-.splash__heart-wrap {
+/* Два сердца + кардиограмма (перенесено из about) */
+.hearts-container {
+  --heart-offset: clamp(14px, 3vw, 20px);
   position: relative;
-  width: clamp(76px, 16vw, 104px);
-  height: clamp(82px, 17vw, 110px);
-  margin-bottom: 10px;
-  animation: splash-beat 1.7s ease-in-out infinite;
+  width: clamp(190px, 40vw, 250px);
+  height: clamp(64px, 14vw, 84px);
+  margin-bottom: 34px;
 }
 
-.splash__heart {
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 0 22px rgba(248, 49, 115, 0.45));
-}
-
-.splash__ecg {
+.heart {
   position: absolute;
+  width: clamp(48px, 11vw, 62px);
+  height: clamp(48px, 11vw, 62px);
+  filter: drop-shadow(0 0 20px currentColor);
+  top: 50%;
   left: 50%;
-  bottom: -4px;
-  width: clamp(150px, 32vw, 210px);
-  transform: translateX(-50%);
-  overflow: visible;
 
-  path {
-    fill: none;
-    stroke: var(--splash-soft-pink);
-    stroke-width: 2.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 340;
-    stroke-dashoffset: 340;
-    filter: drop-shadow(0 0 6px rgba(248, 49, 115, 0.85));
-    animation: splash-ecg 2.6s ease-in-out infinite;
+  &-left {
+    color: var(--splash-magenta);
+    transform: translate(calc(-50% - var(--heart-offset)), -50%);
+    z-index: 2;
+    animation: splash-heart-red 1.5s ease-in-out infinite;
   }
+
+  &-right {
+    color: var(--splash-blue);
+    transform: translate(calc(-50% + var(--heart-offset)), -50%);
+    z-index: 1;
+    animation: splash-heart-blue 1.8s ease-in-out infinite;
+    animation-delay: 0.8s;
+  }
+}
+
+.ecg-container {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(200px, 44vw, 240px);
+  height: 70px;
+  opacity: 0.8;
+  overflow: visible;
+}
+
+.ecg-line {
+  fill: none;
+  stroke: #ff6b9d;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: splash-ecg-draw 2.4s ease-in-out infinite;
 }
 
 .splash__logo {
@@ -251,39 +270,47 @@
   }
 }
 
-@keyframes splash-beat {
+@keyframes splash-heart-red {
   0%,
   100% {
-    transform: scale(1);
+    transform: translate(calc(-50% - var(--heart-offset)), -50%) scale(1);
   }
 
-  18% {
-    transform: scale(1.08);
-  }
-
-  32% {
-    transform: scale(0.99);
-  }
-
-  46% {
-    transform: scale(1.04);
+  50% {
+    transform: translate(calc(-50% - var(--heart-offset)), -50%) scale(1.15);
   }
 }
 
-@keyframes splash-ecg {
+@keyframes splash-heart-blue {
+  0%,
+  100% {
+    transform: translate(calc(-50% + var(--heart-offset)), -50%) scale(1);
+  }
+
+  50% {
+    transform: translate(calc(-50% + var(--heart-offset)), -50%) scale(1.15);
+  }
+}
+
+@keyframes splash-ecg-draw {
   0% {
-    stroke-dashoffset: 340;
+    stroke-dashoffset: 400;
     opacity: 0;
   }
 
-  12% {
+  10% {
     opacity: 1;
   }
 
-  55%,
-  100% {
+  60%,
+  88% {
     stroke-dashoffset: 0;
     opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
   }
 }
 
@@ -363,8 +390,8 @@
 @media (prefers-reduced-motion: reduce) {
   .splash,
   .splash__content,
-  .splash__heart-wrap,
-  .splash__ecg path,
+  .heart,
+  .ecg-line,
   .splash__logo-four,
   .splash__progress-fill,
   .splash__progress-fill::after,
@@ -374,9 +401,9 @@
     transition: none !important;
   }
 
-  .splash__ecg path {
+  .ecg-line {
     stroke-dashoffset: 0;
-    opacity: 1;
+    opacity: 0.8;
   }
 
   .splash.is-hidden {

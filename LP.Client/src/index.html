@@ -256,40 +256,58 @@
       animation: boot-content-in 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) both;
     }
 
-    .boot-splash__heart-wrap {
+    .boot-splash__hearts {
+      --heart-offset: clamp(14px, 3vw, 20px);
       position: relative;
-      width: clamp(76px, 16vw, 104px);
-      height: clamp(82px, 17vw, 110px);
-      margin-bottom: 10px;
-      animation: boot-heart-beat 1.7s ease-in-out infinite;
+      width: clamp(190px, 40vw, 250px);
+      height: clamp(64px, 14vw, 84px);
+      margin-bottom: 34px;
     }
 
     .boot-splash__heart {
-      display: block;
-      width: 100%;
-      height: auto;
-      filter: drop-shadow(0 0 22px rgba(248, 49, 115, 0.45));
+      position: absolute;
+      width: clamp(48px, 11vw, 62px);
+      height: clamp(48px, 11vw, 62px);
+      filter: drop-shadow(0 0 20px currentColor);
+      top: 50%;
+      left: 50%;
+    }
+
+    .boot-splash__heart--left {
+      color: #e91e63;
+      transform: translate(calc(-50% - var(--heart-offset)), -50%);
+      z-index: 2;
+      animation: boot-heart-red 1.5s ease-in-out infinite;
+    }
+
+    .boot-splash__heart--right {
+      color: #03a9f4;
+      transform: translate(calc(-50% + var(--heart-offset)), -50%);
+      z-index: 1;
+      animation: boot-heart-blue 1.8s ease-in-out infinite;
+      animation-delay: 0.8s;
     }
 
     .boot-splash__ecg {
       position: absolute;
+      bottom: -20px;
       left: 50%;
-      bottom: -4px;
-      width: clamp(150px, 32vw, 210px);
       transform: translateX(-50%);
+      width: clamp(200px, 44vw, 240px);
+      height: 70px;
+      opacity: 0.8;
       overflow: visible;
     }
 
     .boot-splash__ecg path {
       fill: none;
-      stroke: #ffd1e2;
-      stroke-width: 2.4;
+      stroke: #ff6b9d;
+      stroke-width: 3;
       stroke-linecap: round;
       stroke-linejoin: round;
-      stroke-dasharray: 340;
-      stroke-dashoffset: 340;
-      filter: drop-shadow(0 0 6px rgba(248, 49, 115, 0.85));
-      animation: boot-ecg 2.6s ease-in-out infinite;
+      stroke-dasharray: 400;
+      stroke-dashoffset: 400;
+      animation: boot-ecg-draw 2.4s ease-in-out infinite;
     }
 
     .boot-splash__logo {
@@ -388,18 +406,21 @@
       animation-delay: 0.4s;
     }
 
-    @keyframes boot-heart-beat {
-      0%, 100% { transform: scale(1); }
-      14% { transform: scale(1.08); }
-      28% { transform: scale(0.98); }
-      42% { transform: scale(1.05); }
-      56% { transform: scale(1); }
+    @keyframes boot-heart-red {
+      0%, 100% { transform: translate(calc(-50% - var(--heart-offset)), -50%) scale(1); }
+      50% { transform: translate(calc(-50% - var(--heart-offset)), -50%) scale(1.15); }
     }
 
-    @keyframes boot-ecg {
-      0% { stroke-dashoffset: 340; }
-      55% { stroke-dashoffset: 0; }
-      100% { stroke-dashoffset: -340; }
+    @keyframes boot-heart-blue {
+      0%, 100% { transform: translate(calc(-50% + var(--heart-offset)), -50%) scale(1); }
+      50% { transform: translate(calc(-50% + var(--heart-offset)), -50%) scale(1.15); }
+    }
+
+    @keyframes boot-ecg-draw {
+      0% { stroke-dashoffset: 400; opacity: 0; }
+      10% { opacity: 1; }
+      60%, 88% { stroke-dashoffset: 0; opacity: 1; }
+      100% { stroke-dashoffset: 0; opacity: 0; }
     }
 
     @keyframes boot-gradient {
@@ -463,31 +484,25 @@
     <div class="boot-splash__grid" aria-hidden="true"></div>
 
     <div class="boot-splash__content">
-      <div class="boot-splash__heart-wrap" aria-hidden="true">
-        <svg class="boot-splash__heart" viewBox="0 0 64 58">
-          <defs>
-            <linearGradient id="boot-splash-heart-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#f83173" />
-              <stop offset="52%" stop-color="#e91e63" />
-              <stop offset="100%" stop-color="#03a9f4" />
-            </linearGradient>
-            <filter id="boot-splash-heart-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          <path
-            d="M32 55C32 55 4 38 4 20C4 10 12 4 21 4C26 4 30 7 32 11C34 7 38 4 43 4C52 4 60 10 60 20C60 38 32 55 32 55Z"
-            fill="url(#boot-splash-heart-gradient)"
-            filter="url(#boot-splash-heart-glow)"
-          />
+      <div class="boot-splash__hearts" aria-hidden="true">
+        <!-- Красное сердце -->
+        <svg class="boot-splash__heart boot-splash__heart--left" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
         </svg>
 
-        <svg class="boot-splash__ecg" viewBox="0 0 220 40">
-          <path d="M0 20H55L66 8L78 33L90 13L102 20H140L151 9L163 31L175 15L187 20H220" />
+        <!-- Синее сердце -->
+        <svg class="boot-splash__heart boot-splash__heart--right" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        </svg>
+
+        <!-- Кардиограмма -->
+        <svg class="boot-splash__ecg" viewBox="0 0 240 70">
+          <g opacity="0.2">
+            <line x1="0" y1="35" x2="240" y2="35" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+            <line x1="0" y1="20" x2="240" y2="20" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+            <line x1="0" y1="50" x2="240" y2="50" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+          </g>
+          <path d="M0,35 L15,35 L20,10 L25,50 L30,10 L35,35 L120,35 L125,15 L130,45 L135,15 L140,35 L240,35" />
         </svg>
       </div>
 
