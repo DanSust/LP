@@ -547,7 +547,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     console.log("[onChatClick] userid:", this.authService.getCachedUserId());
     if (!this.authService.getCachedUserId()) {
       console.warn("Профиль не загружен");
-      this.toast.warning('Для начала диалога нужно зарегистрироваться<br><a href="/auth">Войти</a>');
+      this.toast.warning('Для начала диалога нужно <br><a href="/auth">зарегистрироваться</a>');
       return;
     }
 
