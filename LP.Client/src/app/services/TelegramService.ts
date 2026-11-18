@@ -1,16 +1,23 @@
 import { HttpClient } from "@angular/common/http";
 import { Inject, inject, Injectable } from "@angular/core";
+import { firstValueFrom } from "rxjs";
 import { TelegramUser } from "../Interfaces/TelegramUser";
 import { API_BASE_URL } from "../app.config";
 import { Router } from "@angular/router";
 import { AuthService } from "../services/AuthService";
+import { ToastService } from "../common/toast.service";
 
+interface TelegramConfig {
+  botName: string | null;
+  authUrl: string;
+}
 
 // telegram-auth.service.ts
 @Injectable({ providedIn: 'root' })
 export class TelegramAuthService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private toast = inject(ToastService);
 
   constructor(@Inject(API_BASE_URL) private baseUrl: string,
     private router: Router) { }
@@ -38,8 +45,25 @@ export class TelegramAuthService {
     });
   }
 
+  /**
+   * Имя бота берём с сервера (OAuth:Telegram:BotName),
+   * чтобы переименование бота не ломало вход в опубликованном клиенте.
+   */
+  async getBotName(): Promise<string | null> {
+    try {
+      const config = await firstValueFrom(
+        this.http.get<TelegramConfig>(this.baseUrl + '/auth/telegram/config')
+      );
+      const botName = (config?.botName ?? '').trim();
+      return botName || null;
+    } catch (err) {
+      console.error('Failed to load Telegram config', err);
+      return null;
+    }
+  }
+
   // Загружаем скрипт виджета динамически
-  loadScript(container: HTMLElement): Promise<void> {
+  loadScript(container: HTMLElement, botName: string): Promise<void> {
     return new Promise((resolve, reject) => {
       // Удаляем старый скрипт если есть
       const oldScript = document.getElementById('telegram-widget-script');
@@ -48,7 +72,7 @@ export class TelegramAuthService {
       const script = document.createElement('script');
       script.id = 'telegram-widget-script';
       script.src = 'https://telegram.org/js/telegram-widget.js?22';
-      script.setAttribute('data-telegram-login', 'PulseMatchBot_bot');
+      script.setAttribute('data-telegram-login', botName);
       script.setAttribute('data-size', 'large');
       script.setAttribute('data-radius', '8');
       script.setAttribute('data-request-access', 'write');
@@ -74,7 +98,20 @@ export class TelegramAuthService {
     });
   }
 
+  notifyNotConfigured(): void {
+    this.toast.error('Вход через Telegram не настроен. Сообщите администратору.');
+  }
+
+  notifyWidgetFailed(): void {
+    this.toast.error('Не удалось загрузить кнопку Telegram. Попробуйте обновить страницу.');
+  }
+
   private handleAuth(user: TelegramUser): void {
+    if (!user || !user.hash) {
+      this.toast.error('Telegram не вернул данные для входа. Попробуйте ещё раз.');
+      return;
+    }
+
     const authData = {
       Id: user.id,
       FirstName: user.first_name,
@@ -92,8 +129,19 @@ export class TelegramAuthService {
         // Редирект или обновление состояния        
         this.authService.handleAuth(response, response.userId);
       },
-      error: (err) => console.error('Auth failed', err)
+      error: (err) => {
+        console.error('Telegram auth failed', err);
+
+        if (err.status === 0) {
+          this.toast.error('Не удалось связаться с сервером. Проверьте соединение.');
+        } else if (err.status === 503) {
+          this.toast.error('Вход через Telegram временно недоступен.');
+        } else if (err.status === 401) {
+          this.toast.error('Telegram не подтвердил вход. Попробуйте войти ещё раз.');
+        } else {
+          this.toast.error('Не удалось войти через Telegram.');
+        }
+      }
     });
   }
 }
-

@@ -58,8 +58,19 @@ public class TelegramAuthController : BaseOAuthController
     [HttpPost("verify")]
     public async Task<IActionResult> Verify([FromBody] TelegramAuthData data)
     {
-        if (!VerifySignature(data))
+        var botToken = _config["OAuth:Telegram:BotToken"];
+        if (string.IsNullOrWhiteSpace(botToken))
+        {
+            Logger.LogError("Telegram bot token is not configured. Set OAuth__Telegram__BotToken.");
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { message = "Telegram auth is not configured" });
+        }
+
+        if (!VerifySignature(data, botToken))
+        {
+            Logger.LogWarning("Telegram signature verification failed for id {TelegramId}", data.Id);
             return Unauthorized(new { message = "Invalid signature" });
+        }
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         if (now - data.AuthDate > 86400)
@@ -114,10 +125,8 @@ public class TelegramAuthController : BaseOAuthController
         });
     }
 
-    private bool VerifySignature(TelegramAuthData data)
+    private bool VerifySignature(TelegramAuthData data, string botToken)
     {
-        var botToken = _config["OAuth:Telegram:BotToken"];
-
         // Создаем список полей в правильном порядке
         var checkList = new List<string>
         {
