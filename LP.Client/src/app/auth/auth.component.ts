@@ -38,6 +38,7 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
   private readonly authTelUrl = `${window.location.origin}/api/auth/telegram/verify`;
   private vkInitialized = false;
   private vkScriptId = 'vk-sdk-script';
+  private vkScriptPromise: Promise<void> | null = null;
 
   constructor(
     @Inject(API_BASE_URL) private baseUrl: string,
@@ -61,14 +62,15 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadVKScript();
+    void this.loadVKScript();
     if (window.location.hash.includes('tgAuthResult=')) {
       this.checkTelegramHash();
     }
   }
 
   ngAfterViewInit() {
-    if (!this.vkInitialized) {
+    // Если SDK уже в памяти (повторный вход на страницу) — дорисовываем виджет.
+    if (window.VKIDSDK) {
       this.initVK();
     }
   }
@@ -78,48 +80,91 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
     this.vkInitialized = false;
   }
 
-  private loadVKScript() {
-    // 1. Если SDK уже в объекте window, просто инициализируем
+  /**
+   * VK SDK лежит локально в assets/vk-sdk (@vkid/sdk 2.6.10), а не на unpkg.com:
+   * внешний CDN блокируется в РФ, и раньше синхронный <script> в <head>
+   * подвешивал всю страницу до таймаута.
+   * Загружаем асинхронно, один раз, с таймаутом и без бесконечных ретраев.
+   */
+  private loadVKScript(): Promise<void> {
     if (window.VKIDSDK) {
       this.initVK();
-      return;
+      return Promise.resolve();
     }
 
-    // 2. Если скрипт уже есть в DOM (например, от прошлого визита), 
-    // но SDK еще не готов, ждем загрузки
-    const existingScript = document.getElementById(this.vkScriptId) as HTMLScriptElement;
-    if (existingScript) {
-      existingScript.onload = () => this.initVK();
-      return;
+    if (this.vkScriptPromise) {
+      return this.vkScriptPromise;
     }
 
-    // 3. Создаем и добавляем скрипт
-    const script = document.createElement('script');
-    script.id = this.vkScriptId;
-    script.src = 'https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js';
-    script.async = true;
-    script.onload = () => {
-      console.log('VK SDK loaded');
-      this.initVK();
-    };
-    script.onerror = () => console.error('VK SDK load failed');
+    this.vkScriptPromise = new Promise<void>((resolve, reject) => {
+      const existing = document.getElementById(this.vkScriptId) as HTMLScriptElement | null;
+      const script = existing ?? document.createElement('script');
 
-    document.head.appendChild(script);
+      const cleanup = () => {
+        clearTimeout(timer);
+        script.onload = null;
+        script.onerror = null;
+      };
+
+      const fail = (error: Error) => {
+        cleanup();
+        // Не оставляем в DOM сломанный скрипт, иначе повторная
+        // попытка загрузки уже не сработает.
+        script.remove();
+        reject(error);
+      };
+
+      const timer = window.setTimeout(() => {
+        fail(new Error('VK SDK load timeout'));
+      }, 10000);
+
+      script.onload = () => {
+        cleanup();
+        console.log('VK SDK loaded');
+        this.initVK();
+        resolve();
+      };
+      script.onerror = () => {
+        fail(new Error('VK SDK load failed'));
+      };
+
+      if (!existing) {
+        script.id = this.vkScriptId;
+        script.src = 'assets/vk-sdk/index.js';
+        script.async = true;
+        document.head.appendChild(script);
+      }
+    }).catch((error) => {
+      // Не блокируем страницу: без VK SDK просто не будет кнопки VK.
+      console.warn('VK ID недоступен:', error);
+      this.vkScriptPromise = null;
+    });
+
+    return this.vkScriptPromise;
   }
 
   private initVK() {
+    if (this.vkInitialized) {
+      return;
+    }
+
     if (!window.VKIDSDK) {
-      console.log('VK SDK not loaded yet, retrying...');
-      setTimeout(() => this.initVK(), 100);
+      console.warn('VK SDK не загрузился, виджет VK отключён');
       return;
     }
 
     // Проверяем, не инициализирован ли уже виджет
     const container = document.getElementById('vk-id-container');
-    if (!container || container.children.length > 0) {
+    if (!container) {
+      // Шаблон ещё не отрисован — попробуем из ngAfterViewInit.
+      return;
+    }
+    if (container.children.length > 0) {
+      this.vkInitialized = true;
       return; // Уже есть содержимое
     }
 
+    this.vkInitialized = true;
     console.log('VK SDK loaded, initializing widget...');
     const VKID = window.VKIDSDK;
 
