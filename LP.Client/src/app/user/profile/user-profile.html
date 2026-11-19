@@ -264,10 +264,7 @@
 
     <mat-step>
       <ng-template matStepLabel>
-        <span class="finish-step-label">
-          <span>Финиш</span>
-          <span class="finish-progress" [class.is-complete]="completion.percent >= 100">{{ completion.percent }}%</span>
-        </span>
+        Финиш <span class="step-progress">{{ completion.percent }}%</span>
       </ng-template>
       @if (isSaving) {
       <mat-spinner diameter="20"></mat-spinner>
@@ -286,7 +283,10 @@
           }
         </div>
         } @else {
-        <p class="completion-done"><mat-icon>check_circle</mat-icon> Всё заполнено — можно сохранять</p>
+        <p class="completion-done">
+          <span class="completion-check" aria-hidden="true"><mat-icon>check</mat-icon></span>
+          Всё заполнено — можно сохранять
+        </p>
         }
       </section>
       @if (ownUserId) {

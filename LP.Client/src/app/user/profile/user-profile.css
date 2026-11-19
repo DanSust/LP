@@ -32,6 +32,20 @@ p {
   font-size: medium;
 }
 
+/* Небольшая плашка с процентом в шапке шага «Финиш». */
+.step-progress {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--divider-color);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  font-size: 12px;
+  line-height: 18px;
+  vertical-align: middle;
+}
+
 .mdc-label {
   color: white;
 }
@@ -229,49 +243,12 @@ mat-chip-option[disabled] {
   margin: 8px 0 16px;
   border: 1px solid var(--divider-color);
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.18);
-}
-
-/* Процент прямо в шапке шага «Финиш». */
-.finish-step-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.finish-progress {
-  display: inline-block;
-  padding: 0 7px;
-  border: 1px solid rgba(245, 222, 179, 0.55);
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.22);
-  color: wheat;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 18px;
-
-  &.is-complete {
-    border-color: rgba(183, 228, 199, 0.65);
-    color: #b7e4c7;
-  }
-}
-
-@media (max-width: 400px) {
-  .finish-step-label {
-    gap: 5px;
-  }
-
-  .finish-progress {
-    padding: 0 5px;
-    font-size: 11px;
-  }
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .completion-message {
   color: var(--text-secondary);
-  font-size: 13px;
+  
 }
 
 .completion-missing {
@@ -282,7 +259,7 @@ mat-chip-option[disabled] {
 
 .completion-missing-title {
   color: var(--text-secondary);
-  font-size: 13px;
+  
 }
 
 .completion-item {
@@ -299,7 +276,7 @@ mat-chip-option[disabled] {
   cursor: pointer;
 
   mat-icon {
-    font-size: 16px;
+    font-size: 18px;
     width: 16px;
     height: 16px;
     color: wheat;
@@ -307,12 +284,13 @@ mat-chip-option[disabled] {
   }
 
   strong {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     font-weight: 500;
+    font-size: 14px;
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -321,12 +299,26 @@ mat-chip-option[disabled] {
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: #b7e4c7;
+  color: white;
 
-  mat-icon {
-    font-size: 18px;
+  /* Фонтовый check_circle монохромный — рисуем круг и кладём белую галочку внутрь. */
+  .completion-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 18px;
     width: 18px;
     height: 18px;
+    border-radius: 50%;
+    background: cornflowerblue;
+
+    mat-icon {
+      color: #fff;
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      line-height: 14px;
+    }
   }
 }
 
