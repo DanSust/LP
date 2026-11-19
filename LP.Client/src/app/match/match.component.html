@@ -1,4 +1,18 @@
-<app-splash-screen [visible]="showSplash" [inline]="true" text="Загружаем галерею" />
+<app-splash-screen [visible]="showSplash && !matchProfileId" [inline]="true" text="Загружаем галерею" />
+
+<!-- Взаимный лайк: тот же splash, что и в /vote -->
+<app-splash-screen
+  [visible]="matchProfileId !== null"
+  [inline]="true"
+  [showProgress]="false"
+  text="Вы и"
+  [linkText]="matchProfileName"
+  [linkHref]="matchProfileHref"
+  textAfterLink="понравились друг другу"
+  actionText="Начать диалог"
+  dismissText="Продолжить поиск"
+  (action)="onStartMatchChat()"
+  (dismiss)="onDismissMatch()" />
 
 <div class="gallery-wrapper">
   <!-- 🔥 ВКЛАДКИ -->
@@ -40,6 +54,13 @@
   <div class="gallery-match-container" #galleryContainer>
     @for (image of filteredImages(); track image.userId) {
     <div class="gallery-item">
+      @if (activeTab === 'likesMe') {
+      <button type="button" class="like-button"
+              [disabled]="likingUserId === image.userId"
+              (click)="onLike(image, $event)">
+        <mat-icon>favorite</mat-icon>        
+      </button>
+      }
       <mat-icon class="delete-icon"
                 [class.photo-icon--light]="deleteIconClass(image) === 'photo-icon--light'"
                 [class.photo-icon--dark]="deleteIconClass(image) === 'photo-icon--dark'"

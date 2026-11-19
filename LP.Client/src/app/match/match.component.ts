@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL, DEFAULT_AVATAR_URL } from './../app.config';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ImageData } from './../Interfaces/ImageData';
 import { formatDistance, getPeopleWord } from './../common/usefull.utils';
 import { PageStateService } from './../services/PageStateService';
@@ -14,6 +14,8 @@ import { PageState } from './../Interfaces/PageState';
 import { generateGUID } from '../common/GUID';
 import { SplashScreenComponent } from '../splash/splash.component';
 import { PhotoIconTheme, photoIconClass, pickIconTheme } from '../common/photo-icon-theme';
+import { Chat, ChatService } from '../services/ChatService';
+import { ToastService } from '../common/toast.service';
 
 type TabType = 'mutual' | 'viewed' | 'likesMe' | 'iLike';
 
@@ -46,6 +48,16 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Splash показываем только при первом открытии страницы, не при смене вкладок. */
   showSplash = true;
 
+  /** Взаимный лайк из «Я нравлюсь»: показываем тот же splash, что и в /vote. */
+  matchProfileId: string | null = null;
+  matchProfileName: string | null = null;
+  /** Защита от повторного нажатия, пока запрос в полёте. */
+  likingUserId: string | null = null;
+
+  get matchProfileHref(): string | null {
+    return this.matchProfileId ? `/vote/${this.matchProfileId}` : null;
+  }
+
   currentPage: number = 1;
   pageSize: number = 20; // Количество элементов на странице
   sortGUID: string = '';
@@ -70,7 +82,10 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
     private http: HttpClient,
     @Inject(API_BASE_URL) private base: string,
     @Inject(DEFAULT_AVATAR_URL) private avatarUrl: string,
-    private pageStateService: PageStateService
+    private pageStateService: PageStateService,
+    private chatService: ChatService,
+    private toast: ToastService,
+    private router: Router
   ) {
     this.baseUrl = base;
     this.defaultAvatarUrl = avatarUrl;
@@ -303,6 +318,89 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
         // Но обычно лучше оставить как есть - пользователь уже не видит карточку
       }
     });
+  }
+
+  /** Лайк в ответ: во вкладке «Я нравлюсь» этот человек уже лайкнул вас. */
+  onLike(image: ImageData, event: Event): void {
+    event.stopPropagation();
+    if (this.likingUserId) return;
+
+    this.likingUserId = image.userId;
+    // Пара появилась сразу — кэш вкладок «Взаимные»/«Я нравлюсь» устарел.
+    this.pageStateService.clearMatchState();
+
+    this.http.post<{ isMutual?: boolean }>(`${this.baseUrl}/Votes/like/${image.userId}`, {}, {
+      withCredentials: true
+    }).subscribe({
+      next: response => {
+        this.likingUserId = null;
+        // После лайка анкета уходит из «Я нравлюсь» в «Взаимные».
+        this.allImages = this.allImages.filter(item => item.userId !== image.userId);
+
+        if (response?.isMutual === true) {
+          this.matchProfileId = image.userId;
+          this.matchProfileName = image.name;
+        } else {
+          this.toast.success('Лайк отправлен');
+        }
+      },
+      error: err => {
+        this.likingUserId = null;
+        console.error('Не удалось отправить лайк', err);
+        this.toast.error('Не удалось отправить лайк');
+      }
+    });
+  }
+
+  onStartMatchChat(): void {
+    const id = this.matchProfileId;
+    if (!id) return;
+
+    this.onDismissMatch();
+    this.onChatClick(id);
+  }
+
+  onDismissMatch(): void {
+    this.matchProfileId = null;
+    this.matchProfileName = null;
+  }
+
+  /** Тот же путь в чат, что и из mutual-splash в /vote. */
+  private onChatClick(id: string): void {
+    this.http.post<any>(`${this.baseUrl}/chats/get-or-create/${id}`, null, { withCredentials: true })
+      .subscribe({
+        next: response => {
+          const chatId = response.chatId ?? response.id;
+          if (!chatId) return;
+
+          const chat: Chat = {
+            id: chatId,
+            name: response.name ?? 'Неизвестный',
+            userId: response.userId,
+            lastMessageTime: response.lastMessageTime ?? undefined,
+            time: response.time,
+            unreadMessagesCount: response.unreadMessagesCount ?? 0,
+            status: true
+          };
+
+          // Чат виден в списке сразу, даже без первого сообщения.
+          this.chatService.upsertChat(chat);
+          this.chatService.activeUserId.set(response.userId);
+          this.chatService.activeChatId.set(chatId);
+          this.router.navigateByUrl(`/chat/${chatId}`);
+        },
+        error: err => {
+          if (err.status === 401) {
+            this.router.navigateByUrl('/auth');
+          } else if (err.error?.code === 'MUTUAL_LIKE_REQUIRED') {
+            this.toast.warning('Нужен взаимный лайк, чтобы начать переписку');
+          } else if (err.error?.code === 'USER_BLOCKED') {
+            this.toast.warning('Переписка с этим пользователем недоступна');
+          } else {
+            console.error('Не удалось открыть чат', err);
+          }
+        }
+      });
   }
 
   @HostListener('window:scroll')
