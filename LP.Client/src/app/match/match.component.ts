@@ -13,6 +13,7 @@ import { PageStateService } from './../services/PageStateService';
 import { PageState } from './../Interfaces/PageState';
 import { generateGUID } from '../common/GUID';
 import { SplashScreenComponent } from '../splash/splash.component';
+import { PhotoIconTheme, photoIconClass, pickIconTheme } from '../common/photo-icon-theme';
 
 type TabType = 'mutual' | 'viewed' | 'likesMe' | 'iLike';
 
@@ -108,6 +109,21 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     clearTimeout(this.scrollDebounceTimer);
+  }
+
+  /** Цвет иконки удаления подбирается по яркости фото, как и в user-photo. */
+  private readonly deleteIconTheme = new Map<string, PhotoIconTheme>();
+
+  photoKey(image: ImageData): string {
+    return image.photoId || image.userId;
+  }
+
+  deleteIconClass(image: ImageData): string {
+    return photoIconClass(this.deleteIconTheme.get(this.photoKey(image)) ?? 'dark');
+  }
+
+  onPhotoLoad(event: Event, key: string): void {
+    this.deleteIconTheme.set(key, pickIconTheme(event.target as HTMLImageElement));
   }
 
   getImageUrl(photoId: string | null | undefined): string {

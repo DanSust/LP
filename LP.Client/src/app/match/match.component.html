@@ -41,8 +41,10 @@
     @for (image of filteredImages(); track image.userId) {
     <div class="gallery-item">
       <mat-icon class="delete-icon"
+                [class.photo-icon--light]="deleteIconClass(image) === 'photo-icon--light'"
+                [class.photo-icon--dark]="deleteIconClass(image) === 'photo-icon--dark'"
                 aria-hidden="false"
-                aria-label="Delete"
+                aria-label="Удалить"
                 fontIcon="delete"
                 (click)="onDelete(image.userId); $event.stopPropagation()">
       </mat-icon>
@@ -51,6 +53,7 @@
              [alt]="'Фото: ' + image.name"
              loading="lazy"
              decoding="async"
+             (load)="onPhotoLoad($event, photoKey(image))"
              routerLink="/vote/{{image.userId}}" />
       </div>
       <div class="photo-info">

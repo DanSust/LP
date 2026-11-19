@@ -75,13 +75,55 @@
 .delete-icon {
   position: absolute; /* ✅ Position relative to photo-box */
   background: transparent;
-  color: lightgray;
   padding: 4px;
   right: 10px;
   cursor: pointer;
   top: 10px;
   z-index: 10;
   /* ✅ Prevent drag when clicking icon */
+  pointer-events: auto;
+  transition: color 0.2s ease;
+}
+
+.delete-icon:hover,
+.delete-icon:focus-visible {
+  color: red;
+}
+
+/* Цвет подбирается по яркости фото: тень гарантирует читаемость значка. */
+.photo-icon--light {
+  color: #fff;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.photo-icon--dark {
+  color: #111;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.95), 0 1px 4px rgba(255, 255, 255, 0.85);
+}
+
+/* Перемещаемый квадрат на первой фотографии. */
+.crop-frame {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px dotted #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  z-index: 20;
+  cursor: move;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.crop-avatar-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  font-size: 28px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  cursor: pointer;
   pointer-events: auto;
 }
 
@@ -93,7 +135,9 @@
   padding: 4px;
   cursor: pointer;
   top: 10px;
-  right: 10px;
+  /* Звезда слева, удаление справа — иначе иконки перекрывают друг друга. */
+  left: 10px;
+  right: auto;
   /* ✅ Prevent drag when clicking icon */
   pointer-events: auto;
 }

@@ -383,6 +383,31 @@ namespace LP.Server.Controllers
             return Ok(result?.PhotoId);
         }
 
+        /// <summary>
+        /// Создаёт аватар из уже обрезанного квадрата, присланного клиентом.
+        /// Отдельный метод: AddImage сохраняет аватар только из первого загруженного фото,
+        /// а здесь пользователь сам выбирает область кадрирования.
+        /// </summary>
+        [Authorize]
+        [HttpPost("avatar")]
+        public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { error = "Файл не загружен" });
+
+            string userPath = Path.Combine(_env.ContentRootPath, "..", "img", UserId.ToString());
+            if (!Directory.Exists(userPath))
+                Directory.CreateDirectory(userPath);
+
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+
+            await _imageService.CreateSquareIconAndSaveAsync(
+                ms.ToArray(), Path.Combine(userPath, "avatar.jpg"), 128);
+
+            return Ok(new { avatar = $"/Photos/avatar/{UserId}" });
+        }
+
         [Authorize]
         [HttpGet("avatar/{id}")]
         public async Task<IActionResult> Avatar(Guid id)

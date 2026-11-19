@@ -2,12 +2,34 @@
 <div cdkDropList cdkDropListOrientation="mixed" class="photo-list" (cdkDropListDropped)="drop($event)">
   @for (item of items; track trackById($index, item)) {
   <div class="photo-box" cdkDrag>
-    <mat-icon class="delete-icon" aria-hidden="false" aria-label="Example home icon" fontIcon="delete" (click)="onDelete(item.id)"></mat-icon>
+    <mat-icon class="delete-icon"
+              [class.photo-icon--light]="deleteIconClass(item.id) === 'photo-icon--light'"
+              [class.photo-icon--dark]="deleteIconClass(item.id) === 'photo-icon--dark'"
+              aria-hidden="false" aria-label="Удалить фото" fontIcon="delete" (click)="onDelete(item.id)"></mat-icon>
     <mat-icon class="star-icon" aria-hidden="false" aria-label="Example home icon" fontIcon="star"></mat-icon>
     <img src="{{baseURL}}/Photos/image/{{item.id}}"
          alt="Фото профиля"
          loading="lazy"
-         decoding="async"/>
+         decoding="async"
+         (load)="onPhotoLoad($event, item.id)"/>
+    @if ($index === 0 && cropFrame) {
+    <div class="crop-frame"
+         [style.left.px]="cropLeft()"
+         [style.top.px]="cropTop()"
+         [style.width.px]="cropFrame.side"
+         [style.height.px]="cropFrame.side"
+         (pointerdown)="onCropPointerDown($event)"
+         (pointermove)="onCropPointerMove($event)"
+         (pointerup)="onCropPointerUp($event)"
+         (pointercancel)="onCropPointerUp($event)">
+      <mat-icon class="crop-avatar-icon"
+                fontIcon="crop"
+                title="Сделать аватар"
+                aria-label="Сделать аватар"
+                (pointerdown)="$event.stopPropagation()"
+                (click)="onCropAvatarClick($event)"></mat-icon>
+    </div>
+    }
   </div>
   }
 
