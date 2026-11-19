@@ -258,6 +258,61 @@
   }
 }
 
+/* Кнопки появляются только у интерактивного splash (например, мэтч). */
+.splash__action {
+  margin-top: 26px;
+  padding: 14px 34px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(120deg, var(--splash-pink), var(--splash-magenta));
+  box-shadow: 0 12px 32px rgba(233, 30, 99, 0.38);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 38px rgba(233, 30, 99, 0.5);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+}
+
+.splash__dismiss {
+  margin-top: 14px;
+  padding: 6px 12px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
 @keyframes splash-content-in {
   from {
     opacity: 0;
@@ -396,6 +451,8 @@
   .splash__progress-fill,
   .splash__progress-fill::after,
   .splash__dots span,
+  .splash__action,
+  .splash__dismiss,
   .splash__aurora {
     animation: none !important;
     transition: none !important;

@@ -148,26 +148,27 @@ export class ProfileService {
     this.loadMoreProfiles(count);
   }
 
-  removeTopProfile(like: boolean = true, needRemove: boolean = true) {
-    const currentProfile = this.profiles()[0];
-    const lk = like ? 'like' : 'dislike';
+  /**
+   * Отправляет лайк на сервер. isMutual === true означает, что другая сторона
+   * уже поставила лайк — пора показывать экран «У вас есть пара».
+   */
+  likeProfile(id: string): Observable<{ isMutual?: boolean }> {
+    return this.http.post<{ isMutual?: boolean }>(
+      `${this.baseUrl}/Votes/like/${id}`,
+      null,
+      { withCredentials: true }
+    );
+  }
 
+  removeTopProfile(like: boolean = true, needRemove: boolean = true) {
     if (needRemove) {
       this.profiles.update(profiles => profiles.slice(1));
       console.log('removeTopProfile -', this.profiles());
     }
 
-    //Не  надо ставить дизлайк - это просто skip
-    //this.http.post<any>(this.baseUrl + '/Votes/' + lk + '/' + currentProfile.id, null, { withCredentials: true })
-    //  .subscribe({
-    //    next: () => {
-    //      console.log('Лайк отправлен', currentProfile.id)
-    //    },
-    //    error: (error: any) => {
-    //      console.log(error);
-    //      return (() => error);
-    //    },
-    //  });    
+    // Не надо ставить дизлайк — это просто skip.
+    // Лайк отправляется отдельно через likeProfile() из VoteComponent,
+    // чтобы можно было получить флаг взаимного лайка в ответе.
   }
 
   addProfiles(newProfiles: Profile[]) {

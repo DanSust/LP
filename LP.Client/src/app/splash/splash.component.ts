@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -8,6 +8,16 @@ import { CommonModule } from '@angular/common';
  * Пример:
  * ```html
  * <app-splash-screen [visible]="isLoading" text="Загружаем журнал" />
+ * ```
+ *
+ * С кнопкой действия (например, экран взаимного лайка):
+ * ```html
+ * <app-splash-screen
+ *   [visible]="!!matchId()"
+ *   [showProgress]="false"
+ *   text="У вас есть пара!"
+ *   actionText="Начать диалог"
+ *   (action)="startChat()" />
  * ```
  */
 @Component({
@@ -29,6 +39,18 @@ export class SplashScreenComponent {
 
   /** Подпись под логотипом. */
   text = input<string>('Загружаем данные');
+
+  /** Текст основной кнопки. Если задан, splash становится интерактивным. */
+  actionText = input<string | null>(null);
+
+  /** Текст второстепенной кнопки, которая закрывает splash. */
+  dismissText = input<string | null>(null);
+
+  /** Клик по основной кнопке (например, «Начать диалог»). */
+  action = output<void>();
+
+  /** Клик по второстепенной кнопке. */
+  dismiss = output<void>();
 
   /**
    * Показывать splash внутри родителя (например, внутри app-root),

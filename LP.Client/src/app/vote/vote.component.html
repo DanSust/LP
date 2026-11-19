@@ -1,7 +1,17 @@
 <app-splash-screen
-  [visible]="profileService.isLoading() && profiles().length === 0"
+  [visible]="!matchProfileId() && profileService.isLoading() && profiles().length === 0"
   [inline]="true"
   text="Загружаем анкеты" />
+
+<!-- Взаимный лайк: тот же splash, но с сообщением и кнопкой перехода в чат -->
+<app-splash-screen
+  [visible]="matchProfileId() !== null"
+  [showProgress]="false"
+  [text]="matchText()"
+  actionText="Начать диалог"
+  dismissText="Продолжить поиск"
+  (action)="onStartMatchChat()"
+  (dismiss)="onDismissMatch()" />
 
 <div class="card-stack" #activePhotoContainer [class.dragging]="isDragging()">
 

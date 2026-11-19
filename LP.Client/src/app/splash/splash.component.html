@@ -2,8 +2,9 @@
   class="splash"
   [class.splash--inline]="inline()"
   [class.is-hidden]="!visible()"
-  role="status"
-  aria-live="polite"
+  [attr.role]="actionText() ? 'dialog' : 'status'"
+  [attr.aria-modal]="actionText() ? 'true' : null"
+  [attr.aria-live]="actionText() ? null : 'polite'"
   [attr.aria-busy]="visible()"
   [attr.aria-label]="text()"
 >
@@ -56,7 +57,21 @@
     }
 
     <p class="splash__text">
-      {{ text() }}<span class="splash__dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+      {{ text() }}@if (!actionText()) {
+      <span class="splash__dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+      }
     </p>
+
+    @if (actionText()) {
+      <button type="button" class="splash__action" (click)="action.emit()">
+        {{ actionText() }}
+      </button>
+    }
+
+    @if (dismissText()) {
+      <button type="button" class="splash__dismiss" (click)="dismiss.emit()">
+        {{ dismissText() }}
+      </button>
+    }
   </div>
 </div>

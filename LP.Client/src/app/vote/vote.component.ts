@@ -69,6 +69,16 @@ export class VoteComponent implements OnInit, AfterViewInit {
   isFullscreen = signal(false);
   isClick = signal(false);
 
+  // Взаимный лайк: показываем фирменный splash поверх карточек.
+  matchProfileId = signal<string | null>(null);
+  matchProfileName = signal<string | null>(null);
+  matchText = computed(() => {
+    const name = this.matchProfileName();
+    return name
+      ? `У вас есть пара! Вы и ${name} понравились друг другу`
+      : 'У вас есть пара!';
+  });
+
   toggleFullscreen(): void {
     //console.log('toggleFullscreen');
     this.isFullscreen.update(v => !v);
@@ -181,6 +191,8 @@ export class VoteComponent implements OnInit, AfterViewInit {
     this.exitDelta.set(0);
     this.imageLoaded.set(false);
     this.hasExceededThreshold = false;
+    this.matchProfileId.set(null);
+    this.matchProfileName.set(null);
 
     // Очистка профилей — ключевой момент!
     this.profileService.clearProfiles();
@@ -533,8 +545,42 @@ export class VoteComponent implements OnInit, AfterViewInit {
   // === ACTIONS ===
 
   onLikeClick(): void {
-    //console.log('onLikeClick()');
+    const profile = this.profiles()[0];
+    if (!profile) return;
+
     this.performSwipe('right', !this.cameFromSearch());
+    this.registerLike(profile);
+  }
+
+  /** Отправляем лайк и ловим момент, когда он стал взаимным. */
+  private registerLike(profile: Profile): void {
+    if (!this.authService.getCachedUserId()) return;
+
+    this.profileService.likeProfile(profile.id).subscribe({
+      next: (response) => {
+        if (response?.isMutual === true) {
+          this.matchProfileId.set(profile.id);
+          this.matchProfileName.set(profile.name);
+        }
+      },
+      error: (err) => {
+        console.error('Не удалось сохранить лайк:', err);
+      }
+    });
+  }
+
+  onStartMatchChat(): void {
+    const id = this.matchProfileId();
+    if (!id) return;
+
+    this.matchProfileId.set(null);
+    this.matchProfileName.set(null);
+    this.onChatClick(id);
+  }
+
+  onDismissMatch(): void {
+    this.matchProfileId.set(null);
+    this.matchProfileName.set(null);
   }
 
   onDislikeClick(): void {

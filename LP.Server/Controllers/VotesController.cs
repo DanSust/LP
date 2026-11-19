@@ -65,7 +65,17 @@ namespace LP.Server.Controllers
                 }
             }
 
-            return Ok(new { message = "OK" });
+            // Сообщаем клиенту, что лайк стал взаимным: он покажет splash
+            // «У вас есть пара» с кнопкой перехода в чат.
+            var isMutual = await _context.Votes
+                .AsNoTracking()
+                .AnyAsync(v =>
+                    v.Owner == id &&
+                    v.Like == UserId &&
+                    v.IsLike &&
+                    !v.IsReject);
+
+            return Ok(new { message = "OK", isMutual });
         }
 
         [Authorize]
