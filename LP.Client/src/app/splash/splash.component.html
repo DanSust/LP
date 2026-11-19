@@ -3,7 +3,7 @@
   [class.splash--inline]="inline()"
   [class.is-hidden]="!visible()"
   [attr.role]="actionText() ? 'dialog' : 'status'"
-  [attr.aria-modal]="actionText() ? 'true' : null"
+  [attr.aria-modal]="actionText() && !inline() ? 'true' : null"
   [attr.aria-live]="actionText() ? null : 'polite'"
   [attr.aria-busy]="visible()"
   [attr.aria-label]="text()"
@@ -56,8 +56,8 @@
       </div>
     }
 
-    <p class="splash__text">
-      {{ text() }}@if (!actionText()) {
+    <p class="splash__text" [class.splash__text--large]="linkText() && linkHref()">
+      {{ text() }}@if (linkText() && linkHref()) {&nbsp;<a class="splash__link" [routerLink]="linkHref()">{{ linkText() }}</a>&nbsp;{{ textAfterLink() }}}@if (!actionText()) {
       <span class="splash__dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
       }
     </p>

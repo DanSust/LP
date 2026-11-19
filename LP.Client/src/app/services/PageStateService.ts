@@ -35,6 +35,14 @@ export class PageStateService {
     this.state = null;
   }
 
+  /** Инвалидируем кэш /match после взаимного лайка, чтобы список «Взаимные» обновился. */
+  clearMatchState(): void {
+    const category = this.state?.category;
+    if (category === 'mutual' || category === 'viewed' || category === 'likesMe' || category === 'iLike') {
+      this.state = null;
+    }
+  }
+
   hasValidState(): boolean {
     return this.getState() !== null;
   }

@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 /**
  * Фирменный splash-экран Made4Love.
@@ -15,7 +16,10 @@ import { CommonModule } from '@angular/common';
  * <app-splash-screen
  *   [visible]="!!matchId()"
  *   [showProgress]="false"
- *   text="У вас есть пара!"
+ *   text="Вы и"
+ *   [linkText]="matchName()"
+ *   [linkHref]="'/vote/' + matchId()"
+ *   textAfterLink="понравились друг другу"
  *   actionText="Начать диалог"
  *   (action)="startChat()" />
  * ```
@@ -23,7 +27,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-splash-screen',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './splash.component.html',
   styleUrl: './splash.component.scss'
 })
@@ -39,6 +43,15 @@ export class SplashScreenComponent {
 
   /** Подпись под логотипом. */
   text = input<string>('Загружаем данные');
+
+  /** Текст ссылки внутри подписи (например, имя пользователя). */
+  linkText = input<string | null>(null);
+
+  /** Адрес ссылки внутри подписи. */
+  linkHref = input<string | null>(null);
+
+  /** Текст после ссылки. */
+  textAfterLink = input<string>('');
 
   /** Текст основной кнопки. Если задан, splash становится интерактивным. */
   actionText = input<string | null>(null);

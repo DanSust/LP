@@ -83,7 +83,11 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
       // Обычная инициализация
       this.sortGUID = generateGUID();
       this.isLoading = true; // 🔥 Явно устанавливаем
-      this.setActiveTab('mutual');
+      // При входе на страницу всегда обновляем «Взаимные»: новая пара,
+      // появившаяся после лайка, не должна остаться в устаревшем кэше.
+      this.activeTab = 'mutual';
+      this.allImages = [];
+      this.loadImages(true);
     }
   }
 

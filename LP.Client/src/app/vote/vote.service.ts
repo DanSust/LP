@@ -150,7 +150,7 @@ export class ProfileService {
 
   /**
    * Отправляет лайк на сервер. isMutual === true означает, что другая сторона
-   * уже поставила лайк — пора показывать экран «У вас есть пара».
+   * уже поставила лайк и диалог ещё не создан — пора показывать splash.
    */
   likeProfile(id: string): Observable<{ isMutual?: boolean }> {
     return this.http.post<{ isMutual?: boolean }>(

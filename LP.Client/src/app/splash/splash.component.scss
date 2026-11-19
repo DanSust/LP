@@ -241,6 +241,32 @@
   letter-spacing: 0.05em;
 }
 
+/* Текст с символической ссылкой (например, «Вы и <имя> понравились друг другу»). */
+.splash__text--large {
+  margin-top: 20px;
+  color: #fff;
+  font-size: clamp(18px, 3.4vw, 26px);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.splash__link {
+  color: wheat;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+
+  &:hover {
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
 .splash__dots {
   display: inline-flex;
   margin-left: 2px;

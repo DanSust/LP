@@ -25,6 +25,7 @@ import { RatingComponent } from '../../app/user/rating/user-rating.component';
 import { getAgeWord } from './../common/usefull.utils';
 import { Subscription } from 'rxjs';
 import { SplashScreenComponent } from './../splash/splash.component';
+import { PageStateService } from '../services/PageStateService';
 
 interface ExitingProfile {
   id: string;
@@ -45,6 +46,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   chatService = inject(ChatService);
   authService = inject(AuthService);
+  pageStateService = inject(PageStateService);
 
   userId?: string = '';
   imageLoaded = signal(false);
@@ -72,11 +74,9 @@ export class VoteComponent implements OnInit, AfterViewInit {
   // Взаимный лайк: показываем фирменный splash поверх карточек.
   matchProfileId = signal<string | null>(null);
   matchProfileName = signal<string | null>(null);
-  matchText = computed(() => {
-    const name = this.matchProfileName();
-    return name
-      ? `У вас есть пара! Вы и ${name} понравились друг другу`
-      : 'У вас есть пара!';
+  matchProfileHref = computed(() => {
+    const id = this.matchProfileId();
+    return id ? `/vote/${id}` : null;
   });
 
   toggleFullscreen(): void {
@@ -555,6 +555,9 @@ export class VoteComponent implements OnInit, AfterViewInit {
   /** Отправляем лайк и ловим момент, когда он стал взаимным. */
   private registerLike(profile: Profile): void {
     if (!this.authService.getCachedUserId()) return;
+
+    // Любой лайк может создать новую пару — кэш «Взаимных» больше не актуален.
+    this.pageStateService.clearMatchState();
 
     this.profileService.likeProfile(profile.id).subscribe({
       next: (response) => {

@@ -6,8 +6,12 @@
 <!-- Взаимный лайк: тот же splash, но с сообщением и кнопкой перехода в чат -->
 <app-splash-screen
   [visible]="matchProfileId() !== null"
+  [inline]="true"
   [showProgress]="false"
-  [text]="matchText()"
+  text="Вы и"
+  [linkText]="matchProfileName()"
+  [linkHref]="matchProfileHref()"
+  textAfterLink="понравились друг другу"
   actionText="Начать диалог"
   dismissText="Продолжить поиск"
   (action)="onStartMatchChat()"

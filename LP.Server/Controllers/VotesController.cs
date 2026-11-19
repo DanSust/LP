@@ -75,7 +75,16 @@ namespace LP.Server.Controllers
                     v.IsLike &&
                     !v.IsReject);
 
-            return Ok(new { message = "OK", isMutual });
+            // Диалог считается начатым сразу после создания чата —
+            // даже если в нём ещё нет ни одного сообщения.
+            var hasChat = await _context.Chats
+                .AsNoTracking()
+                .AnyAsync(c =>
+                    (c.Owner == UserId && c.UserId == id) ||
+                    (c.Owner == id && c.UserId == UserId));
+
+            // Чат уже создан — splash «У вас есть пара» не нужен, даже если лайки взаимные.
+            return Ok(new { message = "OK", isMutual = isMutual && !hasChat });
         }
 
         [Authorize]
