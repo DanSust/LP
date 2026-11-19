@@ -517,6 +517,47 @@
   }
 }
 
+/* Режим «Как меня видят другие»: вместо кнопок лайка — подсказка и возврат. */
+.self-preview-bar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 6px 16px;
+  border-radius: 24px;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  white-space: nowrap;
+
+  .self-preview-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+  }
+}
+
 .details-wrapper {
   flex: 0 0 30%;
   height: 100%;

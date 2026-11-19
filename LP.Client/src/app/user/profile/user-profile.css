@@ -224,6 +224,21 @@ mat-chip-option[disabled] {
     font-weight: bold;
   }
 
+.self-preview-line {
+  margin: 8px 0 0;
+}
+
+.self-preview-link {
+  color: wheat;
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
 .step-actions {
   margin-top: 24px;
   display: flex;

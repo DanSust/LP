@@ -49,7 +49,7 @@
   @if (profiles()[0]; as profile) {
   <!-- Кнопки -->
 
-  <div class="card-actions" [class.hidden]="isFullscreen()" [class.unregistered]="!userId">
+  <div class="card-actions" [class.hidden]="isFullscreen() || isSelfPreview()" [class.unregistered]="!userId">
     <button class="action-btn dislike-btn"
             (click)="onDislikeClick(); $event.stopPropagation()"
             [disabled]="isAnimating()">
@@ -81,6 +81,15 @@
               [disabled]="isAnimating()">⭐
   </button>-->
   </div>
+  @if (isSelfPreview() && !isFullscreen()) {
+  <div class="self-preview-bar">
+    <span>Так вашу анкету видят другие</span>
+    <button class="self-preview-back" (click)="goBackToSearch()" title="Вернуться в профиль">
+      <mat-icon>arrow_back</mat-icon>
+      В профиль
+    </button>
+  </div>
+  }
   <div class="card active-card"
        [style.z-index]="10"
        [class.dragging]="isDragging()">

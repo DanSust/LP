@@ -28,6 +28,7 @@ import { City, NearestCityResponse } from './../../Interfaces/CityLocation';
 import { LocationService, LocationCoords } from './../../services/LocationService';
 import { SplashScreenComponent } from '../../splash/splash.component';
 import { BaseComponent } from '../../common/base.component';
+import { RouterLink } from '@angular/router';
 
 /** Город должен быть выбран из списка (объект с id), а не введён произвольным текстом. */
 function townSelectedValidator(control: AbstractControl): ValidationErrors | null {
@@ -61,7 +62,8 @@ function townSelectedValidator(control: AbstractControl): ValidationErrors | nul
     MatChipsModule,
     MatAutocompleteModule,
     UserPhoto,
-    SplashScreenComponent
+    SplashScreenComponent,
+    RouterLink
   ]
 })
 
@@ -75,6 +77,9 @@ export class UserProfile extends BaseComponent {
   provider: string = "google";
   isConfirmed = false;
   currentStep = 3;
+
+  /** Свой userId — нужен для ссылки «Как меня видят другие». */
+  ownUserId: string | null = null;
 
   maxInterests = 10;
   selectedInterestsCount = 0;
@@ -150,6 +155,7 @@ export class UserProfile extends BaseComponent {
     ]);
 
     // ✅ Сохраняем результаты первой волны
+    this.ownUserId = cookiesResult?.userId || null;
     this.interests = interestsResult;
     this.towns = citiesResult;
     this.setupCityAutocomplete();

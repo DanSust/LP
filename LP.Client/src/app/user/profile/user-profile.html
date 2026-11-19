@@ -267,6 +267,11 @@
       <mat-spinner diameter="20"></mat-spinner>
       }
       @else {
+      @if (ownUserId) {
+      <p class="self-preview-line">
+        <a class="self-preview-link" [routerLink]="['/vote', ownUserId]">Как меня видят другие</a>
+      </p>
+      }
       <div class="step-actions">
         <button mat-button matStepperPrevious>Назад</button>
         <!--<button mat-button [disabled]="form.invalid" (click)="save()">Сохранить</button>-->

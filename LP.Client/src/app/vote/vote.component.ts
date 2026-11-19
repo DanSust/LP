@@ -71,6 +71,9 @@ export class VoteComponent implements OnInit, AfterViewInit {
   isFullscreen = signal(false);
   isClick = signal(false);
 
+  /** Просмотр своей анкеты через «Как меня видят другие» — действия недоступны. */
+  isSelfPreview = signal(false);
+
   // Взаимный лайк: показываем фирменный splash поверх карточек.
   matchProfileId = signal<string | null>(null);
   matchProfileName = signal<string | null>(null);
@@ -136,6 +139,22 @@ export class VoteComponent implements OnInit, AfterViewInit {
       this.resetState();
 
       this.userId = newUserId;
+      const applySelfPreview = (ownId: string | null) => {
+        this.isSelfPreview.set(
+          !!newUserId && !!ownId && newUserId.toLowerCase() === ownId.toLowerCase()
+        );
+      };
+      const cachedId = this.authService.getCachedUserId();
+      if (newUserId && !cachedId) {
+        // Кэш может быть пустым при прямом переходе — уточняем свой id у сервера.
+        this.http.get<{ userId?: string }>(`${this.base}/Users/cookies`, { withCredentials: true })
+          .subscribe({
+            next: response => applySelfPreview(response?.userId ?? null),
+            error: () => applySelfPreview(null)
+          });
+      } else {
+        applySelfPreview(cachedId);
+      }
       this.currentPhotoIndex.set(0);
       this.isFullscreen.set(false);
       this.dragDelta.set(0);
@@ -473,8 +492,9 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
     // Принудительно применяем изменение detection
     // иногда Angular не ловит изменения сигнала
-    setTimeout(() => {     
-      if (this.isFullscreen())
+    setTimeout(() => {
+      // Свой просмотр не должен попадать в список «Гости».
+      if (this.isFullscreen() && !this.isSelfPreview())
         this.profileService.addViewed(this.profiles()[0].id);
     }, 0);
   }
@@ -554,6 +574,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   /** Отправляем лайк и ловим момент, когда он стал взаимным. */
   private registerLike(profile: Profile): void {
+    if (this.isSelfPreview()) return;
     if (!this.authService.getCachedUserId()) return;
 
     // Любой лайк может создать новую пару — кэш «Взаимных» больше не актуален.
@@ -592,6 +613,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
   }
 
   onChatClick(id: string): void {
+    if (this.isSelfPreview()) return;
     console.log("[onChatClick] Запускаем для profile id:", id);
     console.log("[onChatClick] userid:", this.authService.getCachedUserId());
     if (!this.authService.getCachedUserId()) {
