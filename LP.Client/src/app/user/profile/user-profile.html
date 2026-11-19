@@ -236,7 +236,7 @@
     </mat-step>-->
 
     <mat-step label="Фотографии">
-      <user-photo></user-photo>
+      <user-photo (photoCountChange)="photoCount = $event"></user-photo>
       <div class="step-actions">
         <button mat-button matStepperPrevious>Назад</button>
         <button mat-button matStepperNext>Далее</button>
@@ -262,11 +262,33 @@
       </div>
     </mat-step>
 
-    <mat-step label="Финиш">
+    <mat-step>
+      <ng-template matStepLabel>
+        <span class="finish-step-label">
+          <span>Финиш</span>
+          <span class="finish-progress" [class.is-complete]="completion.percent >= 100">{{ completion.percent }}%</span>
+        </span>
+      </ng-template>
       @if (isSaving) {
       <mat-spinner diameter="20"></mat-spinner>
       }
       @else {
+      <section class="completion-card" aria-label="Заполненность профиля">
+        @if (completion.missing.length) {
+        <div class="completion-missing">
+          <span class="completion-message">{{ completion.message }}</span>
+          <span class="completion-missing-title">Что можно улучшить:</span>
+          @for (item of completion.missing; track item.label) {
+          <button type="button" class="completion-item" (click)="goToCompletionStep(item.step)">
+            <mat-icon>arrow_forward</mat-icon>
+            <span><strong>{{ item.label }}</strong> — {{ item.hint }}</span>
+          </button>
+          }
+        </div>
+        } @else {
+        <p class="completion-done"><mat-icon>check_circle</mat-icon> Всё заполнено — можно сохранять</p>
+        }
+      </section>
       @if (ownUserId) {
       <p class="self-preview-line">
         <a class="self-preview-link" [routerLink]="['/vote', ownUserId]">Как меня видят другие</a>

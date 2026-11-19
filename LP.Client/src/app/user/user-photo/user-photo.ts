@@ -1,5 +1,5 @@
 import { CommonModule, JsonPipe } from '@angular/common';
-import { Component, ElementRef, HostListener, Inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Inject, Output } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CdkDragDrop, CdkDrag, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatIconModule } from '@angular/material/icon';
@@ -45,6 +45,9 @@ interface CropDrag {
     FileUploadComponent],
 })
 export class UserPhoto extends BaseComponent {
+  /** Сообщаем родителю количество фото — участвует в заполненности профиля. */
+  @Output() photoCountChange = new EventEmitter<number>();
+
   isSaving: boolean = false;
   items: { userId: string; id: string }[] = [];
   file: File | null = null; // Variable to store file
@@ -70,7 +73,12 @@ export class UserPhoto extends BaseComponent {
       .pipe(tap((result) => {
         //console.log('📸 Photos loaded:', result);
         this.items = result;
+        this.emitPhotoCount();
       }));
+  }
+
+  private emitPhotoCount(): void {
+    this.photoCountChange.emit(this.items.length);
   }
 
   trackById(index: number, item: any): string {
@@ -280,6 +288,7 @@ export class UserPhoto extends BaseComponent {
       next: () => {
         const wasFirst = this.items[0]?.id === id;
         this.items = this.items.filter(item => item.id !== id);
+        this.emitPhotoCount();
         if (wasFirst) {
           this.cropFrame = null;
           // Новая первая фотография уже загружена — пересчитываем рамку после рендера.
@@ -306,9 +315,10 @@ export class UserPhoto extends BaseComponent {
 
       const upload$ = this.http.post<{ userId: string; id: string }>(this.base + "/Photos/add", formData, { withCredentials: true });           
 
-      upload$.subscribe(result => {        
+      upload$.subscribe(result => {
         //console.log(result);
-        this.items = [...this.items, result];        
+        this.items = [...this.items, result];
+        this.emitPhotoCount();
       });
     }
   }
@@ -316,6 +326,7 @@ export class UserPhoto extends BaseComponent {
   onFileUploaded(newPhoto: { userId: string; id: string }): void {
     if (this.items.length < this.maxPhotos) {
       this.items = [...this.items, newPhoto];
+      this.emitPhotoCount();
       console.log('✅ New photo added:', newPhoto);
     } else {
       // Здесь можно вызвать toast-уведомление, если оно доступно в этом компоненте

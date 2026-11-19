@@ -36,6 +36,21 @@ function townSelectedValidator(control: AbstractControl): ValidationErrors | nul
   return value && typeof value === 'object' && value.id ? null : { townRequired: true };
 }
 
+interface CompletionCheck {
+  label: string;
+  hint: string;
+  /** Индекс шага в mat-stepper, ответственного за это поле. */
+  step: number;
+  progress: number;
+  weight: number;
+}
+
+interface ProfileCompletion {
+  percent: number;
+  missing: CompletionCheck[];
+  message: string;
+}
+
 @Component({
   selector: 'user-profile',
   standalone: true,
@@ -80,6 +95,9 @@ export class UserProfile extends BaseComponent {
 
   /** Свой userId — нужен для ссылки «Как меня видят другие». */
   ownUserId: string | null = null;
+
+  /** Количество фото приходит из <user-photo>. */
+  photoCount = 0;
 
   maxInterests = 10;
   selectedInterestsCount = 0;
@@ -144,6 +162,83 @@ export class UserProfile extends BaseComponent {
     // 🔥 Autocomplete остается reactive (не блокирует загрузку).
     // После загрузки городов подписка пересоздаётся в setupCityAutocomplete().
     this.setupCityAutocomplete();
+  }
+
+  /** Насколько профиль готов к показу другим: 6 критериев, веса в сумме дают 100%. */
+  get completion(): ProfileCompletion {
+    const value = this.form.value;
+    const caption = (value.Caption || '').trim();
+    const description = (value.Description || '').trim();
+    const town = value.TownName as TownDTO | null;
+    const interestsCount = this.interests.filter(i => i.selected).length;
+    const birthday = value.Birthday;
+    const hasBirthday = !!birthday && !Number.isNaN(new Date(birthday).getTime());
+
+    const descriptionProgress = description.length >= 60 ? 1 : description.length >= 20 ? 0.7 : description.length > 0 ? 0.35 : 0;
+    const photoProgress = this.photoCount >= 3 ? 1 : this.photoCount === 2 ? 0.72 : this.photoCount === 1 ? 0.4 : 0;
+    const interestProgress = interestsCount >= 3 ? 1 : interestsCount === 2 ? 0.65 : interestsCount === 1 ? 0.35 : 0;
+
+    const checks: CompletionCheck[] = [
+      {
+        label: 'Имя',
+        hint: caption ? 'Можно указать более полное имя' : 'Укажите, как к вам обращаться',
+        step: 0,
+        progress: caption.length >= 3 ? 1 : caption.length > 0 ? 0.5 : 0,
+        weight: 15
+      },
+      {
+        label: 'Дата рождения',
+        hint: 'Укажите дату рождения',
+        step: 0,
+        progress: hasBirthday ? 1 : 0,
+        weight: 10
+      },
+      {
+        label: 'Город',
+        hint: 'Выберите город из списка',
+        step: 0,
+        progress: town && town.id ? 1 : 0,
+        weight: 10
+      },
+      {
+        label: 'Рассказ о себе',
+        hint: 'Пара предложений о вас и о том, кого ищете',
+        step: 1,
+        progress: descriptionProgress,
+        weight: 20
+      },
+      {
+        label: 'Фотографии',
+        hint: 'Добавьте минимум 3 фото — так анкета заметнее',
+        step: 3,
+        progress: photoProgress,
+        weight: 25
+      },
+      {
+        label: 'Интересы',
+        hint: 'Выберите хотя бы 3 интереса',
+        step: 2,
+        progress: interestProgress,
+        weight: 20
+      }
+    ];
+
+    const percent = Math.round(checks.reduce((sum, check) => sum + check.weight * check.progress, 0));
+    const message = percent >= 100
+      ? 'Отлично! Вашу анкету увидят в лучшем виде'
+      : percent >= 70
+        ? 'Осталось совсем немного'
+        : percent >= 40
+          ? 'Анкета уже выглядит неплохо — добавьте деталей'
+          : 'Заполните основные разделы, чтобы вас заметили';
+
+    return { percent, missing: checks.filter(check => check.progress < 1), message };
+  }
+
+  /** Переход из индикатора к нужному шагу анкеты. */
+  goToCompletionStep(step: number): void {
+    this.stepper.selectedIndex = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   protected async LoadData(): Promise<void> {

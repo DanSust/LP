@@ -224,6 +224,112 @@ mat-chip-option[disabled] {
     font-weight: bold;
   }
 
+.completion-card {
+  padding: 16px;
+  margin: 8px 0 16px;
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* Процент прямо в шапке шага «Финиш». */
+.finish-step-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.finish-progress {
+  display: inline-block;
+  padding: 0 7px;
+  border: 1px solid rgba(245, 222, 179, 0.55);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  color: wheat;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+
+  &.is-complete {
+    border-color: rgba(183, 228, 199, 0.65);
+    color: #b7e4c7;
+  }
+}
+
+@media (max-width: 400px) {
+  .finish-step-label {
+    gap: 5px;
+  }
+
+  .finish-progress {
+    padding: 0 5px;
+    font-size: 11px;
+  }
+}
+
+.completion-message {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.completion-missing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.completion-missing-title {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.completion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: wheat;
+    flex: 0 0 16px;
+  }
+
+  strong {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.completion-done {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #b7e4c7;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
 .self-preview-line {
   margin: 8px 0 0;
 }
