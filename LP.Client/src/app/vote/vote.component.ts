@@ -23,9 +23,10 @@ import { NavigationService } from '../services/NavigationService';
 import { AuthService } from '../services/AuthService';
 import { RatingComponent } from '../../app/user/rating/user-rating.component';
 import { getAgeWord } from './../common/usefull.utils';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { SplashScreenComponent } from './../splash/splash.component';
 import { PageStateService } from '../services/PageStateService';
+import { PhotoIconTheme, photoIconClass, pickIconTheme } from '../common/photo-icon-theme';
 
 interface ExitingProfile {
   id: string;
@@ -62,6 +63,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
   exitDelta = signal(0); // Смещение для улетающей карты
 
   currentPhotoIndex = signal(0);
+  overlayTheme = signal<PhotoIconTheme | null>(null);
 
   // Drag состояние для ручного свайпа
   dragDelta = signal(0);
@@ -73,6 +75,9 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
   /** Просмотр своей анкеты через «Как меня видят другие» — действия недоступны. */
   isSelfPreview = signal(false);
+
+  // Временный фикс: идёт изменение пола/имени для текущей анкеты
+  isFixingProfile = signal(false);
 
   // Взаимный лайк: показываем фирменный splash поверх карточек.
   matchProfileId = signal<string | null>(null);
@@ -156,6 +161,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
         applySelfPreview(cachedId);
       }
       this.currentPhotoIndex.set(0);
+      this.overlayTheme.set(null);
       this.isFullscreen.set(false);
       this.dragDelta.set(0);
       this.isDragging.set(false);
@@ -202,6 +208,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
   private resetState(): void {
     // Сброс всех сигналов состояния
     this.currentPhotoIndex.set(0);
+    this.overlayTheme.set(null);
     this.isFullscreen.set(false);
     this.dragDelta.set(0);
     this.isDragging.set(false);
@@ -520,6 +527,10 @@ export class VoteComponent implements OnInit, AfterViewInit {
 
     // 2. Удаляем из списка - следующий профиль становится profiles()[0]
     this.profileService.removeTopProfile(direction === 'right', needSwipe);
+    this.currentPhotoIndex.set(0);
+    this.overlayTheme.set(null);
+    this.imageLoaded.set(false);
+    this.dragDelta.set(0);
 
     // 3. Запускаем анимацию вылета
     this.isAnimating.set(true);
@@ -532,13 +543,11 @@ export class VoteComponent implements OnInit, AfterViewInit {
       });
     });
 
-    //// 4. Очищаем после анимации
+    // 4. Сбрасываем после анимации
     setTimeout(() => {
       this.isAnimating.set(false);
       this.exitingProfile.set(null);
       this.exitDelta.set(0);
-      this.dragDelta.set(0);
-      this.currentPhotoIndex.set(0);
     }, this.ANIMATION_DURATION);
   }
 
@@ -674,10 +683,63 @@ export class VoteComponent implements OnInit, AfterViewInit {
       });
   }
 
-  onFavoriteClick(id: string): void {
-    //console.log('⭐ Избранное:', id);
-    this.profileService.addToFavorites(id);
-    this.performSwipe('right', true);
+  private applyProfileFix(
+    profile: Profile,
+    request$: Observable<any>,
+    optimistic?: (p: Profile) => Partial<Profile>
+  ): void {
+    if (this.isAnimating() || this.isFixingProfile()) return;
+
+    this.isFixingProfile.set(true);
+    request$.subscribe({
+      next: () => {
+        if (optimistic) {
+          const patch = optimistic(profile);
+          this.profiles.update(list =>
+            list.map((p, i) => i === 0 && p.id === profile.id ? { ...p, ...patch } : p)
+          );
+        }
+
+        this.http
+          .get<any>(`${this.base}/Users/view?id=${profile.id}`, { withCredentials: true })
+          .subscribe({
+            next: (user) => {
+              const newName = user?.caption ?? user?.Caption ?? profile.name;
+              const newSex = user?.sex ?? user?.Sex ?? (optimistic ? (optimistic(profile).sex ?? profile.sex ?? null) : (profile.sex ?? null));
+              this.profiles.update(list =>
+                list.map((p, i) =>
+                  i === 0 && p.id === profile.id ? { ...p, name: newName, sex: newSex } : p
+                )
+              );
+              this.isFixingProfile.set(false);
+            },
+            error: () => {
+              if (!optimistic) {
+                this.toast.error('Не удалось обновить карточку');
+              }
+              this.isFixingProfile.set(false);
+            }
+          });
+      },
+      error: () => {
+        this.toast.error('Не удалось применить изменение');
+        this.isFixingProfile.set(false);
+      }
+    });
+  }
+
+  /** Временный фикс: переключить пол анкеты. */
+  onChangeSex(profile: Profile): void {
+    this.applyProfileFix(
+      profile,
+      this.profileService.changeSex(profile.id),
+      (p) => (p.sex === null || p.sex === undefined ? {} : { sex: !p.sex })
+    );
+  }
+
+  /** Временный фикс: подобрать новое имя для текущего пола анкеты. */
+  onChangeName(profile: Profile): void {
+    this.applyProfileFix(profile, this.profileService.changeName(profile.id));
   }
 
   nextPhoto(): void {
@@ -686,6 +748,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
     if (!photos || photos.length <= 1) return;
     this.currentPhotoIndex.update(i => i >= photos.length - 1 ? 0 : i + 1);
     this.imageLoaded.set(false);
+    this.overlayTheme.set(null);
   }
 
   prevPhoto(): void {
@@ -694,9 +757,22 @@ export class VoteComponent implements OnInit, AfterViewInit {
     if (!photos || photos.length <= 1) return;
     this.currentPhotoIndex.update(i => i <= 0 ? photos.length - 1 : i - 1);
     this.imageLoaded.set(false);
+    this.overlayTheme.set(null);
   }
 
-  onImageLoad(): void {
+  onImageLoad(event?: Event): void {
     this.imageLoaded.set(true);
+    
+    const img = event?.target as HTMLImageElement | null;
+    if (img) {
+      this.overlayTheme.set(pickIconTheme(img));
+    } else {
+      this.overlayTheme.set(null);
+    }
+  }
+
+  get overlayThemeClass(): string {
+    const theme = this.overlayTheme();
+    return theme ? photoIconClass(theme) : '';
   }
 }

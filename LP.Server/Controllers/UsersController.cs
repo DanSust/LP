@@ -51,68 +51,67 @@ namespace LP.Server.Controllers
         [HttpGet("view")]
         public async Task<IActionResult> View([FromQuery] Guid id)
         {
-            // 🔥 ОДИН запрос вместо 4-х
-            var userData = await _context.Users
+            var user = await _context.Users
                 .AsNoTracking()
                 .Where(x => x.Id == id)
-                .Select(x => new
-                {
-                    User = x,
-                    Profile = _context.Profiles
-                        .Where(p => p.UserId == x.Id)
-                        .Select(p => new
-                        {
-                            p.Description,
-                            p.Weight,
-                            p.Height,
-                            p.AgeFrom,
-                            p.AgeTo,
-                            p.Aim,
-                            p.SendEmail,
-                            p.WithPhoto,
-                            p.WithEmail,
-                            p.WithLikes,
-                            p.CityId
-                        })
-                        .FirstOrDefault(),
-                    CityName = _context.Cities
-                        .Where(c => c.Id == _context.Profiles
-                            .Where(p => p.UserId == x.Id)
-                            .Select(p => p.CityId)
-                            .FirstOrDefault())
-                        .Select(c => c.Name)
-                        .FirstOrDefault(),
-                    Interests = _context.UserInterests
-                        .Where(ui => ui.User.Id == id)
-                        .OrderBy(ui => ui.Order)
-                        .Select(ui => new
-                        {
-                            ui.Interest.Id,
-                            ui.Interest.Name,
-                            ui.Interest.Path,
-                            ui.Interest.Group
-                        })
-                        .ToList()
-                })
+                .Select(x => new { x.Id, x.Caption, x.Sex, x.IsPaused, x.Birthday })
                 .FirstOrDefaultAsync();
 
-            if (userData?.User == null)
+            if (user == null)
             {
                 return NotFound();
             }
 
-            // 🔥 Профиль может отсутствовать - создаем дефолтный "пустой"
-            var profile = userData.Profile;
+            var profile = await _context.Profiles
+                .AsNoTracking()
+                .Where(p => p.UserId == id)
+                .Select(p => new
+                {
+                    p.Description,
+                    p.Weight,
+                    p.Height,
+                    p.AgeFrom,
+                    p.AgeTo,
+                    p.Aim,
+                    p.SendEmail,
+                    p.WithPhoto,
+                    p.WithEmail,
+                    p.WithLikes,
+                    p.CityId
+                })
+                .FirstOrDefaultAsync();
+
+            string? cityName = null;
+            if (profile != null && profile.CityId != Guid.Empty)
+            {
+                cityName = await _context.Cities
+                    .AsNoTracking()
+                    .Where(c => c.Id == profile.CityId)
+                    .Select(c => c.Name)
+                    .FirstOrDefaultAsync();
+            }
+
+            var interests = await _context.UserInterests
+                .AsNoTracking()
+                .Where(ui => ui.User.Id == id)
+                .OrderBy(ui => ui.Order)
+                .Select(ui => new
+                {
+                    ui.Interest.Id,
+                    ui.Interest.Name,
+                    ui.Interest.Path,
+                    ui.Interest.Group
+                })
+                .ToListAsync();
 
             var result = new
             {
-                userData.User.Id,
-                userData.User.Caption,
-                userData.User.Sex,
-                userData.User.IsPaused,
-                userData.User.Birthday,
+                user.Id,
+                user.Caption,
+                user.Sex,
+                user.IsPaused,
+                user.Birthday,
 
-                // Profile данные (или дефолты)
                 Description = profile?.Description,
                 Weight = profile?.Weight,
                 Height = profile?.Height,
@@ -121,10 +120,9 @@ namespace LP.Server.Controllers
                 Aim = profile?.Aim,
                 WithLikes = profile?.WithLikes ?? false,
                 CityId = profile?.CityId,
-                CityName = userData.CityName, // 🔥 Уже строка или null
+                CityName = cityName,
 
-                // Interests
-                Interests = userData.Interests
+                Interests = interests
             };
 
             return Ok(result);
@@ -135,47 +133,32 @@ namespace LP.Server.Controllers
         public async Task<IActionResult> Details()
         {
             //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /info STARTED");
-            var userData = await _context.Users
+            var user = await _context.Users
                 .AsNoTracking()
                 .Where(x => x.Id == UserId)
                 .Select(x => new
                 {
-                    User = x,
-                    Profile = _context.Profiles.FirstOrDefault(p => p.UserId == x.Id),
-                    TownId = _context.Profiles
-                        .Where(p => p.UserId == x.Id)
-                        .Select(p => p.CityId)
-                        .FirstOrDefault(),
-                    TownName = _context.Cities
-                        .Where(c => c.Id == _context.Profiles
-                            .Where(p => p.UserId == x.Id)
-                            .Select(p => p.CityId)
-                            .FirstOrDefault())
-                        .Select(c => c.Name)
-                        .FirstOrDefault(),
-                    Interests = _context.UserInterests
-                        .Where(ui => ui.User.Id == x.Id)
-                        .OrderBy(ui => ui.Order)
-                        .Select(ui => new
-                        {
-                            ui.Interest.Id,
-                            ui.Interest.Name,
-                            ui.Interest.Path,
-                            ui.Interest.Group
-                        })
-                        .ToList(),
-                    IsConfirmed = _context.EmailConfirmations
-                        .Any(ec => ec.UserId == x.Id && ec.IsConfirmed)
+                    x.Id,
+                    x.Email,
+                    x.Caption,
+                    x.Sex,
+                    x.IsPaused,
+                    x.Provider,
+                    x.Birthday
                 })
                 .FirstOrDefaultAsync();
 
-            if (userData?.User == null)
+            if (user == null)
             {
                 return NotFound();
             }
 
+            var profile = await _context.Profiles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == UserId);
+
             // Создаем профиль если отсутствует (ленивая инициализация)
-            if (userData.Profile == null)
+            if (profile == null)
             {
                 var newProfile = new Profile
                 {
@@ -197,52 +180,65 @@ namespace LP.Server.Controllers
                 _context.Profiles.Add(newProfile);
                 await _context.SaveChangesAsync();
 
-                // Инвалидируем кеш и возвращаем заново
-                return await Details();
+                profile = newProfile;
             }
-            
 
-            // 🔥 Исправлено: DateOnly не nullable, проверяем через == default
-            var birthday = userData.User.Birthday == default
+            string? townName = null;
+            if (profile.CityId != Guid.Empty)
+            {
+                townName = await _context.Cities
+                    .AsNoTracking()
+                    .Where(c => c.Id == profile.CityId)
+                    .Select(c => c.Name)
+                    .FirstOrDefaultAsync();
+            }
+
+            var interests = await _context.UserInterests
+                .AsNoTracking()
+                .Where(ui => ui.User.Id == UserId)
+                .OrderBy(ui => ui.Order)
+                .Select(ui => new
+                {
+                    ui.Interest.Id,
+                    ui.Interest.Name,
+                    ui.Interest.Path,
+                    ui.Interest.Group
+                })
+                .ToListAsync();
+
+            var isConfirmed = await _context.EmailConfirmations
+                .AsNoTracking()
+                .AnyAsync(ec => ec.UserId == UserId && ec.IsConfirmed);
+
+            var birthday = user.Birthday == default
                 ? DateOnly.FromDateTime(DateTime.Now.AddYears(-20))
-                : userData.User.Birthday;
+                : user.Birthday;
 
-            // Формируем ответ
             var result = new
             {
-                Id = userData.User.Id,
-                Email = userData.User.Email,
-                Caption = userData.User.Caption,
-                Sex = userData.User.Sex,
-                IsPaused = userData.User.IsPaused,
-                Provider = userData.User.Provider,
-                IsConfirmed = userData.IsConfirmed,
+                Id = user.Id,
+                Email = user.Email,
+                Caption = user.Caption,
+                Sex = user.Sex,
+                IsPaused = user.IsPaused,
+                Provider = user.Provider,
+                IsConfirmed = isConfirmed,
                 Birthday = birthday,
-                Description = userData.Profile.Description,
-                Weight = userData.Profile.Weight,
-                Height = userData.Profile.Height,
-                AgeFrom = userData.Profile.AgeFrom,
-                AgeTo = userData.Profile.AgeTo,
-                townId = userData.TownId,
-                townName = userData.TownName ?? "",
-                Aim = userData.Profile.Aim,
-                SendEmail = userData.Profile.SendEmail,
-                SendTelegram = userData.Profile.SendTelegram,
-                WithPhoto = userData.Profile.WithPhoto,
-                WithEmail = userData.Profile.WithEmail,
-                WithLikes = userData.Profile.WithLikes,
-                interests = userData.Interests
+                Description = profile.Description,
+                Weight = profile.Weight,
+                Height = profile.Height,
+                AgeFrom = profile.AgeFrom,
+                AgeTo = profile.AgeTo,
+                townId = profile.CityId,
+                townName = townName ?? "",
+                Aim = profile.Aim,
+                SendEmail = profile.SendEmail,
+                SendTelegram = profile.SendTelegram,
+                WithPhoto = profile.WithPhoto,
+                WithEmail = profile.WithEmail,
+                WithLikes = profile.WithLikes,
+                interests = interests
             };
-
-            // Сохраняем в кеш на 5 минут
-            //await _cache.SetStringAsync(
-            //    cacheKey,
-            //    JsonSerializer.Serialize(result),
-            //    new DistributedCacheEntryOptions
-            //    {
-            //        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-            //    }
-            //);
 
             //Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] /info COMPLETED: {System.Text.Json.JsonSerializer.Serialize(result)}");
 
@@ -373,14 +369,32 @@ namespace LP.Server.Controllers
                 .Where(p => p.User.Id == UserId)
                 .ExecuteDeleteAsync();
 
+            var selectedInterestIds = new List<Guid>();
             foreach (var item in model.GetProperty("interests").EnumerateArray())
             {
                 if (!item.TryGetProperty("selected", out var selectedProp) || !selectedProp.GetBoolean())
                     continue;
-                var id = item.GetProperty("id").GetGuid();
-                var iterest = new UserInterest()
-                    {Id = Guid.NewGuid(), User = user, Interest = _context.Interests.FirstOrDefault(x => x.Id == id)};
-                _context.UserInterests.Add(iterest);
+                selectedInterestIds.Add(item.GetProperty("id").GetGuid());
+            }
+
+            if (selectedInterestIds.Count > 0)
+            {
+                var interestsById = await _context.Interests
+                    .Where(i => selectedInterestIds.Contains(i.Id))
+                    .ToDictionaryAsync(i => i.Id);
+
+                foreach (var id in selectedInterestIds)
+                {
+                    if (!interestsById.TryGetValue(id, out var interest))
+                        continue;
+
+                    _context.UserInterests.Add(new UserInterest
+                    {
+                        Id = Guid.NewGuid(),
+                        User = user,
+                        Interest = interest
+                    });
+                }
             }
 
             await _context.UserQuestions
@@ -402,33 +416,47 @@ namespace LP.Server.Controllers
             return Ok(new ResponseDto {Result = true, Message = "данные сохранены"});
         }
 
-        [Authorize]
+        private static readonly string[] FemaleNames = {
+            "Алевтина","Александра","Алёна","Алина","Алла","Анастасия","Ангелина","Анжела","Анжелика","Анна","Антонида","Антонина","Анфиса","Арина","Валентина","Валерия","Варвара","Василиса","Вера","Вероника","Виктория","Галина","Дарья","Евгения","Екатерина","Елена","Елизавета","Жанна","Зинаида","Зоя","Ирина","Кира","Клавдия","Ксения","Лариса","Лидия","Любовь","Людмила","Маргарита","Марина","Мария","Надежда","Наталья","Нина","Оксана","Ольга","Раиса","Регина","Римма","Светлана","София","Таисия","Тамара","Татьяна","Ульяна","Юлия"
+        };
+
+        private static readonly string[] MaleNames = {
+            "Александр","Алексей","Альберт","Анатолий","Андрей","Антон","Аркадий","Арсений","Артём","Артем Шабашов","Борис","Вадим","Валентин","Валерий","Василий","Виктор","Виталий","Владимир","Владислав","Вячеслав","Геннадий","Георгий","Герман","Григорий","Даниил","Даниил Кнешус","Денис","Дмитрий","Евгений","Егор","Иван","Игнатий","Игорь","Илья","Колян 🚜","Константин","Лаврентий","Леонид","Лука","Макар","Максим","Матвей","Михаил","Никита","Николай","Николай Шатров","Олег","Роман","Семён","Сергей","Станислав","Степан","Фёдор","Эдуард","Юрий","Ярослав"
+        };
+
+        private static string GetRandomNameForSex(bool? sex)
+        {
+            var random = new Random();
+            // В текущей логике: Sex == false => мужское имя, Sex == true => женское имя
+            if (sex == false)
+            {
+                return MaleNames[random.Next(MaleNames.Length)];
+            }
+
+            return FemaleNames[random.Next(FemaleNames.Length)];
+        }
+
+        [AllowAnonymous]
+        [HttpPost("update-sex/{id}")]
+        public async Task<IActionResult> UpdateSex(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            user.Sex = !user.Sex;
+            await _context.SaveChangesAsync();
+
+            return Ok(new ResponseDto { Result = true, Message = "данные сохранены" });
+        }
+
+        [AllowAnonymous]
         [HttpPost("update-name/{id}")]
         public async Task<IActionResult> UpdateName(Guid id)
         {
-            var user = _context.Users.FindAsync(id).Result;
-            string[] femaleNames = {
-                "Алевтина","Александра","Алёна","Алина","Алла","Анастасия","Ангелина","Анжела","Анжелика","Анна","Антонида","Антонина","Анфиса","Арина","Валентина","Валерия","Варвара","Василиса","Вера","Вероника","Виктория","Галина","Дарья","Евгения","Екатерина","Елена","Елизавета","Жанна","Зинаида","Зоя","Ирина","Кира","Клавдия","Ксения","Лариса","Лидия","Любовь","Людмила","Маргарита","Марина","Мария","Надежда","Наталья","Нина","Оксана","Ольга","Раиса","Регина","Римма","Светлана","София","Таисия","Тамара","Татьяна","Ульяна","Юлия"
-            };
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
 
-            string[] maleNames = {
-                "Александр","Алексей","Альберт","Анатолий","Андрей","Антон","Аркадий","Арсений","Артём","Артем Шабашов","Борис","Вадим","Валентин","Валерий","Василий","Виктор","Виталий","Владимир","Владислав","Вячеслав","Геннадий","Георгий","Герман","Григорий","Даниил","Даниил Кнешус","Денис","Дмитрий","Евгений","Егор","Иван","Игнатий","Игорь","Илья","Колян 🚜","Константин","Лаврентий","Леонид","Лука","Макар","Максим","Матвей","Михаил","Никита","Николай","Николай Шатров","Олег","Роман","Семён","Сергей","Станислав","Степан","Фёдор","Эдуард","Юрий","Ярослав"
-            };
-
-            var random = new Random();
-
-            user.Sex = !user.Sex;
-
-            // Логика выбора имени на основе пола (0 - жен, 1 - муж)
-            if (user.Sex == false)
-            {
-                user.Caption = maleNames[random.Next(femaleNames.Length)];
-            }
-            else if (user.Sex == true)
-            {
-                user.Caption = femaleNames[random.Next(maleNames.Length)];
-            }
-
+            user.Caption = GetRandomNameForSex(user.Sex);
             await _context.SaveChangesAsync();
 
             return Ok(new ResponseDto { Result = true, Message = "данные сохранены" });

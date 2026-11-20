@@ -225,7 +225,9 @@ namespace LP.Server.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddImage([FromForm] IFormFile file)
         {
-            User _user = _context.Users.FirstOrDefault(x => x.Id == UserId);
+            var _user = await _context.Users.FindAsync(UserId);
+            if (_user == null) return Unauthorized();
+
             Guid _id = Guid.NewGuid();
 
             string userPath = Path.Combine(_env.ContentRootPath, "..", "img", UserId.ToString());
@@ -318,13 +320,14 @@ namespace LP.Server.Controllers
         [HttpPost("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            if (id == null)
+            if (id == Guid.Empty)
             {
                 return NotFound();
             }
 
             // Создать "пустую" сущность только с ID
-            User _user = _context.Users.FirstOrDefault(x => x.Id == UserId);
+            var _user = await _context.Users.FindAsync(UserId);
+            if (_user == null) return Unauthorized();
             var photo = new Photo() { Id = id, User = _user };
 
             // Привязать и удалить
@@ -361,12 +364,11 @@ namespace LP.Server.Controllers
         [HttpPost("order/{id}")]
         public async Task<IActionResult> Order(Guid id)
         {
-            var user = _context.Users.FindAsync(UserId).Result;
+            var user = await _context.Users.FindAsync(UserId);
 
-            _context.PhotoMain.Where(x => x.User.Id == user.Id).ExecuteDelete();
+            await _context.PhotoMain.Where(x => x.User.Id == user!.Id).ExecuteDeleteAsync();
 
-
-            var photo = new PhotoMain() { PhotoId = id, User = user };
+            var photo = new PhotoMain() { PhotoId = id, User = user! };
             _context.PhotoMain.Add(photo);
 
             await _context.SaveChangesAsync();

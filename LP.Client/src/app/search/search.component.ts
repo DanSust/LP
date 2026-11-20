@@ -179,13 +179,40 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     window.removeEventListener('scroll', this.onWindowScrollBound);
   }
 
-  getImageUrl(photoId: string | null | undefined): string {
-    //console.log(`${this.baseUrl}/Photos/image/${photoId}`);
+  getAvatarUrl(userId: string | null | undefined): string | null {
+    if (!userId) return null;
+    return `${this.baseUrl}/Photos/avatar/${userId}`;
+  }
+
+  getPhotoUrl(photoId: string | null | undefined): string | null {
     if (!photoId || photoId === '00000000-0000-0000-0000-000000000000') {
-      return 'assets/default-avatar.svg';//this.defaultAvatarUrl;
+      return null;
     }
-    
     return `${this.baseUrl}/Photos/image/${photoId}`;
+  }
+
+  getImageUrl(photoId: string | null | undefined): string {
+    return this.getPhotoUrl(photoId) ?? this.defaultAvatarUrl ?? 'assets/default-avatar.svg';
+  }
+
+  onImageError(image: ImageData, event: Event): void {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+
+    const fallback = image.fallbackImageUrl;
+    if (fallback && img.src !== fallback) {
+      image.imageUrl = fallback;
+      image.fallbackImageUrl = null;
+      img.src = fallback;
+      return;
+    }
+
+    const def = this.defaultAvatarUrl ?? 'assets/default-avatar.svg';
+    if (img.src !== def) {
+      image.imageUrl = def;
+      image.fallbackImageUrl = null;
+      img.src = def;
+    }
   }
 
   // Добавьте новые методы:
@@ -443,11 +470,16 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.http.post<ImageData[]>(this.baseUrl + '/Votes/search', filters, { withCredentials: true })
       .subscribe({
         next: (data) => {
-          // 🔥 Добавляем URL один раз при загрузке
-          const processedData = data.map(img => ({
-            ...img,
-            imageUrl: this.getImageUrl(img.photoId)
-          }));
+          // 🔥 Аватар приоритетно, при ошибке загрузки — первое фото профиля (или main), затем дефолт
+          const processedData = data.map(img => {
+            const fallback = this.getPhotoUrl(img.firstPhotoId ?? img.photoId);
+            const avatar = this.getAvatarUrl(img.userId);
+            return {
+              ...img,
+              imageUrl: avatar ?? fallback ?? this.defaultAvatarUrl ?? 'assets/default-avatar.svg',
+              fallbackImageUrl: avatar ? fallback : null
+            };
+          });
 
           if (isInitialLoad) {
             this.allImages = processedData;

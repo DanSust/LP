@@ -115,6 +115,7 @@
              [alt]="'Фото: ' + image.name"
              loading="lazy"
              decoding="async"
+             (error)="onImageError(image, $event)"
              routerLink="/vote/{{image.userId}}" />
       </div>
       <div class="photo-info">

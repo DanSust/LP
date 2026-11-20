@@ -1,11 +1,13 @@
 export interface ImageData {
-  photoId: string;
+  photoId: string | null;
+  firstPhotoId?: string | null;
   userId: string;
   name: string;
   age: number;
-  interests: string[];
-  category: string;
+  interests?: string[];
+  category?: string;
   cityId?: string;
-  distance?: number;
+  distance?: number | null;
   imageUrl?: string;
+  fallbackImageUrl?: string | null;
 }

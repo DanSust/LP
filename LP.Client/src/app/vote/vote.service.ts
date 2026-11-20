@@ -69,6 +69,7 @@ export class ProfileService {
             age: this.calculateAge(p.birthday),
             height: p.height || undefined,
             weight: p.weight || undefined,
+            sex: p.sex ?? p.Sex ?? null,
             description: p.description || '',
             zodiac: getZodiacSign(p.birthday),
             photoUrls: p.photos?.map((photo: any) => ({
@@ -114,8 +115,7 @@ export class ProfileService {
             name: response.caption,
             city: response.cityName || '',
             age: this.calculateAge(response.birthday),
-            //sex: response.sex ? true : false,
-            
+            sex: response.sex ?? response.Sex ?? null,
             height: response.height,
             weight: response.weight,
             interests: response.interests,
@@ -180,18 +180,33 @@ export class ProfileService {
     });
   }
 
+  /** Временный фикс: переключить пол анкеты. */
+  changeSex(id: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}/Users/update-sex/${id}`,
+      null,
+      { withCredentials: true }
+    );
+  }
+
+  /** Временный фикс: подобрать случайное имя для текущего пола анкеты. */
+  changeName(id: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}/Users/update-name/${id}`,
+      null,
+      { withCredentials: true }
+    );
+  }
+
   addToFavorites(id: string) {
-    //return this.http.post(`${this.baseUrl}/Users/update-name`, { id }, { withCredentials: true });
-    this.http.post<any>(this.baseUrl + '/Users/update-name/' + id, null, { withCredentials: true })
-      .subscribe({
-        next: () => {          
-          console.log('Update отправлен')
-        },
-        error: (error: any) => {
-          console.log(error);
-          return (() => error);
-        },
-      });
+    this.changeName(id).subscribe({
+      next: () => {
+        console.log('Update отправлен');
+      },
+      error: (error: any) => {
+        console.log(error);
+      }
+    });
   }
 
   addViewed(id?: string) {    

@@ -76,10 +76,18 @@
       <mat-icon>reply</mat-icon>
     </button>
     }
-    <!--<button class="action-btn favorite-btn"
-              (click)="onFavoriteClick(profile.id); $event.stopPropagation()"
-              [disabled]="isAnimating()">⭐
-  </button>-->
+    <!--<button class="action-btn fix-btn sex-btn"
+            (click)="onChangeSex(profile); $event.stopPropagation()"
+            [disabled]="isAnimating() || isFixingProfile()"
+            title="Временно: сменить пол">
+      <span class="material-symbols-outlined" style="font-size: 32px;">wc</span>
+    </button>
+    <button class="action-btn fix-btn name-btn"
+            (click)="onChangeName(profile); $event.stopPropagation()"
+            [disabled]="isAnimating() || isFixingProfile()"
+            title="Временно: сменить имя">
+      <span class="material-symbols-outlined" style="font-size: 32px;">badge</span>
+    </button>-->
   </div>
   @if (isSelfPreview() && !isFullscreen()) {
   <div class="self-preview-bar">
@@ -112,16 +120,21 @@
         </div>
 
         <!-- ИМЯ И ВОЗРАСТ В ПРАВОМ ВЕРХНЕМ УГЛУ -->
-        <div class="profile-header-overlay">
+        @if (overlayTheme() || !(profile.photoUrls && profile.photoUrls.length > 0)) {
+        <div class="profile-header-overlay" [ngClass]="overlayThemeClass || 'photo-icon--light'">
           <h3>{{ profile.name }}, {{ profile.age }}</h3>
+          <!--@if (profile.sex !== null && profile.sex !== undefined) {
+          <div class="profile-sex">Пол: {{ profile.sex ? 'Женский' : 'Мужской' }}</div>
+          }-->
         </div>
+        }
         }
         @if (profile.photoUrls && profile.photoUrls.length > 0) {
         <img [src]="profile.photoUrls[currentPhotoIndex()].path"
              [alt]="profile.name"
              decoding="async"
              class="card-photo"
-             (load)="onImageLoad()" />
+             (load)="onImageLoad($event)" />
         } @else {
         <div class="no-photo">Нет фото</div>
         }

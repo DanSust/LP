@@ -287,72 +287,99 @@ namespace LP.Server.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> GetVoteList(int count = 5)
         {
-            var userId = UserId;
-            var user = await _context.Users.FindAsync(userId);
+            count = Math.Clamp(count, 1, 20);
 
-            // ---- РЕЖИМ БЕЗ АВТОРИЗАЦИИ ----
+            var userId = UserId;
+            var user = userId == Guid.Empty
+                ? null
+                : await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId);
+
+            // ---- Режим без авторизации ----
             if (user == null)
             {
-                // Базовый запрос: все пользователи, кроме admin
                 var queryN = _context.Users
                     .AsNoTracking()
                     .Where(x => x.Username != "admin");
 
-                // Берём случайные count записей
+                var totalN = await queryN.CountAsync();
+                if (totalN == 0)
+                    return Ok(new List<object>());
+
+                var offsetN = totalN <= count ? 0 : Random.Shared.Next(0, totalN - count + 1);
                 var randomIdsN = await queryN
-                    .OrderBy(u => Guid.NewGuid())
+                    .OrderBy(u => u.Id)
+                    .Skip(offsetN)
                     .Take(count)
                     .Select(x => x.Id)
                     .ToListAsync();
 
-                if (!randomIdsN.Any())
+                if (randomIdsN.Count == 0)
                     return Ok(new List<object>());
 
-                // Загружаем данные (город, профиль, фото, интересы) – аналогично основной ветке
                 var userDataN = await _context.Users
-                    .Where(u => randomIdsN.Contains(u.Id))
-                    .Select(u => new
-                    {
-                        u.Id,
-                        u.Caption,
-                        u.Birthday,
-                        CityName = _context.Profiles
-                            .Where(p => p.UserId == u.Id)
-                            .Select(p => _context.Cities.Where(c => c.Id == p.CityId).Select(c => c.Name).FirstOrDefault())
-                            .FirstOrDefault(),
-                        Profile = _context.Profiles
-                            .Where(p => p.UserId == u.Id)
-                            .Select(p => new { p.Height, p.Weight, p.Description })
-                            .FirstOrDefault()
-                    })
                     .AsNoTracking()
+                    .Where(u => randomIdsN.Contains(u.Id))
+                    .Select(u => new { u.Id, u.Caption, u.Sex, u.Birthday })
                     .ToListAsync();
 
-                var userIdListN = userDataN.Select(u => u.Id).ToList();
+                var profilesN = await _context.Profiles
+                    .AsNoTracking()
+                    .Where(p => randomIdsN.Contains(p.UserId))
+                    .Select(p => new { p.UserId, p.CityId, p.Height, p.Weight, p.Description })
+                    .ToListAsync();
+
+                var profileByUserN = profilesN
+                    .GroupBy(p => p.UserId)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                var cityIdsN = profileByUserN.Values
+                    .Select(p => p.CityId)
+                    .Where(id => id != Guid.Empty)
+                    .Distinct()
+                    .ToList();
+
+                var citiesN = cityIdsN.Count == 0
+                    ? new Dictionary<Guid, string>()
+                    : await _context.Cities
+                        .AsNoTracking()
+                        .Where(c => cityIdsN.Contains(c.Id))
+                        .Select(c => new { c.Id, c.Name })
+                        .ToDictionaryAsync(c => c.Id, c => c.Name);
 
                 var photosN = await _context.Photos
-                    .Where(p => userIdListN.Contains(p.User.Id))
-                    .Select(p => new { p.Id, p.Path, UserId = p.User.Id })
                     .AsNoTracking()
+                    .Where(p => randomIdsN.Contains(p.User.Id))
+                    .Select(p => new { p.Id, p.Path, UserId = p.User.Id })
                     .ToListAsync();
 
                 var interestsN = await _context.UserInterests
-                    .Where(ui => userIdListN.Contains(ui.User.Id))
-                    .Select(ui => new { UserId = ui.User.Id, ui.Interest.Id, ui.Interest.Name, ui.Interest.Path })
                     .AsNoTracking()
+                    .Where(ui => randomIdsN.Contains(ui.User.Id))
+                    .Select(ui => new { UserId = ui.User.Id, ui.Interest.Id, ui.Interest.Name, ui.Interest.Path })
                     .ToListAsync();
 
-                var resultN = userDataN.Select(u => new
+                var resultN = userDataN.Select(u =>
                 {
-                    Id = u.Id,
-                    Name = u.Caption,
-                    City = u.CityName,
-                    Birthday = u.Birthday,
-                    Height = u.Profile != null ? u.Profile.Height : 0,
-                    Weight = u.Profile != null ? u.Profile.Weight : 0,
-                    Description = u.Profile != null ? u.Profile.Description : string.Empty,
-                    Photos = photosN.Where(p => p.UserId == u.Id).Select(p => new { p.Id, p.Path }).ToList(),
-                    Interests = interestsN.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name, i.Path }).ToList()
+                    profileByUserN.TryGetValue(u.Id, out var profile);
+                    string? city = null;
+                    if (profile != null && profile.CityId != Guid.Empty)
+                    {
+                        citiesN.TryGetValue(profile.CityId, out city);
+                    }
+
+                    return new
+                    {
+                        Id = u.Id,
+                        Name = u.Caption,
+                        Sex = u.Sex,
+                        City = city,
+                        Birthday = u.Birthday,
+                        Height = profile?.Height ?? 0,
+                        Weight = profile?.Weight ?? 0,
+                        Description = profile?.Description ?? string.Empty,
+                        Photos = photosN.Where(p => p.UserId == u.Id).Select(p => new { p.Id, p.Path }).ToList(),
+                        Interests = interestsN.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name, i.Path }).ToList()
+                    };
                 }).ToList();
 
                 return Ok(resultN);
@@ -362,98 +389,101 @@ namespace LP.Server.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == userId);
 
-            // Заблокированные в любую сторону и пользователи, на которых
-            // текущий пользователь пожаловался как на спам, в ленте не показываются.
             var hiddenIds = await _context.HiddenUserIds(userId).ToListAsync();
 
-            var shownIds = await _context.Votes
-                .AsNoTracking()
-                .Where(s => s.Owner == userId)
-                .Select(s => s.Like)
-                .ToListAsync();
-            shownIds.Clear();
-            shownIds.Add(userId);
-
-            // Базовый запрос
             IQueryable<User> query = _context.Users
                 .AsNoTracking()
                 .Where(x => x.Username != "admin"
+                            && x.Id != userId
                             && !hiddenIds.Contains(x.Id)
-                            && !shownIds.Contains(x.Id)
                             && x.IsPaused == false
-                            && x.Sex != user.Sex);
+                            && x.Sex != user.Sex
+                            && !_context.Votes.Any(v => v.Owner == userId && v.Like == x.Id));
 
-            // Настройка «Только подтверждённые email»: показываем анкеты
-            // с подтверждённой почтой.
-            //if (currentUserProfile?.WithEmail == true)
-            //{
-            //    query = query.Where(x => x.EmailConfirmation != null && x.EmailConfirmation.IsConfirmed);
-            //}
-
-            // Настройка «Партнёры только с фото»: показываем анкеты,
-            // у которых есть хотя бы одно загруженное фото.
             if (currentUserProfile?.WithPhoto == true)
             {
                 query = query.Where(x => _context.Photos.Any(p => p.User.Id == x.Id));
             }
 
+            var total = await query.CountAsync();
+            if (total == 0)
+                return Ok(new List<object>());
+
+            var offset = total <= count ? 0 : Random.Shared.Next(0, total - count + 1);
             var randomIds = await query
-                .OrderBy(u => Guid.NewGuid())
+                .OrderBy(u => u.Id)
+                .Skip(offset)
                 .Take(count)
                 .Select(x => x.Id)
                 .ToListAsync();
 
-            if (!randomIds.Any())
+            if (randomIds.Count == 0)
                 return Ok(new List<object>());
 
-            // 2. Данные пользователей с городами и профилем (один запрос)
             var userData = await _context.Users
+                .AsNoTracking()
                 .Where(u => randomIds.Contains(u.Id))
-                .Select(u => new
-                {
-                    u.Id,
-                    u.Caption,
-                    u.Birthday,
-                    CityName = _context.Profiles
-                        .Where(p => p.UserId == u.Id)
-                        .Select(p => _context.Cities.Where(c => c.Id == p.CityId).Select(c => c.Name).FirstOrDefault())
-                        .FirstOrDefault(),
-                    Profile = _context.Profiles
-                        .Where(p => p.UserId == u.Id)
-                        .Select(p => new { p.Height, p.Weight, p.Description })
-                        .FirstOrDefault()
-                })
-                .AsNoTracking()
+                .Select(u => new { u.Id, u.Caption, u.Sex, u.Birthday })
                 .ToListAsync();
 
-            var userIdList = userData.Select(u => u.Id).ToList();
+            var profiles = await _context.Profiles
+                .AsNoTracking()
+                .Where(p => randomIds.Contains(p.UserId))
+                .Select(p => new { p.UserId, p.CityId, p.Height, p.Weight, p.Description })
+                .ToListAsync();
 
-            // 3. Фото (второй запрос)
+            var profileByUser = profiles
+                .GroupBy(p => p.UserId)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            var cityIds = profileByUser.Values
+                .Select(p => p.CityId)
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            var cities = cityIds.Count == 0
+                ? new Dictionary<Guid, string>()
+                : await _context.Cities
+                    .AsNoTracking()
+                    .Where(c => cityIds.Contains(c.Id))
+                    .Select(c => new { c.Id, c.Name })
+                    .ToDictionaryAsync(c => c.Id, c => c.Name);
+
             var photos = await _context.Photos
-                .Where(p => userIdList.Contains(p.User.Id))
+                .AsNoTracking()
+                .Where(p => randomIds.Contains(p.User.Id))
                 .Select(p => new { p.Id, p.Path, UserId = p.User.Id })
-                .AsNoTracking()
                 .ToListAsync();
 
-            // 4. Интересы (третий запрос)
             var interests = await _context.UserInterests
-                .Where(ui => userIdList.Contains(ui.User.Id))
-                .Select(ui => new { UserId = ui.User.Id, ui.Interest.Id, ui.Interest.Name, ui.Interest.Path })
                 .AsNoTracking()
+                .Where(ui => randomIds.Contains(ui.User.Id))
+                .Select(ui => new { UserId = ui.User.Id, ui.Interest.Id, ui.Interest.Name, ui.Interest.Path })
                 .ToListAsync();
 
-            // 5. Сборка
-            var result = userData.Select(u => new
+            var result = userData.Select(u =>
             {
-                Id = u.Id,
-                Name = u.Caption,
-                City = u.CityName,
-                Birthday = u.Birthday,
-                Height = u.Profile != null ? u.Profile.Height : 0,
-                Weight = u.Profile != null ? u.Profile.Weight : 0,
-                Description = u.Profile != null ? u.Profile.Description : string.Empty,
-                Photos = photos.Where(p => p.UserId == u.Id).Select(p => new { p.Id, p.Path }).ToList(),
-                Interests = interests.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name, i.Path }).ToList()
+                profileByUser.TryGetValue(u.Id, out var profile);
+                string? city = null;
+                if (profile != null && profile.CityId != Guid.Empty)
+                {
+                    cities.TryGetValue(profile.CityId, out city);
+                }
+
+                return new
+                {
+                    Id = u.Id,
+                    Name = u.Caption,
+                    Sex = u.Sex,
+                    City = city,
+                    Birthday = u.Birthday,
+                    Height = profile?.Height ?? 0,
+                    Weight = profile?.Weight ?? 0,
+                    Description = profile?.Description ?? string.Empty,
+                    Photos = photos.Where(p => p.UserId == u.Id).Select(p => new { p.Id, p.Path }).ToList(),
+                    Interests = interests.Where(i => i.UserId == u.Id).Select(i => new { i.Id, i.Name, i.Path }).ToList()
+                };
             }).ToList();
 
             return Ok(result);
@@ -480,7 +510,7 @@ namespace LP.Server.Controllers
             try
             {
                 var userId = UserId;
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId);
 
                 if (user == null)
                     return Unauthorized();
@@ -587,6 +617,10 @@ namespace LP.Server.Controllers
                         PhotoId = _context.PhotoMain
                             .Where(pm => pm.User.Id == x.User.Id)
                             .Select(pm => pm.PhotoId)
+                            .FirstOrDefault(),
+                        FirstPhotoId = _context.Photos
+                            .Where(p => p.User.Id == x.User.Id)
+                            .Select(p => p.Id)
                             .FirstOrDefault()
                     })
                     .ToListAsync();
@@ -595,6 +629,7 @@ namespace LP.Server.Controllers
                 var result = data.Select(x => new
                 {
                     photoId = x.PhotoId != Guid.Empty ? x.PhotoId.ToString() : null,
+                    firstPhotoId = x.FirstPhotoId != Guid.Empty ? x.FirstPhotoId.ToString() : null,
                     userId = x.UserId,
                     name = x.Name,
                     age = x.Age,

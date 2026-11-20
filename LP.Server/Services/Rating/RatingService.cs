@@ -14,6 +14,7 @@ namespace LP.Server.Services.Rating
         private readonly ILogger<RatingService> _logger;
         private const string CACHE_KEY_PREFIX = "user_rating_";
         private readonly TimeSpan CACHE_DURATION = TimeSpan.FromHours(1);
+        private static readonly TimeSpan CacheTimeout = TimeSpan.FromSeconds(1);
 
         // Веса для компонентов рейтинга
         private const double ACTIVITY_WEIGHT = 0.3;        // 30%
@@ -106,39 +107,101 @@ namespace LP.Server.Services.Rating
         {
             try
             {
-                var cached = await _cache.GetStringAsync($"{CACHE_KEY_PREFIX}{userId}");
+                using var cts = new CancellationTokenSource();
+                var cacheTask = _cache.GetStringAsync($"{CACHE_KEY_PREFIX}{userId}", cts.Token);
+                var completed = await Task.WhenAny(cacheTask, Task.Delay(CacheTimeout));
+
+                if (completed != cacheTask)
+                {
+                    cts.Cancel();
+                    _ = cacheTask.ContinueWith(
+                        t => _ = t.Exception,
+                        TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+                    _logger.LogWarning("Redis cache get timed out for user {UserId}, continuing without cache", userId);
+                    return 0;
+                }
+
+                var cached = await cacheTask;
                 if (!string.IsNullOrEmpty(cached) && double.TryParse(cached, out var rating))
                 {
                     return rating;
                 }
             }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Redis cache get cancelled for user {UserId}, continuing without cache", userId);
+            }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to get cached rating for user {UserId}", userId);
+                _logger.LogWarning(ex, "Failed to get cached rating for user {UserId}, continuing without cache", userId);
             }
             return 0;
         }
 
         public async Task InvalidateCache(Guid userId)
         {
-            await _cache.RemoveAsync($"{CACHE_KEY_PREFIX}{userId}");
+            try
+            {
+                using var cts = new CancellationTokenSource();
+                var cacheTask = _cache.RemoveAsync($"{CACHE_KEY_PREFIX}{userId}", cts.Token);
+                var completed = await Task.WhenAny(cacheTask, Task.Delay(CacheTimeout));
+
+                if (completed != cacheTask)
+                {
+                    cts.Cancel();
+                    _ = cacheTask.ContinueWith(
+                        t => _ = t.Exception,
+                        TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+                    _logger.LogWarning("Redis cache invalidate timed out for user {UserId}", userId);
+                    return;
+                }
+
+                await cacheTask;
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Redis cache invalidate cancelled for user {UserId}", userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to invalidate cached rating for user {UserId}", userId);
+            }
         }
 
         private async Task CacheRating(Guid userId, double rating)
         {
             try
             {
-                await _cache.SetStringAsync(
+                using var cts = new CancellationTokenSource();
+                var cacheTask = _cache.SetStringAsync(
                     $"{CACHE_KEY_PREFIX}{userId}",
                     rating.ToString(),
                     new DistributedCacheEntryOptions
                     {
                         AbsoluteExpirationRelativeToNow = CACHE_DURATION
-                    });
+                    },
+                    cts.Token);
+                var completed = await Task.WhenAny(cacheTask, Task.Delay(CacheTimeout));
+
+                if (completed != cacheTask)
+                {
+                    cts.Cancel();
+                    _ = cacheTask.ContinueWith(
+                        t => _ = t.Exception,
+                        TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+                    _logger.LogWarning("Redis cache set timed out for user {UserId}, continuing without cache", userId);
+                    return;
+                }
+
+                await cacheTask;
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Redis cache set cancelled for user {UserId}, continuing without cache", userId);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to cache rating for user {UserId}", userId);
+                _logger.LogWarning(ex, "Failed to cache rating for user {UserId}, continuing without cache", userId);
             }
         }
 

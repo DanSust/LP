@@ -227,11 +227,11 @@ namespace LP.Server.Controllers
         [HttpPost("like/{id}")]
         public async Task<IActionResult> Like(Guid id)
         {
-            var chat = _context.Chats.FindAsync(id).Result;
+            var chat = await _context.Chats.FindAsync(id);
 
             if (chat == null)
             {
-                _context.Chats.Add(new Chat() { Id = id, Owner = UserId, Time = DateTime.Now, Name = "chat_" + id.ToString()});
+                _context.Chats.Add(new Chat() { Id = id, Owner = UserId, Time = DateTime.Now, Name = "chat_" + id.ToString() });
             }
 
             await _context.SaveChangesAsync();

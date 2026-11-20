@@ -289,20 +289,13 @@ $color-blue: #03a9f4;
 .gallery-item {
   position: relative;
   width: 100%;
-  height: 160px;
+  aspect-ratio: 1 / 1;
   background-color: #eee;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  display: flex;
-  justify-content: center;
-  align-items: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  /*&:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  }*/
 
   .image-wrapper {
     position: absolute;
@@ -322,20 +315,6 @@ $color-blue: #03a9f4;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
-  }
-
-  @media (max-width: 768px) {
-    height: 0;
-    padding-bottom: 75%; // 4:3 = 3/4 = 0.75 = 75%
-    display: block;
-    aspect-ratio: 4 / 3;
-  }
-
-  @media (max-width: 480px) {
-    height: 0;
-    padding-bottom: 75%; // 4:3 = 3/4 = 0.75 = 75%
-    display: block;
-    aspect-ratio: 4 / 3;
   }
 }
 

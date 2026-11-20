@@ -8,6 +8,7 @@ import { API_BASE_URL } from './../../app.config';
   standalone: true,
   imports: [CommonModule],
   template: `
+    @if (loaded) {
     <div class="rating-badge" [class.small]="size === 'small'" [class.large]="size === 'large'">
       <div class="stars-container">
         <div class="stars">
@@ -21,6 +22,7 @@ import { API_BASE_URL } from './../../app.config';
         <span class="rating-value">{{ displayRating.toFixed(1) }}</span>
       </div>
     </div>
+    }
   `,
   styles: [`
     .rating-badge {
@@ -139,6 +141,7 @@ export class RatingComponent implements OnInit, OnChanges {
   protected filledStars = 0;
   protected showHalfStar = false;
   protected halfStarIndex = 0;
+  protected loaded = false;
   private http = inject(HttpClient);
   private baseUrl = inject(API_BASE_URL);
 
@@ -150,6 +153,7 @@ export class RatingComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['profileId'] && !changes['profileId'].firstChange) {
+      this.loaded = false;
       this.loadRating();
     }
   }
@@ -165,19 +169,25 @@ export class RatingComponent implements OnInit, OnChanges {
   }
 
   private loadRating(): void {
-    if (!this.profileId) return;
-    
+    if (!this.profileId) {
+      this.loaded = false;
+      return;
+    }
+
+    this.loaded = false;
     this.http.get<any>(`${this.baseUrl}/Users/rating/${this.profileId}`)
       .subscribe({
         next: (response) => {
           this.displayRating = response.rating;
-          this.updateStars();          
+          this.updateStars();
+          this.loaded = true;
         },
         error: (err) => {
           console.error('Error loading rating:', err);
           // Fallback на случайный рейтинг при ошибке
           this.displayRating = this.getRandomRating(this.profileId);
-          this.updateStars();          
+          this.updateStars();
+          this.loaded = true;
         }
       });
   }

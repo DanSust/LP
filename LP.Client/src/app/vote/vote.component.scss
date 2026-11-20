@@ -507,6 +507,20 @@
       color: #ffd700;
       font-size: 24px;
     }
+
+    &.swap-btn,
+    &.fix-btn {
+      color: #ffb74d;
+
+      &:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+    }
+
+    &.name-btn {
+      color: #ffd54f;
+    }
   }
 
   &.hidden {
@@ -852,6 +866,29 @@
       color: white;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
+
+    .profile-sex {
+      margin-top: 2px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.92);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    }
+
+    &.photo-icon--light {
+      h3,
+      .profile-sex {
+        color: #fff;
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.85);
+      }
+    }
+
+    &.photo-icon--dark {
+      h3,
+      .profile-sex {
+        color: #111;
+        text-shadow: 0 0 2px rgba(255, 255, 255, 0.95), 0 1px 4px rgba(255, 255, 255, 0.85);
+      }
+    }
   }
 
   // Кнопки Like/Dislike/⋯ — остаются поверх всего
@@ -927,6 +964,29 @@
     font-weight: 600;
     color: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .profile-sex {
+    margin-top: 2px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  }
+
+  &.photo-icon--light {
+    h3,
+    .profile-sex {
+      color: #fff;
+      text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.85);
+    }
+  }
+
+  &.photo-icon--dark {
+    h3,
+    .profile-sex {
+      color: #111;
+      text-shadow: 0 0 2px rgba(255, 255, 255, 0.95), 0 1px 4px rgba(255, 255, 255, 0.85);
+    }
   }
 
   @media (max-width: 768px) {
