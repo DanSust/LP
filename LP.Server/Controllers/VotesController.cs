@@ -18,8 +18,11 @@ namespace LP.Server.Controllers
     [Route("[controller]")]
     public class VotesController : BaseAuthController
     {
-        public VotesController(ApplicationContext context) : base(context)
+        private readonly IConfiguration _configuration;
+
+        public VotesController(ApplicationContext context, IConfiguration configuration) : base(context)
         {
+            _configuration = configuration;
         }
 
         [Authorize]
@@ -527,8 +530,20 @@ namespace LP.Server.Controllers
                 const double KmPerDegree = 111.0;
 
                 // Пагинация
-                var skip = (filters.Page - 1) * filters.PageSize;
-                var take = filters.PageSize;
+                var maxResults = _configuration.GetValue<int>("Search:MaxResults", 100);
+                if (maxResults <= 0) maxResults = 100;
+
+                var page = filters.Page < 1 ? 1 : filters.Page;
+                var pageSize = filters.PageSize < 1 ? 1 : filters.PageSize;
+
+                var skip = (page - 1) * pageSize;
+                var remaining = maxResults - skip;
+                if (remaining <= 0)
+                {
+                    return Ok(Array.Empty<object>());
+                }
+
+                var take = Math.Min(pageSize, remaining);
 
                 // Если геолокация — считаем границы квадрата для грубого фильтра
                 double? minLat = null, maxLat = null, minLon = null, maxLon = null;
@@ -586,7 +601,7 @@ namespace LP.Server.Controllers
                 }
 
                 // Подсчет общего количества для пагинации (опционально)
-                var totalCount = await query.CountAsync();
+                var totalCount = Math.Min(await query.CountAsync(), maxResults);
 
                 // Загружаем данные с пагинацией
                 var data = await query

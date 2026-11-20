@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, HostListener, ElementRef, AfterViewInit, OnDestroy, ViewChild, ChangeDetectorRef, viewChild, ViewEncapsulation } from '@angular/core';
+﻿import { Component, Inject, OnInit, HostListener, ElementRef, AfterViewInit, OnDestroy, ViewChild, ChangeDetectorRef, viewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -108,7 +108,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Пагинация
   currentPage: number = 1;
-  pageSize: number = 20; // Количество элементов на странице
+  pageSize: number = 20; // Количество элементов на странице
+  private qrInserted = false;
   sortGUID: string = generateGUID();
   hasMore: boolean = true; // Есть ли еще данные для загрузки
 
@@ -196,6 +197,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onImageError(image: ImageData, event: Event): void {
+    if (image.isTinkoffQr) return;
+
     const img = event.target as HTMLImageElement | null;
     if (!img) return;
 
@@ -213,6 +216,27 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       image.fallbackImageUrl = null;
       img.src = def;
     }
+  }
+
+  private insertTinkoffQr(items: ImageData[], isInitialLoad: boolean): ImageData[] {
+    if (this.qrInserted || items.length === 0) {
+      return items;
+    }
+
+    const qrItem: ImageData = {
+      photoId: null,
+      userId: '',
+      name: 'Tinkoff QR',
+      age: 0,
+      imageUrl: `${this.baseUrl}/Payments/tinkoff-qr`,
+      isTinkoffQr: true
+    };
+
+    const result = [...items];
+    const index = Math.floor(Math.random() * (result.length + 1));
+    result.splice(index, 0, qrItem);
+    this.qrInserted = true;
+    return result;
   }
 
   // Добавьте новые методы:
@@ -441,11 +465,12 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
-  loadImages(isInitialLoad: boolean = false): void {    
+  loadImages(isInitialLoad: boolean = false): void {
     if (isInitialLoad) {
       this.isLoading = true;
       this.currentPage = 1;
       this.hasMore = true;
+      this.qrInserted = false;
     } else {
       if (this.isLoadingMore || !this.hasMore) return;
       this.isLoadingMore = true;
@@ -470,8 +495,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.http.post<ImageData[]>(this.baseUrl + '/Votes/search', filters, { withCredentials: true })
       .subscribe({
         next: (data) => {
-          // 🔥 Аватар приоритетно, при ошибке загрузки — первое фото профиля (или main), затем дефолт
-          const processedData = data.map(img => {
+          // Аватар приоритетно, при ошибке загрузки — первое фото профиля (или main), затем дефолт
+          const processedData: ImageData[] = data.map(img => {
             const fallback = this.getPhotoUrl(img.firstPhotoId ?? img.photoId);
             const avatar = this.getAvatarUrl(img.userId);
             return {
@@ -481,16 +506,17 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
             };
           });
 
+          const batchWithQr = this.insertTinkoffQr(processedData, isInitialLoad);
+
           if (isInitialLoad) {
-            this.allImages = processedData;
+            this.allImages = batchWithQr;
             this.isLoading = false;
             this.attachScrollListener();
           } else {
-            if (data.length > 0) {
-              this.allImages = [...this.allImages, ...processedData];
+            if (batchWithQr.length > 0) {
+              this.allImages = [...this.allImages, ...batchWithQr];
             }
 
-            // Если пришло меньше данных, чем запрошено, значит это последняя страница
             if (data.length < this.pageSize) {
               this.hasMore = false;
             }
@@ -498,7 +524,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
             this.isLoadingMore = false;
           }
 
-          // Проверяем, если это первая загрузка и данных мало
           if (isInitialLoad && data.length === this.pageSize) {
             this.hasMore = true;
           }

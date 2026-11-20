@@ -283,23 +283,30 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
   onRegister(): void {
     if (this.registerForm.valid) {
       this.isLoading = true;
+      this.registerErrorMessage = null;
       const { email, password } = this.registerForm.value;
       this.authService.register(email, password).subscribe({
         next: (response: any) => {
           console.log(response);
-          this.isLoading = false;
           if (response.success) {
-            // Успех
             this.loginForm.patchValue({
               email: email,
               password: password
             });
-
-            //this.switchTab('login');
-            this.onLogin();
-            this.toast.success(response.message);
+            this.toast.success('Аккаунт создан! Выполняем вход...');
+            this.authService.login(email, password).subscribe({
+              next: () => {
+                // login() перенаправит в /profile
+              },
+              error: (error) => {
+                this.isLoading = false;
+                console.error('Ошибка входа после регистрации:', error);
+                this.switchTab('login');
+                this.toast.info('Аккаунт создан. Теперь войдите с указанными email и паролем.');
+              }
+            });
           } else {
-            // Показываем ошибку в вашем формате
+            this.isLoading = false;
             this.toast.error(response.message);
             this.registerErrorMessage = response.message;
           }
@@ -307,19 +314,25 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
         error: (error) => {
           this.isLoading = false;
           console.error('Ошибка регистрации:', error);
+          this.toast.error('Не удалось завершить регистрацию. Попробуйте ещё раз.');
         }
       });
     }
   }
 
   GoogleLogin(event: any): void {
-    console.log(this.baseUrl + '/oauth/google/login?');
     event.preventDefault();
+    const url = `${this.baseUrl}/oauth/google/login`;
+    console.log(url);
     const popup = window.open(
-      this.baseUrl+'/oauth/google/login?' + window,
+      url,
       'OAuthPopup',
       'width=600,height=700'
     );
+
+    if (!popup) {
+      this.toast.error('Разрешите всплывающие окна для входа через Google');
+    }
   }
 
   // Telegram Login Widget
