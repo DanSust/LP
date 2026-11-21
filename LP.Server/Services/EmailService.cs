@@ -7,6 +7,7 @@ namespace LP.Server.Services
     public interface IEmailService
     {
         Task SendConfirmationEmailAsync(string toEmail, string confirmationLink);
+        Task SendPasswordResetEmailAsync(string toEmail, string resetLink);
     }
 
     public class EmailService : IEmailService
@@ -59,6 +60,33 @@ namespace LP.Server.Services
                 Console.WriteLine($"SMTP Error: {ex.Message}");
                 throw;
             }
+        }
+
+        public async Task SendPasswordResetEmailAsync(string toEmail, string resetLink)
+        {
+            using var client = new SmtpClient(_config.Host, _config.Port);
+            client.Credentials = new NetworkCredential(_config.Username, _config.Password);
+            client.EnableSsl = _config.EnableSsl;
+
+            var message = new MailMessage
+            {
+                From = new MailAddress(_config.FromEmail, _config.FromName),
+                Subject = "Восстановление пароля",
+                IsBodyHtml = true,
+                Body = $@"
+                    <html>
+                        <body style='font-family: Arial, sans-serif;'>
+                            <h2>Восстановление пароля</h2>
+                            <p>Для установки нового пароля перейдите по ссылке:</p>
+                            <a href='{resetLink}' style='display: inline-block; padding: 10px 20px; background-color: #e91e63; color: white; text-decoration: none; border-radius: 5px;'>Сбросить пароль</a>
+                            <p>Если вы не запрашивали восстановление пароля, проигнорируйте это письмо.</p>
+                            <p>Ссылка действует 1 час.</p>
+                        </body>
+                    </html>"
+            };
+
+            message.To.Add(toEmail);
+            await client.SendMailAsync(message);
         }
     }
 

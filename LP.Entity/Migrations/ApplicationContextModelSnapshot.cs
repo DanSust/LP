@@ -559,6 +559,25 @@ namespace LP.Entity.Migrations
                     b.ToTable("NewsItems");
                 });
 
+            modelBuilder.Entity("LP.Entity.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TokenExpires")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("PasswordResetTokens");
+                });
+
             modelBuilder.Entity("LP.Entity.Photo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -863,6 +882,17 @@ namespace LP.Entity.Migrations
                     b.Navigation("Source");
                 });
 
+            modelBuilder.Entity("LP.Entity.PasswordResetToken", b =>
+                {
+                    b.HasOne("LP.Entity.User", "User")
+                        .WithOne("PasswordResetToken")
+                        .HasForeignKey("LP.Entity.PasswordResetToken", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("LP.Entity.Photo", b =>
                 {
                     b.HasOne("LP.Entity.User", "User")
@@ -946,6 +976,8 @@ namespace LP.Entity.Migrations
             modelBuilder.Entity("LP.Entity.User", b =>
                 {
                     b.Navigation("EmailConfirmation");
+
+                    b.Navigation("PasswordResetToken");
                 });
 #pragma warning restore 612, 618
         }

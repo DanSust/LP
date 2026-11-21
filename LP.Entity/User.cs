@@ -27,5 +27,6 @@ namespace LP.Entity
         public DateTime? EventsSeen { get; set; } = null;
         public bool IsPaused { get; set; } = false;
         public virtual EmailConfirmation? EmailConfirmation { get; set; }
+        public virtual PasswordResetToken? PasswordResetToken { get; set; }
     }
 }

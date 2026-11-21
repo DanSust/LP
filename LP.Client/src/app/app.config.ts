@@ -115,6 +115,7 @@ const appRoutes: Routes = [
   },
   { path: "auth", loadComponent: () => import('./auth/auth.component').then(m => m.AuthComponent) },
   { path: "confirm", loadComponent: () => import('./auth/auth.confirm.component').then(m => m.ConfirmComponent) },
+  { path: "reset-password", loadComponent: () => import('./auth/reset-password.component').then(m => m.ResetPasswordComponent) },
   /*{ path: "home", component: SoPulseComponent },*/
   { path: "logout",
     canActivate: [() => {

@@ -8,6 +8,7 @@
         public DbSet<Interest> Interests { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<EmailConfirmation> EmailConfirmations { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
         public DbSet<UserInterest> UserInterests { get; set; } = null!;
         public DbSet<UserQuestion> UserQuestions { get; set; } = null!;
         public DbSet<Profile> Profiles { get; set; } = null!;
@@ -44,6 +45,12 @@
                 .HasOne(ec => ec.User)
                 .WithOne(u => u.EmailConfirmation)
                 .HasForeignKey<EmailConfirmation>(ec => ec.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            md.Entity<PasswordResetToken>()
+                .HasOne(pr => pr.User)
+                .WithOne(u => u.PasswordResetToken)
+                .HasForeignKey<PasswordResetToken>(pr => pr.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             md.Entity<City>()

@@ -15,6 +15,7 @@ namespace LP.Server.Services
         Task<AuthResponse?> Authenticate(string username, string password);
         Task<AuthResponse> RegisterAsync(string email, string password);
         AuthResponse GenerateToken(User user);
+        byte[] HashPassword(string password);
     }
 
     public class AuthResponse
@@ -108,6 +109,11 @@ namespace LP.Server.Services
             return GenerateToken(user);
         }
 
+
+        public byte[] HashPassword(string password)
+        {
+            return _md5.ComputeHash(Encoding.ASCII.GetBytes(password));
+        }
 
         public AuthResponse GenerateToken(User user)
         {

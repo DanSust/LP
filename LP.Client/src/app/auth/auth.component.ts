@@ -29,7 +29,8 @@ declare global {
 export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
   public loginForm: FormGroup;
   public registerForm: FormGroup;
-  public activeTab: 'login' | 'register' = 'login';
+  public forgotPasswordForm: FormGroup;
+  public activeTab: 'login' | 'register' | 'forgot' = 'login';
   public isLoading = false;
   public registerErrorMessage: string | null = null;
   get acceptTerms() { return this.registerForm.get('acceptTerms'); }
@@ -58,6 +59,10 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
       acceptTerms: [false, Validators.requiredTrue]
+    });
+
+    this.forgotPasswordForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]]
     });
   }
 
@@ -258,8 +263,34 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
     //});
   }
 
-  switchTab(tab: 'login' | 'register'): void {
+  switchTab(tab: 'login' | 'register' | 'forgot'): void {
     this.activeTab = tab;
+    if (tab === 'forgot') {
+      const email = this.loginForm.get('email')?.value || '';
+      this.forgotPasswordForm.patchValue({ email });
+    }
+  }
+
+  onForgotPassword(): void {
+    if (this.forgotPasswordForm.invalid) {
+      this.forgotPasswordForm.markAllAsTouched();
+      return;
+    }
+
+    this.isLoading = true;
+    const { email } = this.forgotPasswordForm.value;
+    this.authService.forgotPassword(email).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.toast.success(response?.message || 'Если аккаунт с таким email существует, мы отправили ссылку для восстановления пароля.');
+        this.switchTab('login');
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Ошибка восстановления пароля:', error);
+        this.toast.error('Не удалось отправить ссылку. Попробуйте позже.');
+      }
+    });
   }
 
   onLogin(): void {
@@ -275,6 +306,8 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
         error: (error) => {
           this.isLoading = false;
           console.error('Ошибка входа:', error);
+          const message = error?.error?.message || 'Не удалось войти. Попробуйте ещё раз.';
+          this.toast.error(message);
         }
       });
     }

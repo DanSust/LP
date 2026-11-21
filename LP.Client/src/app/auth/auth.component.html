@@ -83,7 +83,9 @@
         </div>
       </div>
 
-      <!-- Восстановление пароля временно недоступно -->
+      <div class="forgot-password">
+        <a href="#" (click)="switchTab('forgot'); $event.preventDefault()">Забыли пароль?</a>
+      </div>
 
       <button type="submit"
               class="auth-button"
@@ -169,6 +171,39 @@
         <a href="#" (click)="switchTab('login'); $event.preventDefault()">
           Войти
         </a>
+      </div>
+    </form>
+    <!-- Forgot password form -->
+    <form class="form"
+          [class.active]="activeTab === 'forgot'"
+          [formGroup]="forgotPasswordForm"
+          (ngSubmit)="onForgotPassword()">
+      <div class="form-group">
+        <label for="forgotEmail">Email</label>
+        <input type="email"
+               id="forgotEmail"
+               formControlName="email"
+               placeholder="Введите email"
+               [class.error]="forgotPasswordForm.get('email')?.invalid && forgotPasswordForm.get('email')?.touched">
+        @if (forgotPasswordForm.get('email')?.invalid && forgotPasswordForm.get('email')?.touched) {
+        <div class="error-message">
+          Введите корректный email
+        </div>
+        }
+      </div>
+
+      <button type="submit"
+              class="auth-button"
+              [disabled]="forgotPasswordForm.invalid || isLoading">
+        @if (!isLoading) {
+        <span>Отправить ссылку</span>
+        } @else {
+        <span class="spinner"></span>
+        }
+      </button>
+
+      <div class="auth-link">
+        <a href="#" (click)="switchTab('login'); $event.preventDefault()">Вернуться ко входу</a>
       </div>
     </form>
   </div>

@@ -1,4 +1,4 @@
-﻿using Humanizer;
+using Humanizer;
 using LP.Common;
 using LP.Entity;
 using LP.Entity.Interfaces;
@@ -33,23 +33,32 @@ namespace LP.Server.Controllers
 		private readonly IUserStore _store;
         private readonly ApplicationContext _context;
         private readonly IEmailService _emailService;
+        private readonly IMemoryCache _cache;
+        private const int MaxLoginAttempts = 5;
+        private static readonly TimeSpan LoginLockoutDuration = TimeSpan.FromMinutes(15);
 
         [HttpGet("me")]
 		public IActionResult Index()
 		{
 			return Ok();
 		}
+        private readonly IConfiguration _config;
+
 		public AuthController(
             IAuthService service,
             IUserStore store,
             ApplicationContext context,
-            IEmailService emailService
+            IEmailService emailService,
+            IConfiguration config,
+            IMemoryCache cache
             )
 		{
 			_service = service;
             _emailService = emailService; 
 			_store = store;
             _context = context;
+            _config = config;
+            _cache = cache;
         }
 
 		[AllowAnonymous]
@@ -119,13 +128,38 @@ namespace LP.Server.Controllers
 			//return Ok(new AuthStatus(true, email, name));
 		}
 
+        private sealed record LoginAttemptInfo(int Count, DateTimeOffset? LockoutUntil);
+
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginModel model)
         {
+            var email = model.Username?.Trim().ToLowerInvariant() ?? string.Empty;
+            var cacheKey = $"login-attempts:{email}";
+
+            if (_cache.TryGetValue<LoginAttemptInfo>(cacheKey, out var attempt) && attempt?.LockoutUntil > DateTimeOffset.UtcNow)
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests, new { message = "Слишком много попыток входа. Попробуйте позже." });
+            }
+
             var response = await _service.Authenticate(model.Username, model.Password);
             if (response == null)
-                return Unauthorized(new { message = "Invalid credentials" });
+            {
+                var current = _cache.TryGetValue<LoginAttemptInfo>(cacheKey, out var existing) ? existing : null;
+                var count = (current?.Count ?? 0) + 1;
+                DateTimeOffset? lockoutUntil = count >= MaxLoginAttempts ? DateTimeOffset.UtcNow.Add(LoginLockoutDuration) : null;
+                _cache.Set(cacheKey, new LoginAttemptInfo(count, lockoutUntil), lockoutUntil ?? DateTimeOffset.UtcNow.Add(LoginLockoutDuration));
+
+                var userExists = await _context.Users.AnyAsync(u => u.Email != null && u.Email.ToLower() == email);
+                var message = lockoutUntil.HasValue
+                    ? "Слишком много попыток входа. Попробуйте через 15 минут."
+                    : (userExists ? "Неверный пароль" : "Пользователь с таким email не найден");
+                if (lockoutUntil.HasValue)
+                    return StatusCode(StatusCodes.Status429TooManyRequests, new { message });
+                return Unauthorized(new { message });
+            }
+
+            _cache.Remove(cacheKey);
 
             var claims = new[]
             {
@@ -198,6 +232,72 @@ namespace LP.Server.Controllers
             {
                 return Ok(new { Success = false, message = ex.Message });
             }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
+        {
+            if (!ModelState.IsValid)
+                return Ok(new { success = true, message = "Если аккаунт с таким email существует, мы отправили ссылку для восстановления пароля." });
+
+            var email = model.Email.Trim().ToLowerInvariant();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == email);
+
+            if (user != null)
+            {
+                var token = Guid.NewGuid().ToString("N");
+                var reset = await _context.PasswordResetTokens.FirstOrDefaultAsync(x => x.UserId == user.Id);
+                if (reset == null)
+                {
+                    reset = new PasswordResetToken { UserId = user.Id };
+                    _context.PasswordResetTokens.Add(reset);
+                }
+
+                reset.Token = token;
+                reset.TokenExpires = DateTime.UtcNow.AddHours(1);
+                reset.CreatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                var siteBaseUrl = _config["Events:SiteBaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
+                var resetLink = $"{siteBaseUrl.TrimEnd('/')}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email ?? email)}";
+                try
+                {
+                    await _emailService.SendPasswordResetEmailAsync(user.Email ?? email, resetLink);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Password reset email error: {ex.Message}");
+                }
+            }
+
+            return Ok(new { success = true, message = "Если аккаунт с таким email существует, мы отправили ссылку для восстановления пароля." });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { success = false, message = "Проверьте корректность данных." });
+
+            var email = model.Email.Trim().ToLowerInvariant();
+            var user = await _context.Users
+                .Include(u => u.PasswordResetToken)
+                .FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == email);
+
+            if (user?.PasswordResetToken == null || user.PasswordResetToken.Token != model.Token)
+                return BadRequest(new { success = false, message = "Ссылка недействительна или устарела." });
+
+            if (user.PasswordResetToken.TokenExpires < DateTime.UtcNow)
+                return BadRequest(new { success = false, message = "Срок действия ссылки истёк. Запросите восстановление снова." });
+
+            user.PasswordHash = _service.HashPassword(model.NewPassword);
+            user.PasswordResetToken.Token = null;
+            user.PasswordResetToken.TokenExpires = null;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Пароль обновлён. Теперь вы можете войти." });
         }
 
         [AllowAnonymous]

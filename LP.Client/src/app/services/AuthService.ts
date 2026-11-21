@@ -165,8 +165,17 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/oauth/vk/verify-token-fast`, vkData);
   }
 
-  forgotPassword(email: string): Observable<void> {
-    console.log('Forgot password:', email);
-    return of(undefined).pipe(delay(500));
+  forgotPassword(email: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(
+      this.baseUrl + '/auth/forgot-password',
+      { email }
+    );
+  }
+
+  resetPassword(email: string, token: string, newPassword: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(
+      this.baseUrl + '/auth/reset-password',
+      { email, token, newPassword }
+    );
   }
 }
