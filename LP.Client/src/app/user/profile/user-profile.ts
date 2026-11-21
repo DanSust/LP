@@ -30,10 +30,11 @@ import { SplashScreenComponent } from '../../splash/splash.component';
 import { BaseComponent } from '../../common/base.component';
 import { RouterLink } from '@angular/router';
 
-/** Город должен быть выбран из списка (объект с id), а не введён произвольным текстом. */
+/** Город желательно выбрать из списка (объект с id), но для сохранения профиля не обязателен. */
 function townSelectedValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
-  return value && typeof value === 'object' && value.id ? null : { townRequired: true };
+  if (!value || value === '') return null;
+  return typeof value === 'object' && value.id ? null : { townRequired: true };
 }
 
 interface CompletionCheck {
@@ -556,9 +557,9 @@ export class UserProfile extends BaseComponent {
       return;
     }
 
-    // Город обязан быть выбран из автокомплита: сервер ждёт объект с id.
-    const townName = this.form.value.TownName as TownDTO;
-    if (!townName || typeof townName !== 'object' || !townName.id) {
+    // Город: если выбран из списка — сохраняем id; если не выбран/введён текст — сохраняем без города.
+    const townName = this.form.value.TownName as TownDTO | string | null;
+    if (townName && typeof townName === 'object' && !townName.id) {
       this.form.get('TownName')?.markAsTouched();
       this.toast.warning('Выберите город из списка');
       this.stepper.selectedIndex = 0;
@@ -579,6 +580,7 @@ export class UserProfile extends BaseComponent {
       }));
 
     const value = this.form.value;
+    const selectedTown = townName && typeof townName === 'object' && townName.id ? townName : null;
 
     this.isSaving = true;
     this.http.post<any>(this.base + '/Users/save', {
@@ -595,8 +597,8 @@ export class UserProfile extends BaseComponent {
       Weight: value.Weight,
       Height: value.Height,
       Description: value.Description,
-      TownName: townName,
-      Town: townName.id,
+      TownName: selectedTown,
+      Town: selectedTown?.id ?? null,
       AgeFrom: value.AgeFrom,
       AgeTo: value.AgeTo,
       Aim: value.Aim,

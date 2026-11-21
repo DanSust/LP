@@ -62,7 +62,7 @@ export class AuthService {
     return this.userIdSubject.value || localStorage.getItem('userId');
   }
 
-  login(email: string, password: string): Observable<any> {
+  login(email: string, password: string, redirectTo: string = '/profile'): Observable<any> {
     //return of({ success: true }).pipe(delay(1000));
     return this.http.post<any>(this.baseUrl + '/auth/login', { username: email, password }, { withCredentials: true })
       .pipe(tap(response => {
@@ -72,7 +72,7 @@ export class AuthService {
           this.userIdSubject.next(userId);
         }
         //this.router.navigate(['/profile']);
-        window.location.href = "/profile";
+        window.location.href = redirectTo;
       }
       ));
   }

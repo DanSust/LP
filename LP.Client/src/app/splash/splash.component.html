@@ -1,13 +1,11 @@
-<div
-  class="splash"
-  [class.splash--inline]="inline()"
-  [class.is-hidden]="!visible()"
-  [attr.role]="actionText() ? 'dialog' : 'status'"
-  [attr.aria-modal]="actionText() && !inline() ? 'true' : null"
-  [attr.aria-live]="actionText() ? null : 'polite'"
-  [attr.aria-busy]="visible()"
-  [attr.aria-label]="text()"
->
+<div class="splash"
+     [class.splash--inline]="inline()"
+     [class.is-hidden]="!visible()"
+     [attr.role]="actionText() ? 'dialog' : 'status'"
+     [attr.aria-modal]="actionText() && !inline() ? 'true' : null"
+     [attr.aria-live]="actionText() ? null : 'polite'"
+     [attr.aria-busy]="visible()"
+     [attr.aria-label]="text()">
   <div class="splash__aurora splash__aurora--pink" aria-hidden="true"></div>
   <div class="splash__aurora splash__aurora--blue" aria-hidden="true"></div>
   <div class="splash__grid" aria-hidden="true"></div>
@@ -44,34 +42,36 @@
     <p class="splash__tagline">знакомства со смыслом</p>
 
     @if (showProgress()) {
-      <div
-        class="splash__progress"
-        [class.is-indeterminate]="progress() === null"
-        aria-hidden="true"
-      >
-        <div
-          class="splash__progress-fill"
-          [style.width.%]="progress() ?? 100"
-        ></div>
-      </div>
+    <div class="splash__progress"
+         [class.is-indeterminate]="progress() === null"
+         aria-hidden="true">
+      <div class="splash__progress-fill"
+           [style.width.%]="progress() ?? 100"></div>
+    </div>
     }
 
     <p class="splash__text" [class.splash__text--large]="linkText() && linkHref()">
-      {{ text() }}@if (linkText() && linkHref()) {&nbsp;<a class="splash__link" [routerLink]="linkHref()">{{ linkText() }}</a>&nbsp;{{ textAfterLink() }}}@if (!actionText()) {
+      {{ text() }}@if (linkText() && linkHref()) {&nbsp;<a class="splash__link" [routerLink]="linkHref()">{{ linkText() }}</a>&nbsp;{{ textAfterLink() }}}@if (!actionText() && !stuck()) {
       <span class="splash__dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
       }
     </p>
 
+    @if (stuck() && !actionText()) {
+    <p class="splash__text">Что-то пошло не так</p>
+    <button type="button" class="splash__action" (click)="reload()">Перезагрузить</button>
+    }
+
     @if (actionText()) {
-      <button type="button" class="splash__action" (click)="action.emit()">
-        {{ actionText() }}
-      </button>
+    <button type="button" class="splash__action" (click)="action.emit()">
+      {{ actionText() }}
+    </button>
     }
 
     @if (dismissText()) {
-      <button type="button" class="splash__dismiss" (click)="dismiss.emit()">
-        {{ dismissText() }}
-      </button>
+    <button type="button" class="splash__dismiss" (click)="dismiss.emit()">
+      {{ dismissText() }}
+    </button>
     }
   </div>
 </div>
+<!-- «Голодный желудок, пустой кошелёк, разбитое сердце могут научить тебя самым важным урокам в жизни». -->

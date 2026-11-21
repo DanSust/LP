@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -71,4 +71,36 @@ export class SplashScreenComponent {
    * поэтому фон и коллаж по бокам остаются видимыми.
    */
   inline = input<boolean>(false);
+
+  /** Показывать сообщение об ошибке, если загрузка затянулась. */
+  stuck = signal(false);
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    effect((onCleanup) => {
+      const isVisible = this.visible();
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+      }
+
+      if (isVisible) {
+        this.stuck.set(false);
+        this.timeoutId = setTimeout(() => this.stuck.set(true), 15000);
+      } else {
+        this.stuck.set(false);
+      }
+
+      onCleanup(() => {
+        if (this.timeoutId) {
+          clearTimeout(this.timeoutId);
+          this.timeoutId = null;
+        }
+      });
+    });
+  }
+
+  reload(): void {
+    window.location.reload();
+  }
 }

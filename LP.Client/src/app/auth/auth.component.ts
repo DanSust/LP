@@ -294,9 +294,9 @@ export class AuthComponent implements AfterViewInit, OnInit, OnDestroy {
               password: password
             });
             this.toast.success('Аккаунт создан! Выполняем вход...');
-            this.authService.login(email, password).subscribe({
+            this.authService.login(email, password, '/vote').subscribe({
               next: () => {
-                // login() перенаправит в /profile
+                // login() перенаправит в /vote
               },
               error: (error) => {
                 this.isLoading = false;
