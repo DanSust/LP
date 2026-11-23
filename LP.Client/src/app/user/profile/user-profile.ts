@@ -356,7 +356,7 @@ export class UserProfile extends BaseComponent {
 
   onEmailClick(): void {
     if (this.isConfirmed) {
-      this.toast.show('Email уже подтверждён');
+      this.toast.info('Email уже подтверждён');
       return;
     }
 
@@ -365,30 +365,32 @@ export class UserProfile extends BaseComponent {
 
     if (!email) {
       emailControl?.markAsTouched();
-      this.toast.warning('Сначала укажите email');
+      this.toast.warning('Укажите email');
       return;
     }
 
     if (emailControl?.invalid) {
       emailControl.markAsTouched();
-      this.toast.warning('Проверьте адрес email');
+      this.toast.warning('Проверьте формат email');
       return;
     }
 
     const params = {
       email,
-      link: this.base+'/Email/confirm'
+      link: this.base + '/Email/confirm'
     };
 
     this.http.post(this.base + '/Email/auth/', null, { params: params, withCredentials: true })
       .subscribe({
-        next: (response) => {
-          this.toast.show('На вашу почту отправлено письмо');
+        next: () => {
+          this.toast.success('Письмо для подтверждения email отправлено');
         },
         error: (error) => {
           console.error('POST request failed:', error);
+          const message = error?.error?.message || 'Не удалось отправить письмо. Попробуйте позже.';
+          this.toast.error(message);
         }
-      });    
+      });
   }
 
   onCitySelected(event: MatAutocompleteSelectedEvent): void {

@@ -10,5 +10,5 @@ export interface ImageData {
   distance?: number | null;
   imageUrl?: string;
   fallbackImageUrl?: string | null;
-  isTinkoffQr?: boolean;
+
 }

@@ -297,11 +297,6 @@ $color-blue: #03a9f4;
   cursor: pointer;
   transition: all 0.3s ease;
 
-  &.gallery-item--qr {
-    cursor: default;
-    background-color: #fff;
-  }
-
   .image-wrapper {
     position: absolute;
     top: 0;
@@ -312,23 +307,6 @@ $color-blue: #03a9f4;
 
     &:hover img {
       transform: scale(1.1);
-    }
-
-    &.qr-image-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-
-      &:hover img {
-        transform: none;
-      }
-
-      img {
-        object-fit: contain;
-        padding: 10px;
-        background: #fff;
-      }
     }
   }
 

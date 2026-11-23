@@ -25,28 +25,31 @@ namespace LP.Server.Controllers
         [HttpPost("auth")]
         public async Task<IActionResult> Auth([FromQuery] string email, [FromQuery] string link)
         {
-            // 1. Генерируем уникальный токен
-            var token = Guid.NewGuid().ToString();
-
-            // 2. Сохраняем токен в базу для этого пользователя (LP.Entity.EmailConfirmation)
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null) return NotFound();
-
-            user.EmailConfirmation = new EmailConfirmation
+            try
             {
-                ConfirmationToken = token,
-                TokenExpires = DateTime.UtcNow.AddHours(24),
-                IsConfirmed = false
-            };
-            await _context.SaveChangesAsync();
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (user == null)
+                    return BadRequest(new { message = "Пользователь не найден" });
 
-            // 3. Формируем полную ссылку с параметрами
-            var confirmationLink = $"https://made4love.ru/api/Email/confirm?email={email}&token={token}";
+                var token = Guid.NewGuid().ToString();
+                user.EmailConfirmation = new EmailConfirmation
+                {
+                    ConfirmationToken = token,
+                    TokenExpires = DateTime.UtcNow.AddHours(24),
+                    IsConfirmed = false
+                };
+                await _context.SaveChangesAsync();
 
-            // 4. Отправляем письмо
-            await _service.SendConfirmationEmailAsync(email, confirmationLink);
+                var confirmationLink = $"https://made4love.ru/api/Email/confirm?email={email}&token={token}";
+                await _service.SendConfirmationEmailAsync(email, confirmationLink);
 
-            return Ok(new { message = "Ссылка сформирована и отправлена" });
+                return Ok(new { message = "Письмо для подтверждения email отправлено" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email auth send error: {ex.Message}");
+                return BadRequest(new { message = "Не удалось отправить письмо. Проверьте настройки почты или попробуйте позже." });
+            }
         }
 
         [AllowAnonymous]

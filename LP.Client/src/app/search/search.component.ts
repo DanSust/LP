@@ -109,7 +109,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   // Пагинация
   currentPage: number = 1;
   pageSize: number = 20; // Количество элементов на странице
-  private qrInserted = false;
+  
   sortGUID: string = generateGUID();
   hasMore: boolean = true; // Есть ли еще данные для загрузки
 
@@ -197,8 +197,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onImageError(image: ImageData, event: Event): void {
-    if (image.isTinkoffQr) return;
-
     const img = event.target as HTMLImageElement | null;
     if (!img) return;
 
@@ -218,26 +216,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private insertTinkoffQr(items: ImageData[], isInitialLoad: boolean): ImageData[] {
-    if (this.qrInserted || items.length === 0) {
-      return items;
-    }
-
-    const qrItem: ImageData = {
-      photoId: null,
-      userId: '',
-      name: 'Tinkoff QR',
-      age: 0,
-      imageUrl: `${this.baseUrl}/Payments/tinkoff-qr`,
-      isTinkoffQr: true
-    };
-
-    const result = [...items];
-    const index = Math.floor(Math.random() * (result.length + 1));
-    result.splice(index, 0, qrItem);
-    this.qrInserted = true;
-    return result;
-  }
 
   // Добавьте новые методы:
   private checkGeoHint(): void {
@@ -470,7 +448,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.isLoading = true;
       this.currentPage = 1;
       this.hasMore = true;
-      this.qrInserted = false;
+
     } else {
       if (this.isLoadingMore || !this.hasMore) return;
       this.isLoadingMore = true;
@@ -506,15 +484,13 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
             };
           });
 
-          const batchWithQr = this.insertTinkoffQr(processedData, isInitialLoad);
-
           if (isInitialLoad) {
-            this.allImages = batchWithQr;
+            this.allImages = processedData;
             this.isLoading = false;
             this.attachScrollListener();
           } else {
-            if (batchWithQr.length > 0) {
-              this.allImages = [...this.allImages, ...batchWithQr];
+            if (processedData.length > 0) {
+              this.allImages = [...this.allImages, ...processedData];
             }
 
             if (data.length < this.pageSize) {

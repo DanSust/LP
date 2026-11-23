@@ -108,16 +108,8 @@
   }
   <!-- 🔥 ГАЛЕРЕЯ -->
   <div class="gallery-search-container" #galleryContainer>
-    @for (image of allImages; track image.isTinkoffQr ? 'tinkoff-qr' : (image.userId + '-' + (image.photoId ?? 'avatar'))) {
-    <div class="gallery-item" [class.gallery-item--qr]="image.isTinkoffQr">
-      @if (image.isTinkoffQr) {
-      <div class="image-wrapper qr-image-wrapper">
-        <img [src]="image.imageUrl"
-             alt="Оплата через Тинькофф"
-             loading="lazy"
-             decoding="async" />
-      </div>
-      } @else {
+    @for (image of allImages; track image.userId + '-' + (image.photoId ?? 'avatar')) {
+    <div class="gallery-item">
       <div class="image-wrapper">
         <img [src]="image.imageUrl"
              [alt]="'Фото: ' + image.name"
@@ -141,7 +133,6 @@
           }
         </div>
       </div>
-      }
     </div>
     }
 
