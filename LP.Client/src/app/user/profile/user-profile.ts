@@ -22,6 +22,7 @@ import { startWith } from 'rxjs/internal/operators/startWith';
 import { map } from 'rxjs/internal/operators/map';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import { ToastService } from '../../common/toast.service';
+import { ConfirmDialogService } from '../../common/confirm-dialog.service';
 import { generateGUID } from '../../common/GUID';
 import { MatIconModule } from '@angular/material/icon';
 import { City, NearestCityResponse } from './../../Interfaces/CityLocation';
@@ -89,6 +90,7 @@ export class UserProfile extends BaseComponent {
   towns: TownDTO[] = [];
   filteredTowns: Observable<TownDTO[]> = of([]);
   isSaving: boolean = false;
+  isDeleting = false;
   response: string = "";
   provider: string = "google";
   isConfirmed = false;
@@ -132,6 +134,7 @@ export class UserProfile extends BaseComponent {
     private cdr: ChangeDetectorRef,
     private toast: ToastService,
     private locationService: LocationService,
+    private confirmDialog: ConfirmDialogService,
     @Inject(API_BASE_URL) private base: string)
   {
     super();
@@ -541,6 +544,33 @@ export class UserProfile extends BaseComponent {
           // Сервер не изменил состояние — возвращаем переключатель назад.
           this.form.patchValue({ IsActive: !desiredState }, { emitEvent: false });
           this.toast.show('Не удалось изменить статус профиля');
+        }
+      });
+  }
+
+  async deleteAccount(): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Удалить аккаунт?',
+      message: 'Это действие нельзя отменить. Все ваши данные, фото и переписки будут удалены.',
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      tone: 'danger',
+      icon: 'trash'
+    });
+    if (!confirmed) return;
+
+    this.isDeleting = true;
+    this.http.post<any>(this.base + '/Users/delete-account', { confirm: true }, { withCredentials: true })
+      .subscribe({
+        next: () => {
+          localStorage.removeItem('userId');
+          window.location.href = '/auth';
+        },
+        error: (error) => {
+          console.error('Delete account failed:', error);
+          this.isDeleting = false;
+          this.toast.show(error?.error?.message || 'Не удалось удалить аккаунт');
+          this.cdr.detectChanges();
         }
       });
   }

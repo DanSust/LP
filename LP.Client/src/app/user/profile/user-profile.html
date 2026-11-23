@@ -259,6 +259,9 @@
       <div class="step-actions">
         <button mat-button matStepperPrevious>Назад</button>
         <button mat-button matStepperNext>Далее</button>
+        <button mat-button type="button" class="delete-account-btn" (click)="deleteAccount()" [disabled]="isDeleting">
+          {{ isDeleting ? 'Удаление...' : 'Удалить аккаунт' }}
+        </button>
       </div>
     </mat-step>
 

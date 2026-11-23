@@ -6,7 +6,7 @@
               [class.photo-icon--light]="deleteIconClass(item.id) === 'photo-icon--light'"
               [class.photo-icon--dark]="deleteIconClass(item.id) === 'photo-icon--dark'"
               aria-hidden="false" aria-label="Удалить фото" fontIcon="delete" (click)="onDelete(item.id)"></mat-icon>
-    <mat-icon class="star-icon" aria-hidden="false" aria-label="Example home icon" fontIcon="star"></mat-icon>
+    
     <img src="{{baseURL}}/Photos/image/{{item.id}}"
          alt="Фото профиля"
          loading="lazy"

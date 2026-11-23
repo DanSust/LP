@@ -3,6 +3,8 @@ using LP.Entity;
 using LP.Server.DTO;
 using LP.Server.Services;
 using LP.Server.Services.Rating;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -24,11 +26,13 @@ namespace LP.Server.Controllers
     public class UsersController(
         ApplicationContext context, 
         IAuthService authService,
-        IRatingService ratingService) : BaseAuthController(context)
+        IRatingService ratingService,
+        IWebHostEnvironment env) : BaseAuthController(context)
     {
         private readonly ApplicationContext _context = context;
         private readonly IAuthService _authService = authService;
         private readonly IRatingService _ratingService = ratingService;
+        private readonly IWebHostEnvironment _env = env;
 
         // GET: Users
         [AllowAnonymous]
@@ -285,19 +289,92 @@ namespace LP.Server.Controllers
         }
 
 
-        [HttpPost ("delete")]
-        //[ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> Delete(Guid id)
+        public class DeleteAccountRequest
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
+            public bool Confirm { get; set; }
+        }
+
+        [HttpPost("delete-account")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountRequest request)
+        {
+            if (request?.Confirm != true)
             {
-                _context.Users.Remove(user);
+                return BadRequest(new ResponseDto { Result = false, Message = "Подтвердите удаление аккаунта" });
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            var userId = UserId;
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new ResponseDto { Result = false, Message = "Пользователь не найден" });
+            }
+
+            await using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Фото: удаляем файлы с диска
+                var userDir = Path.Combine(_env.ContentRootPath, "..", "img", userId.ToString());
+                if (Directory.Exists(userDir))
+                {
+                    Directory.Delete(userDir, true);
+                }
+
+                // Чаты и сообщения пользователя
+                var chatIds = await _context.Chats
+                    .Where(c => c.Owner == userId || c.UserId == userId)
+                    .Select(c => c.Id)
+                    .ToListAsync();
+
+                if (chatIds.Count > 0)
+                {
+                    await _context.Messages.Where(m => chatIds.Contains(m.ChatId)).ExecuteDeleteAsync();
+                    await _context.Chats.Where(c => chatIds.Contains(c.Id)).ExecuteDeleteAsync();
+                }
+
+                await _context.Messages.Where(m => m.UserId == userId).ExecuteDeleteAsync();
+                await _context.Votes.Where(v => v.Owner == userId || v.Like == userId).ExecuteDeleteAsync();
+                await _context.Rejects.Where(r => r.Owner == userId || r.UserId == userId).ExecuteDeleteAsync();
+                await _context.UserInterests.Where(ui => EF.Property<Guid>(ui, "UserId") == userId).ExecuteDeleteAsync();
+                await _context.UserQuestions.Where(uq => EF.Property<Guid>(uq, "UserId") == userId).ExecuteDeleteAsync();
+                await _context.Photos.Where(p => EF.Property<Guid>(p, "UserId") == userId).ExecuteDeleteAsync();
+                await _context.PhotoMain.Where(p => EF.Property<Guid>(p, "UserId") == userId).ExecuteDeleteAsync();
+                await _context.Profiles.Where(p => p.UserId == userId).ExecuteDeleteAsync();
+                await _context.EmailConfirmations.Where(ec => ec.UserId == userId).ExecuteDeleteAsync();
+                await _context.PasswordResetTokens.Where(pr => pr.UserId == userId).ExecuteDeleteAsync();
+
+                // Connectity имеет shadow FK UserId без cascade
+                await _context.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM [Connectity] WHERE [UserId] = {0}", userId);
+
+                await _context.Users.Where(u => u.Id == userId).ExecuteDeleteAsync();
+
+                await tx.CommitAsync();
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            Response.Cookies.Delete("UserId", new CookieOptions
+            {
+                Path = "/",
+                Secure = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax
+            });
+            Response.Cookies.Delete("auth", new CookieOptions
+            {
+                Path = "/",
+                Secure = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax
+            });
+            HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+            return Ok(new ResponseDto { Result = true, Message = "Аккаунт удалён" });
         }
 
         [HttpPost("login")]

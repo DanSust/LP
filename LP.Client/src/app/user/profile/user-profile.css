@@ -347,6 +347,11 @@ mat-chip-option[disabled] {
     margin-left: 16px; /* запасной вариант */
   }
 
+  .step-actions .delete-account-btn {
+    margin-left: auto;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
 .questions-container {
   display: flex;
   flex-direction: column;

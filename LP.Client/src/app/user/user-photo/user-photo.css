@@ -79,7 +79,7 @@
   right: 10px;
   cursor: pointer;
   top: 10px;
-  z-index: 10;
+  z-index: 30;
   /* ✅ Prevent drag when clicking icon */
   pointer-events: auto;
   transition: color 0.2s ease;
@@ -138,6 +138,7 @@
   /* Звезда слева, удаление справа — иначе иконки перекрывают друг друга. */
   left: 10px;
   right: auto;
+  z-index: 30;
   /* ✅ Prevent drag when clicking icon */
   pointer-events: auto;
 }
