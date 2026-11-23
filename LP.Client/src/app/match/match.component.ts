@@ -92,7 +92,7 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-    const savedState = this.pageStateService.getState();
+    const savedState = this.pageStateService.getState('match');
     if (savedState && savedState.category === this.activeTab) {
       this.restoreState(savedState);
     } else {
@@ -202,7 +202,7 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
     const container = this.galleryContainerRef()?.nativeElement;
     const scrollPosition = container?.scrollTop || 0;
 
-    this.pageStateService.saveState({
+    this.pageStateService.saveState('match', {
       images: this.allImages,
       filters: {
         ageMin: 0,
@@ -448,7 +448,7 @@ export class MatchComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.activeTab = tab;
 
-    const savedState = this.pageStateService.getState();
+    const savedState = this.pageStateService.getState('match');
     if (savedState && savedState.category === tab) {
       this.restoreState(savedState);
     } else {

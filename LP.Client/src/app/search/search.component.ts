@@ -141,16 +141,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     scroll(0, 0);
-    const savedState = this.pageStateService.getState();
-    const cameFromVote = this.navigationService.cameFrom('/vote') ||
-      this.navigationService.cameFrom(/\/vote\/.*/);
+    const savedState = this.pageStateService.getState('search');
 
-    if (savedState && cameFromVote) {      
+    if (savedState) {
       try {
         this.restoreState(savedState);
       } catch (e) {
         console.error('Failed to restore search state, resetting:', e);
-        this.pageStateService.clearState();
+        this.pageStateService.clearState('search');
         this.isRestoringState = false;
         this.shouldRestoreScroll = false;
         this.sortGUID = generateGUID();
@@ -253,8 +251,14 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const images = Array.isArray(state.images) ? state.images : [];
 
     // Восстанавливаем фильтры
-    this.ageMin = filters?.ageMin ?? 18;
-    this.ageMax = filters?.ageMax ?? 80;
+    const restoredAgeMin = Number(filters?.ageMin);
+    const restoredAgeMax = Number(filters?.ageMax);
+    this.ageMin = Number.isFinite(restoredAgeMin) && restoredAgeMin >= 18 && restoredAgeMin <= 80 ? restoredAgeMin : 18;
+    this.ageMax = Number.isFinite(restoredAgeMax) && restoredAgeMax >= 18 && restoredAgeMax <= 80 ? restoredAgeMax : 80;
+    if (this.ageMin > this.ageMax) {
+      this.ageMin = 18;
+      this.ageMax = 80;
+    }
     this.selectedCityId = filters?.selectedCityId ?? '';
     this.useGeolocation = filters?.useGeolocation ?? false;
     this.radiusKm = filters?.radiusKm ?? 50;
@@ -329,7 +333,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       ? currentCityValue
       : currentCityValue?.name || null;    
 
-    this.pageStateService.saveState({
+    this.pageStateService.saveState('search', {
       images: this.allImages,
       filters: {
         ageMin: this.ageMin,
@@ -347,7 +351,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       scrollPosition: this.currentScrollPosition,
       showFilters: this.showFilters,
       timestamp: Date.now(),
-      category: ''
+      category: 'search'
     });
   }
   
@@ -418,7 +422,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (cities) => {
           this.availableCities = cities;
           if (this.isRestoringState) {
-            const state = this.pageStateService.getState();
+            const state = this.pageStateService.getState('search');
             if (state?.filters.cityControlValue) {
               const city = this.availableCities.find(c => c.name === state.filters.cityControlValue);
               if (city) {
@@ -668,7 +672,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   applyFilters(): void {    
     this.showFilters = false;
     this.resetPagination();
-    this.pageStateService.clearState();
+    this.pageStateService.clearState('search');
     this.loadImages(true);
   }
 
@@ -687,7 +691,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.currentPosition = null;
     this.locationError = null;
     this.resetPagination();
-    this.pageStateService.clearState();
+    this.pageStateService.clearState('search');
   }
 
   resetPagination(): void {

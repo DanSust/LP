@@ -2,48 +2,63 @@
 import { Injectable } from '@angular/core';
 import { PageState } from '../Interfaces/PageState';
 
-
-
 @Injectable({ providedIn: 'root' })
 export class PageStateService {
-  private state: PageState | null = null;
+  private states = new Map<string, PageState>();
   private readonly MAX_AGE_MS = 5 * 60 * 1000; // 5 минут - время жизни состояния
 
-  saveState(state: PageState): void {
-    this.state = {
-      ...state,
-      timestamp: Date.now()
-    };
-    console.log('Search state saved:', this.state);
+  saveState(key: string, state: PageState): void;
+  saveState(state: PageState): void;
+  saveState(keyOrState: string | PageState, state?: PageState): void {
+    let key = 'default';
+    let nextState: PageState;
+
+    if (typeof keyOrState === 'string') {
+      key = keyOrState;
+      nextState = state as PageState;
+    } else {
+      nextState = keyOrState;
+      key = this.inferKey(nextState);
+    }
+
+    this.states.set(key, { ...nextState, timestamp: Date.now() });
   }
 
-  getState(): PageState | null {
-    if (!this.state) return null;
+  getState(key: string = 'default'): PageState | null {
+    const state = this.states.get(key);
+    if (!state) return null;
 
-    // Проверяем, не устарело ли состояние
-    const age = Date.now() - this.state.timestamp;
+    const age = Date.now() - state.timestamp;
     if (age > this.MAX_AGE_MS) {
-      console.log('Search state expired, clearing');
-      this.clearState();
+      this.states.delete(key);
       return null;
     }
 
-    return this.state;
+    return state;
   }
 
-  clearState(): void {
-    this.state = null;
+  clearState(key?: string): void {
+    if (key) {
+      this.states.delete(key);
+      return;
+    }
+    this.states.clear();
   }
 
   /** Инвалидируем кэш /match после взаимного лайка, чтобы список «Взаимные» обновился. */
   clearMatchState(): void {
-    const category = this.state?.category;
-    if (category === 'mutual' || category === 'viewed' || category === 'likesMe' || category === 'iLike') {
-      this.state = null;
-    }
+    this.states.delete('match');
   }
 
-  hasValidState(): boolean {
-    return this.getState() !== null;
+  hasValidState(key: string = 'default'): boolean {
+    return this.getState(key) !== null;
+  }
+
+  private inferKey(state: PageState): string {
+    const category = state?.category;
+    if (category === 'mutual' || category === 'viewed' || category === 'likesMe' || category === 'iLike') {
+      return 'match';
+    }
+    return 'search';
   }
 }
