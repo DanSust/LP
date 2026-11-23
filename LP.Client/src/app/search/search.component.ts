@@ -1,4 +1,4 @@
-﻿import { Component, Inject, OnInit, HostListener, ElementRef, AfterViewInit, OnDestroy, ViewChild, ChangeDetectorRef, viewChild, ViewEncapsulation } from '@angular/core';
+import { Component, Inject, OnInit, HostListener, ElementRef, AfterViewInit, OnDestroy, ViewChild, ChangeDetectorRef, viewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -108,7 +108,8 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Пагинация
   currentPage: number = 1;
-  pageSize: number = 20; // Количество элементов на странице
+  pageSize: number = 20; // Количество элементов на странице
+
   
   sortGUID: string = generateGUID();
   hasMore: boolean = true; // Есть ли еще данные для загрузки
@@ -145,7 +146,18 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.navigationService.cameFrom(/\/vote\/.*/);
 
     if (savedState && cameFromVote) {      
-      this.restoreState(savedState);
+      try {
+        this.restoreState(savedState);
+      } catch (e) {
+        console.error('Failed to restore search state, resetting:', e);
+        this.pageStateService.clearState();
+        this.isRestoringState = false;
+        this.shouldRestoreScroll = false;
+        this.sortGUID = generateGUID();
+        this.isLoading = true;
+        this.loadCities();
+        this.setupCityAutocomplete();
+      }
     } else {
       // Обычная инициализация
       this.sortGUID = generateGUID();
@@ -236,31 +248,36 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private restoreState(state: PageState): void {
     this.isRestoringState = true;
 
+    const filters = state.filters;
+    const pagination = state.pagination;
+    const images = Array.isArray(state.images) ? state.images : [];
+
     // Восстанавливаем фильтры
-    this.ageMin = state.filters.ageMin;
-    this.ageMax = state.filters.ageMax;
-    this.selectedCityId = state.filters.selectedCityId;
-    this.useGeolocation = state.filters.useGeolocation;
-    this.radiusKm = state.filters.radiusKm;
-    this.showFilters = state.showFilters;
+    this.ageMin = filters?.ageMin ?? 18;
+    this.ageMax = filters?.ageMax ?? 80;
+    this.selectedCityId = filters?.selectedCityId ?? '';
+    this.useGeolocation = filters?.useGeolocation ?? false;
+    this.radiusKm = filters?.radiusKm ?? 50;
+    this.showFilters = state.showFilters ?? true;
 
     // Восстанавливаем пагинацию
-    this.currentPage = state.pagination.currentPage;
-    this.hasMore = state.pagination.hasMore;
-    this.savedScrollPosition = state.scrollPosition;
+    this.currentPage = pagination?.currentPage ?? 1;
+    this.hasMore = pagination?.hasMore ?? true;
+    this.savedScrollPosition = state.scrollPosition ?? 0;
     this.sortGUID = state.sortGUID || generateGUID();
     
     // Восстанавливаем изображения
-    this.allImages = [...state.images];
+    this.allImages = [...images];
     this.isLoading = false;
     
     // Восстанавливаем город в автокомплите
-    if (state.filters.cityControlValue && this.availableCities.length > 0) {
-      const city = this.availableCities.find(c => c.name === state.filters.cityControlValue);
+    const cityControlValue = filters?.cityControlValue ?? null;
+    if (cityControlValue && this.availableCities.length > 0) {
+      const city = this.availableCities.find(c => c.name === cityControlValue);
       if (city) {
         this.cityControl.setValue(city);
-      } else if (state.filters.cityControlValue) {
-        this.cityControl.setValue(state.filters.cityControlValue);
+      } else {
+        this.cityControl.setValue(cityControlValue);
       }
     }
     this.cdr.detectChanges();
@@ -302,7 +319,7 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // 🔥 Метод сохранения состояния
   private saveStateBeforeLeave(): void {    
-    const container = this.galleryContainerRef()?.nativeElement;    
+    //const container = this.galleryContainerRef()?.nativeElement;    
     //const scrollPosition = container?.scrollTop || 0;
 
     //console.log('saveStateBeforeLeave-', this.currentScrollPosition);
