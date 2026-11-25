@@ -8,6 +8,8 @@ export interface PageState {
     useGeolocation: boolean;
     radiusKm: number;
     cityControlValue: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
   };
   pagination: {
     currentPage: number;

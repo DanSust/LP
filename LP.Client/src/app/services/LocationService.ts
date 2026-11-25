@@ -29,9 +29,9 @@ export class LocationService {
         this.error.set(null);
 
         if (!('geolocation' in navigator)) {
-          this.error.set('Geolocation not supported');
+          this.error.set('Геолокация не поддерживается этим браузером');
           this.isLoading.set(false);
-          reject('Geolocation not supported');
+          reject('Геолокация не поддерживается этим браузером');
           return;
         }
 
@@ -54,9 +54,10 @@ export class LocationService {
             reject(errorMsg);
           },
           {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
+            // Сеть/кэш дают первый фикс быстрее и надёжнее, чем принудительный GPS.
+            enableHighAccuracy: false,
+            timeout: 20000,
+            maximumAge: 60000
           }
         );
       })
@@ -66,13 +67,13 @@ export class LocationService {
   private handleError(error: GeolocationPositionError): string {
     switch (error.code) {
       case error.PERMISSION_DENIED:
-        return 'Location access denied. Please enable permissions.';
+        return 'Доступ к геолокации запрещён. Разрешите его в настройках браузера.';
       case error.POSITION_UNAVAILABLE:
-        return 'Location information unavailable.';
+        return 'Не удалось определить местоположение.';
       case error.TIMEOUT:
-        return 'Location request timed out.';
+        return 'Не удалось определить местоположение за отведённое время. Попробуйте ещё раз.';
       default:
-        return 'Unknown location error.';
+        return 'Ошибка определения местоположения.';
     }
   }
 

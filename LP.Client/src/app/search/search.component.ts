@@ -118,7 +118,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private scrollDebounceTimer: any;
   private scrollListener?: () => void;
 
-  private isRestoringState = false;
   private shouldRestoreScroll = false;
   private savedScrollPosition: number = 0;
 
@@ -149,7 +148,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       } catch (e) {
         console.error('Failed to restore search state, resetting:', e);
         this.pageStateService.clearState('search');
-        this.isRestoringState = false;
         this.shouldRestoreScroll = false;
         this.sortGUID = generateGUID();
         this.isLoading = true;
@@ -244,8 +242,6 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private restoreState(state: PageState): void {
-    this.isRestoringState = true;
-
     const filters = state.filters;
     const pagination = state.pagination;
     const images = Array.isArray(state.images) ? state.images : [];
@@ -260,8 +256,23 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
       this.ageMax = 80;
     }
     this.selectedCityId = filters?.selectedCityId ?? '';
-    this.useGeolocation = filters?.useGeolocation ?? false;
-    this.radiusKm = filters?.radiusKm ?? 50;
+
+    // Координаты нужны, чтобы запрос поиска с useGeolocation работал после восстановления.
+    // Если их нет (старое сохранённое состояние), сбрасываем геолокацию — иначе cityId игнорируется.
+    const restoredLatitude = Number(filters?.latitude);
+    const restoredLongitude = Number(filters?.longitude);
+    const hasPosition = Number.isFinite(restoredLatitude) && Number.isFinite(restoredLongitude);
+    this.useGeolocation = Boolean(filters?.useGeolocation) && hasPosition;
+    this.currentPosition = hasPosition
+      ? { latitude: restoredLatitude, longitude: restoredLongitude, accuracy: 0, timestamp: Date.now() }
+      : null;
+    this.locationError = null;
+    this.isLocating = false;
+
+    const restoredRadius = Number(filters?.radiusKm);
+    this.radiusKm = Number.isFinite(restoredRadius) && restoredRadius >= 1 && restoredRadius <= 500
+      ? restoredRadius
+      : 50;
     this.showFilters = state.showFilters ?? true;
 
     // Восстанавливаем пагинацию
@@ -273,27 +284,25 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     // Восстанавливаем изображения
     this.allImages = [...images];
     this.isLoading = false;
-    
-    // Восстанавливаем город в автокомплите
-    const cityControlValue = filters?.cityControlValue ?? null;
-    if (cityControlValue && this.availableCities.length > 0) {
-      const city = this.availableCities.find(c => c.name === cityControlValue);
-      if (city) {
-        this.cityControl.setValue(city);
-      } else {
-        this.cityControl.setValue(cityControlValue);
-      }
-    }
+
     this.cdr.detectChanges();
     // Отмечаем, что нужно восстановить скролл
     this.shouldRestoreScroll = true;
 
-    // Загружаем города если нужно
+    // Города грузим асинхронно; после загрузки ставим сохранённый город,
+    // а не город из профиля, чтобы не потерять выбранный фильтр.
     if (this.availableCities.length === 0) {
-      this.loadCities();
+      this.loadCities(true, filters?.cityControlValue ?? null);
+    } else {
+      const cityControlValue = filters?.cityControlValue ?? null;
+      const city = this.availableCities.find(c => c.id === this.selectedCityId)
+        ?? this.availableCities.find(c => c.name === cityControlValue);
+      if (city) {
+        this.cityControl.setValue(city);
+      } else if (cityControlValue) {
+        this.cityControl.setValue(cityControlValue);
+      }
     }
-    
-    this.isRestoringState = false;    
   }
 
   private restoreScrollPosition(): void {
@@ -341,7 +350,9 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
         selectedCityId: this.selectedCityId,
         useGeolocation: this.useGeolocation,
         radiusKm: this.radiusKm,
-        cityControlValue: cityName
+        cityControlValue: cityName,
+        latitude: this.currentPosition?.latitude ?? null,
+        longitude: this.currentPosition?.longitude ?? null
       },
       pagination: {
         currentPage: this.currentPage,
@@ -412,22 +423,21 @@ export class SearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedCityId = city.id;
     this.useGeolocation = false;
     this.currentPosition = null;
+    this.locationError = null;
     this.resetPagination();
     this.onFilterChange();
   }
 
-  loadCities(): void {
+  loadCities(restoreCity: boolean = false, cityControlValue: string | null = null): void {
     this.http.get<City[]>(this.baseUrl + '/City/list', { withCredentials: true })
       .subscribe({
         next: (cities) => {
           this.availableCities = cities;
-          if (this.isRestoringState) {
-            const state = this.pageStateService.getState('search');
-            if (state?.filters.cityControlValue) {
-              const city = this.availableCities.find(c => c.name === state.filters.cityControlValue);
-              if (city) {
-                this.cityControl.setValue(city);
-              }
+          if (restoreCity) {
+            const city = this.availableCities.find(c => c.id === this.selectedCityId)
+              ?? this.availableCities.find(c => c.name === cityControlValue);
+            if (city) {
+              this.cityControl.setValue(city);
             }
           } else {
             this.loadProfile();
