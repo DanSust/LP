@@ -1,6 +1,7 @@
 import { Component, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Router, RouterModule } from "@angular/router";
+import { AuthService } from "../services/AuthService";
 
 @Component({
   selector: "about-app",
@@ -11,8 +12,14 @@ import { Router, RouterModule } from "@angular/router";
 })
 export class AboutComponent {
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
   readonly currentYear = new Date().getFullYear();
+
+  /** На /about кнопка создания анкеты не нужна авторизованным пользователям. */
+  get showRegistrationCta(): boolean {
+    return !this.isAboutPage || !this.authService.getCachedUserId();
+  }
 
   /**
    * На главной и на /about используется один компонент, но контент должен
