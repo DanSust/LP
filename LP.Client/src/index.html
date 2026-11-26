@@ -2,6 +2,20 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
+
+  <!-- Yandex.Metrika counter -->
+  <script type="text/javascript">
+    (function (m, e, t, r, i, k, a) {
+      m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
+      m[i].l = 1 * new Date();
+      for (var j = 0; j < document.scripts.length; j++) { if (document.scripts[j].src === r) { return; } }
+      k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+    })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=114378944', 'ym');
+
+    ym(114378944, 'init', { ssr: true, clickmap: true, ecommerce: "dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce: true, trackLinks: true });
+  </script>  
+  <!-- /Yandex.Metrika counter -->
+
   <script>
     (function () {
       var path = window.location.pathname.replace(/\/+$/, '') || '/';
@@ -46,7 +60,7 @@
   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <!-- VK SDK подключён локально (assets/vk-sdk) и грузится асинхронно из AuthComponent.
        Не подключайте здесь внешний CDN (unpkg.com): он блокируется в РФ,
        а синхронный скрипт в <head> подвешивает всю страницу до таймаута. -->
@@ -137,43 +151,43 @@
       line-height: 1.65;
     }
 
-    .seo-shell h1 {
-      margin: 0 0 20px;
-      font-size: clamp(28px, 5vw, 48px);
-      line-height: 1.15;
-    }
+      .seo-shell h1 {
+        margin: 0 0 20px;
+        font-size: clamp(28px, 5vw, 48px);
+        line-height: 1.15;
+      }
 
-    .seo-shell p {
-      margin: 0 0 16px;
-      font-size: 18px;
-      color: rgba(255, 255, 255, 0.9);
-    }
+      .seo-shell p {
+        margin: 0 0 16px;
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.9);
+      }
 
-    .seo-shell h2 {
-      margin: 32px 0 12px;
-      font-size: 24px;
-    }
+      .seo-shell h2 {
+        margin: 32px 0 12px;
+        font-size: 24px;
+      }
 
-    .seo-shell details {
-      margin-bottom: 10px;
-    }
+      .seo-shell details {
+        margin-bottom: 10px;
+      }
 
-    .seo-shell summary {
-      cursor: pointer;
-      font-weight: 600;
-    }
+      .seo-shell summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
 
-    .seo-shell nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px 20px;
-      margin-top: 28px;
-    }
+      .seo-shell nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 20px;
+        margin-top: 28px;
+      }
 
-    .seo-shell a {
-      color: #fff;
-      text-decoration: underline;
-    }
+      .seo-shell a {
+        color: #fff;
+        text-decoration: underline;
+      }
 
     @media (max-width: 768px) {
       .icon-sidebar {
@@ -203,18 +217,13 @@
       place-items: center;
       overflow: hidden;
       color: #fff;
-      background:
-        radial-gradient(120% 90% at 50% 0%, rgba(233, 30, 99, 0.16), transparent 62%),
-        radial-gradient(90% 70% at 100% 100%, rgba(3, 169, 244, 0.14), transparent 60%),
-        linear-gradient(135deg, #557A94 0%, #7396AE 100%);
+      background: radial-gradient(120% 90% at 50% 0%, rgba(233, 30, 99, 0.16), transparent 62%), radial-gradient(90% 70% at 100% 100%, rgba(3, 169, 244, 0.14), transparent 60%), linear-gradient(135deg, #557A94 0%, #7396AE 100%);
     }
 
     .boot-splash__grid {
       position: absolute;
       inset: 0;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
       background-size: 64px 64px;
       -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 0%, transparent 72%);
       mask-image: radial-gradient(circle at 50% 45%, #000 0%, transparent 72%);
@@ -299,16 +308,16 @@
       overflow: visible;
     }
 
-    .boot-splash__ecg path {
-      fill: none;
-      stroke: #ff6b9d;
-      stroke-width: 3;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-dasharray: 400;
-      stroke-dashoffset: 400;
-      animation: boot-ecg-draw 2.4s ease-in-out infinite;
-    }
+      .boot-splash__ecg path {
+        fill: none;
+        stroke: #ff6b9d;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 400;
+        stroke-dashoffset: 400;
+        animation: boot-ecg-draw 2.4s ease-in-out infinite;
+      }
 
     .boot-splash__logo {
       display: flex;
@@ -375,14 +384,14 @@
       animation: boot-indeterminate 1.5s ease-in-out infinite;
     }
 
-    .boot-splash__progress-fill::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
-      transform: translateX(-100%);
-      animation: boot-shimmer 1.8s ease-in-out infinite;
-    }
+      .boot-splash__progress-fill::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+        transform: translateX(-100%);
+        animation: boot-shimmer 1.8s ease-in-out infinite;
+      }
 
     .boot-splash__text {
       display: inline-flex;
@@ -398,64 +407,125 @@
       animation: boot-dot 1.4s ease-in-out infinite;
     }
 
-    .boot-splash__dots span:nth-child(2) {
-      animation-delay: 0.2s;
-    }
+      .boot-splash__dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
 
-    .boot-splash__dots span:nth-child(3) {
-      animation-delay: 0.4s;
-    }
+      .boot-splash__dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
 
     @keyframes boot-heart-red {
-      0%, 100% { transform: translate(calc(-50% - var(--heart-offset)), -50%) scale(1); }
-      50% { transform: translate(calc(-50% - var(--heart-offset)), -50%) scale(1.15); }
+      0%, 100% {
+        transform: translate(calc(-50% - var(--heart-offset)), -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(calc(-50% - var(--heart-offset)), -50%) scale(1.15);
+      }
     }
 
     @keyframes boot-heart-blue {
-      0%, 100% { transform: translate(calc(-50% + var(--heart-offset)), -50%) scale(1); }
-      50% { transform: translate(calc(-50% + var(--heart-offset)), -50%) scale(1.15); }
+      0%, 100% {
+        transform: translate(calc(-50% + var(--heart-offset)), -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(calc(-50% + var(--heart-offset)), -50%) scale(1.15);
+      }
     }
 
     @keyframes boot-ecg-draw {
-      0% { stroke-dashoffset: 400; opacity: 0; }
-      10% { opacity: 1; }
-      60%, 88% { stroke-dashoffset: 0; opacity: 1; }
-      100% { stroke-dashoffset: 0; opacity: 0; }
+      0% {
+        stroke-dashoffset: 400;
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      60%, 88% {
+        stroke-dashoffset: 0;
+        opacity: 1;
+      }
+
+      100% {
+        stroke-dashoffset: 0;
+        opacity: 0;
+      }
     }
 
     @keyframes boot-gradient {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
     }
 
     @keyframes boot-indeterminate {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(350%); }
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(350%);
+      }
     }
 
     @keyframes boot-shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
     }
 
     @keyframes boot-dot {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 1; }
+      0%, 100% {
+        opacity: 0.2;
+      }
+
+      50% {
+        opacity: 1;
+      }
     }
 
     @keyframes boot-drift-pink {
-      from { transform: translate3d(0, 0, 0) scale(1); }
-      to { transform: translate3d(6vmax, 4vmax, 0) scale(1.12); }
+      from {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      to {
+        transform: translate3d(6vmax, 4vmax, 0) scale(1.12);
+      }
     }
 
     @keyframes boot-drift-blue {
-      from { transform: translate3d(0, 0, 0) scale(1); }
-      to { transform: translate3d(-5vmax, -3vmax, 0) scale(1.1); }
+      from {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      to {
+        transform: translate3d(-5vmax, -3vmax, 0) scale(1.1);
+      }
     }
 
     @keyframes boot-content-in {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -470,82 +540,89 @@
     }
   </style>
   <noscript>
-    <style>.boot-splash { display: none !important; }</style>
+    <style>
+      .boot-splash {
+        display: none !important;
+      }
+    </style>
   </noscript>
 </head>
 <body>
-<app-root>
-  <!-- Стартовый splash: виден до тех пор, пока Angular не отрисует приложение.
-       Angular очищает содержимое app-root при бутстрапе, поэтому отдельно
-       скрывать этот блок не нужно. -->
-  <div class="boot-splash" role="status" aria-live="polite" aria-label="Загружаем сайт">
-    <div class="boot-splash__aurora boot-splash__aurora--pink" aria-hidden="true"></div>
-    <div class="boot-splash__aurora boot-splash__aurora--blue" aria-hidden="true"></div>
-    <div class="boot-splash__grid" aria-hidden="true"></div>
 
-    <div class="boot-splash__content">
-      <div class="boot-splash__hearts" aria-hidden="true">
-        <!-- Красное сердце -->
-        <svg class="boot-splash__heart boot-splash__heart--left" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-        </svg>
+  <noscript><div><img src="https://mc.yandex.ru/watch/114378944" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 
-        <!-- Синее сердце -->
-        <svg class="boot-splash__heart boot-splash__heart--right" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-        </svg>
+  <app-root>
+    <!-- Стартовый splash: виден до тех пор, пока Angular не отрисует приложение.
+         Angular очищает содержимое app-root при бутстрапе, поэтому отдельно
+         скрывать этот блок не нужно. -->
+    <div class="boot-splash" role="status" aria-live="polite" aria-label="Загружаем сайт">
+      <div class="boot-splash__aurora boot-splash__aurora--pink" aria-hidden="true"></div>
+      <div class="boot-splash__aurora boot-splash__aurora--blue" aria-hidden="true"></div>
+      <div class="boot-splash__grid" aria-hidden="true"></div>
 
-        <!-- Кардиограмма -->
-        <svg class="boot-splash__ecg" viewBox="0 0 240 70">
-          <g opacity="0.2">
-            <line x1="0" y1="35" x2="240" y2="35" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
-            <line x1="0" y1="20" x2="240" y2="20" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
-            <line x1="0" y1="50" x2="240" y2="50" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
-          </g>
-          <path d="M0,35 L15,35 L20,10 L25,50 L30,10 L35,35 L120,35 L125,15 L130,45 L135,15 L140,35 L240,35" />
-        </svg>
+      <div class="boot-splash__content">
+        <div class="boot-splash__hearts" aria-hidden="true">
+          <!-- Красное сердце -->
+          <svg class="boot-splash__heart boot-splash__heart--left" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+
+          <!-- Синее сердце -->
+          <svg class="boot-splash__heart boot-splash__heart--right" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+
+          <!-- Кардиограмма -->
+          <svg class="boot-splash__ecg" viewBox="0 0 240 70">
+            <g opacity="0.2">
+              <line x1="0" y1="35" x2="240" y2="35" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+              <line x1="0" y1="20" x2="240" y2="20" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+              <line x1="0" y1="50" x2="240" y2="50" stroke="#fff" stroke-width="0.5" stroke-dasharray="2,2" />
+            </g>
+            <path d="M0,35 L15,35 L20,10 L25,50 L30,10 L35,35 L120,35 L125,15 L130,45 L135,15 L140,35 L240,35" />
+          </svg>
+        </div>
+
+        <div class="boot-splash__logo" aria-label="made4love">
+          <span class="boot-splash__logo-made">made</span>
+          <span class="boot-splash__logo-four">4</span>
+          <span class="boot-splash__logo-love">love</span>
+        </div>
+
+        <p class="boot-splash__tagline">знакомства со смыслом</p>
+
+        <div class="boot-splash__progress" aria-hidden="true">
+          <div class="boot-splash__progress-fill"></div>
+        </div>
+
+        <p class="boot-splash__text">
+          Загружаем сайт<span class="boot-splash__dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+        </p>
       </div>
-
-      <div class="boot-splash__logo" aria-label="made4love">
-        <span class="boot-splash__logo-made">made</span>
-        <span class="boot-splash__logo-four">4</span>
-        <span class="boot-splash__logo-love">love</span>
-      </div>
-
-      <p class="boot-splash__tagline">знакомства со смыслом</p>
-
-      <div class="boot-splash__progress" aria-hidden="true">
-        <div class="boot-splash__progress-fill"></div>
-      </div>
-
-      <p class="boot-splash__text">
-        Загружаем сайт<span class="boot-splash__dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
-      </p>
     </div>
-  </div>
 
-  <div class="seo-shell">
-    <h1>Бесплатные знакомства для серьёзных отношений</h1>
-    <p>Made4Love — бесплатный сервис знакомств, где весь функционал доступен без оплаты: анкеты, проверка совместимости, живой чат и события.</p>
-    <p>Создайте анкету, общайтесь в реальном времени и находите людей с близкими интересами. Пара, нашедшая друг друга на Made4Love и сыгравшая свадьбу, получает денежный приз.</p>
-    <nav aria-label="Основные страницы">
-      <a href="/about">О сервисе</a>
-      <a href="/events">События</a>
-      <a href="/auth">Создать анкету</a>
-      <a href="/assets/terms.html">Условия</a>
-      <a href="/assets/privacy.html">Конфиденциальность</a>
-    </nav>
-  </div>
-</app-root>
-<script>
-  // Страховка: если Angular не загрузился, через 12 секунд убираем splash,
-  // чтобы не оставить пользователя навсегда на экране загрузки.
-  window.setTimeout(function () {
-    var splash = document.querySelector('.boot-splash');
-    if (splash) {
-      splash.style.display = 'none';
-    }
-  }, 12000);
-</script>
+    <div class="seo-shell">
+      <h1>Бесплатные знакомства для серьёзных отношений</h1>
+      <p>Made4Love — бесплатный сервис знакомств, где весь функционал доступен без оплаты: анкеты, проверка совместимости, живой чат и события.</p>
+      <p>Создайте анкету, общайтесь в реальном времени и находите людей с близкими интересами. Пара, нашедшая друг друга на Made4Love и сыгравшая свадьбу, получает денежный приз.</p>
+      <nav aria-label="Основные страницы">
+        <a href="/about">О сервисе</a>
+        <a href="/events">События</a>
+        <a href="/auth">Создать анкету</a>
+        <a href="/assets/terms.html">Условия</a>
+        <a href="/assets/privacy.html">Конфиденциальность</a>
+      </nav>
+    </div>
+  </app-root>
+  <script>
+    // Страховка: если Angular не загрузился, через 12 секунд убираем splash,
+    // чтобы не оставить пользователя навсегда на экране загрузки.
+    window.setTimeout(function () {
+      var splash = document.querySelector('.boot-splash');
+      if (splash) {
+        splash.style.display = 'none';
+      }
+    }, 12000);
+  </script>
 </body>
 </html>
