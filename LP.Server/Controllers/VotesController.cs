@@ -153,6 +153,36 @@ namespace LP.Server.Controllers
             ex.InnerException is SqlException sqlEx &&
             (sqlEx.Number == 2601 || sqlEx.Number == 2627); // SQL Server unique constraint codes
 
+        /// <summary>
+        /// Возрастной диапазон для ленты /vote: настройки анкеты пользователя
+        /// и, если они есть, более узкий диапазон из фильтров /search.
+        /// </summary>
+        private static (int From, int To) NormalizeAgeRange(
+            int? requestedMin,
+            int? requestedMax,
+            int? profileMin,
+            int? profileMax)
+        {
+            var from = Math.Clamp(profileMin ?? 18, 18, 100);
+            var to = Math.Clamp(profileMax ?? 100, 18, 100);
+            if (to < from)
+            {
+                (from, to) = (to, from);
+            }
+
+            if (requestedMin.HasValue)
+            {
+                from = Math.Max(from, Math.Clamp(requestedMin.Value, 18, 100));
+            }
+
+            if (requestedMax.HasValue)
+            {
+                to = Math.Min(to, Math.Clamp(requestedMax.Value, 18, 100));
+            }
+
+            return (from, to);
+        }
+
         //[Authorize]
         //[HttpPost("favorite/{id}")]
         //public async Task<IActionResult> Favorite(Guid id)
@@ -288,7 +318,10 @@ namespace LP.Server.Controllers
 
         //[Authorize]
         [HttpGet("list")]
-        public async Task<IActionResult> GetVoteList(int count = 5)
+        public async Task<IActionResult> GetVoteList(
+            int count = 5,
+            [FromQuery] int? ageMin = null,
+            [FromQuery] int? ageMax = null)
         {
             count = Math.Clamp(count, 1, 20);
 
@@ -297,12 +330,36 @@ namespace LP.Server.Controllers
                 ? null
                 : await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId);
 
+            var currentUserProfileForAge = user == null
+                ? null
+                : await _context.Profiles.AsNoTracking()
+                    .Where(p => p.UserId == userId)
+                    .Select(p => new { p.AgeFrom, p.AgeTo })
+                    .FirstOrDefaultAsync();
+
+            var ageRange = NormalizeAgeRange(
+                ageMin,
+                ageMax,
+                currentUserProfileForAge?.AgeFrom,
+                currentUserProfileForAge?.AgeTo);
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var minBirthDate = today.AddYears(-ageRange.To);
+            var maxBirthDate = today.AddYears(-ageRange.From);
+
+            if (ageRange.To < ageRange.From)
+            {
+                return Ok(new List<object>());
+            }
+
             // ---- Режим без авторизации ----
             if (user == null)
             {
                 var queryN = _context.Users
                     .AsNoTracking()
-                    .Where(x => x.Username != "admin");
+                    .Where(x => x.Username != "admin"
+                                && x.Birthday >= minBirthDate
+                                && x.Birthday <= maxBirthDate);
 
                 var totalN = await queryN.CountAsync();
                 if (totalN == 0)
@@ -401,6 +458,8 @@ namespace LP.Server.Controllers
                             && !hiddenIds.Contains(x.Id)
                             && x.IsPaused == false
                             && x.Sex != user.Sex
+                            && x.Birthday >= minBirthDate
+                            && x.Birthday <= maxBirthDate
                             && !_context.Votes.Any(v => v.Owner == userId && v.Like == x.Id));
 
             if (currentUserProfile?.WithPhoto == true)

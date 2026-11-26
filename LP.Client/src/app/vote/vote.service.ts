@@ -6,6 +6,11 @@ import { getZodiacSign  } from './../common/usefull.utils';
 import { Profile } from './vote.model';
 import { ToastService } from '../common/toast.service';
 
+export interface VoteAgeFilter {
+  ageMin?: number;
+  ageMax?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
  
@@ -38,8 +43,21 @@ export class ProfileService {
   }
 
   private lastLoadEmpty = false;
+
+  /** Возрастной фильтр из /search. Если его нет, сервер использует AgeFrom/AgeTo из анкеты. */
+  private ageParams(age?: VoteAgeFilter): Record<string, string> {
+    const params: Record<string, string> = {};
+    if (age?.ageMin && age.ageMin >= 18 && age.ageMin <= 100) {
+      params['ageMin'] = String(age.ageMin);
+    }
+    if (age?.ageMax && age.ageMax >= 18 && age.ageMax <= 100) {
+      params['ageMax'] = String(age.ageMax);
+    }
+    return params;
+  }
+
   // Динамическая подгрузка профилей
-  loadMoreProfiles(count: number = 5) {
+  loadMoreProfiles(count: number = 5, age?: VoteAgeFilter) {
     if (this.isLoading()) return; // Предотвращаем двойную загрузку
 
     if (this.lastLoadEmpty) {
@@ -49,9 +67,11 @@ export class ProfileService {
 
     this.isLoading.set(true);
     console.log(`Загружаем ${count} профилей...`);
-    
 
-    this.http.get<any>(`${this.baseUrl}/Votes/list?count=${count}`, { withCredentials: true })
+    this.http.get<any>(`${this.baseUrl}/Votes/list`, {
+      params: { count: String(count), ...this.ageParams(age) },
+      withCredentials: true
+    })
       .subscribe({
         next: (response) => {
           if (!response || response.length === 0) {
@@ -144,8 +164,8 @@ export class ProfileService {
       });
   }
 
-  loadProfiles(count: number = 1) {
-    this.loadMoreProfiles(count);
+  loadProfiles(count: number = 1, age?: VoteAgeFilter) {
+    this.loadMoreProfiles(count, age);
   }
 
   /**

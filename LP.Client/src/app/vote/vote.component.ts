@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { ProfileService } from './vote.service';
+import { ProfileService, VoteAgeFilter } from './vote.service';
 import { Profile } from './vote.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { API_BASE_URL } from './../app.config';
@@ -111,6 +111,25 @@ export class VoteComponent implements OnInit, AfterViewInit {
     );
   }
 
+  /** Берём более узкий возрастной фильтр из /search; иначе сервер использует анкету. */
+  private getAgeFilter(): VoteAgeFilter | undefined {
+    const filters = this.pageStateService.getState('search')?.filters;
+    const ageMin = Number(filters?.ageMin);
+    const ageMax = Number(filters?.ageMax);
+
+    const result: VoteAgeFilter = {};
+    if (Number.isFinite(ageMin) && ageMin >= 18 && ageMin <= 100) {
+      result.ageMin = ageMin;
+    }
+    if (Number.isFinite(ageMax) && ageMax >= 18 && ageMax <= 100) {
+      result.ageMax = ageMax;
+    }
+
+    if (!result.ageMin && !result.ageMax) return undefined;
+    if (result.ageMin && result.ageMax && result.ageMin > result.ageMax) return undefined;
+    return result;
+  }
+
   constructor(
     private http: HttpClient,
     @Inject(API_BASE_URL) private base: string,
@@ -128,7 +147,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
       // Подгружаем заранее, чтобы следующий профиль был готов
       if (count < this.LOAD_THRESHOLD + 1 && !this.userId) {
         console.log(`Осталось ${count} профилей, подгружаем...`);
-        this.profileService.loadMoreProfiles(this.BATCH_SIZE);
+        this.profileService.loadMoreProfiles(this.BATCH_SIZE, this.getAgeFilter());
       }
     });
   }
@@ -173,7 +192,7 @@ export class VoteComponent implements OnInit, AfterViewInit {
           || this.navService.cameFrom('/scroll')
           || this.navService.cameFrom('/chat'));
       } else {
-        this.profileService.loadProfiles();
+        this.profileService.loadProfiles(1, this.getAgeFilter());
       }
     });
     scroll(0, 0);
