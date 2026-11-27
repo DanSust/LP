@@ -2,8 +2,8 @@
 
 <div class="journal-page">
   <header class="journal-hero">
-    <p class="eyebrow">Журнал Made4Love</p>
     <h1>Отношения, города и события</h1>
+    <p style="color: wheat">Журнал Made4Love</p>
     <p class="lead">
       Разборы, городские подборки и материалы о знакомствах без клише.
       Каждый текст проверен редакцией, источник указан.
@@ -40,9 +40,21 @@
                     loading="lazy"
                     referrerpolicy="no-referrer"
                   />
-                } @else {
-                  <span class="media-placeholder">📖</span>
                 }
+
+                <div class="media-heading">
+                  <span class="media-placeholder">📖</span>
+                  <div class="media-heading-text">
+                    <h2>{{ item.title }}</h2>
+
+                    @if (item.publishedAt) {
+                      <span class="card-date">
+                        <mat-icon>calendar_today</mat-icon>
+                        {{ item.publishedAt | date: 'd MMMM yyyy' }}
+                      </span>
+                    }
+                  </div>
+                </div>
 
                 @if (item.topic) {
                   <span class="topic-chip">{{ item.topic }}</span>
@@ -50,11 +62,6 @@
               </div>
 
               <div class="card-body">
-                @if (item.publishedAt) {
-                  <p class="card-date">{{ item.publishedAt | date: 'd MMMM yyyy' }}</p>
-                }
-
-                <h2>{{ item.title }}</h2>
 
                 @if (item.summary) {
                   <p class="card-summary">{{ item.summary }}</p>
