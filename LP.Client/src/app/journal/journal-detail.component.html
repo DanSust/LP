@@ -70,6 +70,15 @@
 
       <div class="article-layout">
         <div class="article-main">
+          <aside class="article-aside">
+            <h2>Читайте также</h2>
+            <p class="aside-text">
+              Реальные встречи и мероприятия для тех, кто ищет серьёзные отношения.
+            </p>
+            <a routerLink="/events" class="btn-ghost">Смотреть события</a>
+            <a routerLink="/journal" class="aside-link">Все материалы журнала</a>
+          </aside>
+
           @if (item.summary) {
             <p class="summary">{{ item.summary }}</p>
           }
@@ -103,15 +112,6 @@
             </p>
           }
         </div>
-
-        <aside class="article-aside">
-          <h2>Читайте также</h2>
-          <p class="aside-text">
-            Реальные встречи и мероприятия для тех, кто ищет серьёзные отношения.
-          </p>
-          <a routerLink="/events" class="btn-ghost">Смотреть события</a>
-          <a routerLink="/journal" class="aside-link">Все материалы журнала</a>
-        </aside>
       </div>
     </article>
   }

@@ -1,3 +1,29 @@
+.article-layout {
+  display: block;
+}
+
+.article-main {
+  &::after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+}
+
+.article-aside {
+  float: right;
+  width: 300px;
+  max-width: 42%;
+  margin: 0 0 18px 28px;
+
+  @media (max-width: 820px) {
+    float: none;
+    width: auto;
+    max-width: none;
+    margin: 0 0 24px;
+  }
+}
+
 .paragraph {
   margin: 0 0 18px;
   color: rgba(255, 255, 255, 0.82);
