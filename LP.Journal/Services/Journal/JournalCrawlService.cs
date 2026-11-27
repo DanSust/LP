@@ -194,6 +194,14 @@ public sealed class JournalCrawlService
                 var article = await TryFetchArticleAsync(sourceUrl, cancellationToken);
                 var sourceText = article?.Text ?? item.Content ?? string.Empty;
                 var summary = item.Summary;
+
+                var keywords = JournalTextCleaner.ParseKeywords(source.DefaultTags);
+                if (!JournalTextCleaner.MatchesAnyKeyword($"{title} {summary} {sourceText}", keywords))
+                {
+                    skipped++;
+                    continue;
+                }
+
                 var body = string.Empty;
                 var aiModel = (string?)null;
                 var promptVersion = (string?)null;
@@ -252,7 +260,7 @@ public sealed class JournalCrawlService
                     Summary = JournalTextCleaner.Clean(summary, 600),
                     Body = body,
                     Topic = JournalTextCleaner.Clean(source.Topic, 120),
-                    Tags = JournalTextCleaner.MergeTags(item.Tags, source.DefaultTags),
+                    Tags = JournalTextCleaner.NormalizeTags(item.Tags),
                     City = JournalTextCleaner.Clean(source.City, 120),
                     SourceId = source.Id,
                     ExternalId = externalId,

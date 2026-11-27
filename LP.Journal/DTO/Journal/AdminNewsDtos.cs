@@ -159,6 +159,9 @@ public sealed class JournalSourceDto
     public bool IsEnabled { get; set; }
     public string? Topic { get; set; }
     public string? City { get; set; }
+    /// <summary>
+    /// Ключевые слова через запятую для поиска статей источника (не теги черновика).
+    /// </summary>
     public string? DefaultTags { get; set; }
     public int SyncIntervalMinutes { get; set; }
     public int MaxItemsPerSync { get; set; }
@@ -191,6 +194,9 @@ public sealed class JournalSourceUpsertDto
     public string? City { get; set; }
 
     [StringLength(600)]
+    /// <summary>
+    /// Ключевые слова через запятую для поиска статей источника (не теги черновика).
+    /// </summary>
     public string? DefaultTags { get; set; }
 
     public int SyncIntervalMinutes { get; set; } = 180;

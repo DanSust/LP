@@ -280,6 +280,35 @@ public sealed class JournalAdminController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Удаляет выбранные материалы одним запросом. В отличие от одиночного DELETE,
+    /// позволяет удалять и опубликованные записи — для очистки журнала админом.
+    /// </summary>
+    [HttpDelete("items")]
+    public async Task<ActionResult> DeleteItems([FromBody] IReadOnlyList<Guid>? ids)
+    {
+        if (EnsureAdmin() is { } denied)
+        {
+            return denied;
+        }
+
+        var uniqueIds = ids?
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .ToList();
+
+        if (uniqueIds is null || uniqueIds.Count == 0)
+        {
+            return BadRequest(new { error = "Выберите материалы для удаления." });
+        }
+
+        var deleted = await _context.NewsItems
+            .Where(item => uniqueIds.Contains(item.Id))
+            .ExecuteDeleteAsync(HttpContext.RequestAborted);
+
+        return Ok(new { deleted });
+    }
+
     [HttpPost("draft-from-url")]
     public async Task<ActionResult<DraftFromUrlResultDto>> DraftFromUrl([FromBody] DraftFromUrlDto dto)
     {

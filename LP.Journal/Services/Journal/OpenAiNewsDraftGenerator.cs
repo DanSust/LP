@@ -247,21 +247,7 @@ public sealed class OpenAiNewsDraftGenerator : INewsDraftGenerator
 
     private static string NormalizeBody(string? body)
     {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return string.Empty;
-        }
-
-        var normalized = body
-            .Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Replace('\r', '\n');
-
-        while (normalized.Contains("\n\n\n", StringComparison.Ordinal))
-        {
-            normalized = normalized.Replace("\n\n\n", "\n\n", StringComparison.Ordinal);
-        }
-
-        return normalized.Trim();
+        return JournalTextCleaner.NormalizeBody(body);
     }
 
     private static string? Trim(string? value, int maxLength)

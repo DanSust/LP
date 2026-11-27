@@ -20,6 +20,7 @@ export interface JournalSourceDto {
   isEnabled: boolean;
   topic?: string | null;
   city?: string | null;
+  /** Ключевые слова через запятую для отбора статей источника. */
   defaultTags?: string | null;
   syncIntervalMinutes: number;
   maxItemsPerSync: number;
@@ -39,6 +40,7 @@ export interface JournalSourceUpsert {
   isEnabled: boolean;
   topic: string;
   city: string;
+  /** Ключевые слова через запятую, например: свидания, отношения, Москва. */
   defaultTags: string;
   syncIntervalMinutes: number;
   maxItemsPerSync: number;
@@ -191,6 +193,17 @@ export class JournalAdminService {
     return this.http.delete<void>(`${this.journalBaseUrl}/Journal/admin/items/${id}`, {
       headers: this.headers(key)
     });
+  }
+
+  deleteItems(key: string, ids: string[]): Observable<{ deleted: number }> {
+    return this.http.request<{ deleted: number }>(
+      'DELETE',
+      `${this.journalBaseUrl}/Journal/admin/items`,
+      {
+        body: ids,
+        headers: this.headers(key)
+      }
+    );
   }
 
   draftFromUrl(

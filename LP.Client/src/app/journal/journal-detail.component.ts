@@ -170,7 +170,11 @@ export class JournalDetailComponent implements OnInit, OnDestroy {
   }
 
   private truncate(value: string, maxLength: number): string {
-    const normalized = value.replace(/\s+/g, ' ').trim();
+    const normalized = value
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
     return normalized.length <= maxLength
       ? normalized
       : `${normalized.slice(0, maxLength).trimEnd()}…`;

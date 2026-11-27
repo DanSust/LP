@@ -152,6 +152,28 @@
           </p>
         </div>
         <div class="panel-actions">
+          @if (items.length > 0) {
+            <label class="select-all">
+              <input
+                type="checkbox"
+                [checked]="allItemsSelected"
+                [indeterminate]="someItemsSelected"
+                (change)="toggleSelectAll($any($event.target).checked)"
+              />
+              <span>Выбрать все</span>
+            </label>
+            <button
+              type="button"
+              class="btn-small btn-small--danger"
+              [disabled]="selectedCount === 0 || isDeletingSelected || isLoading"
+              (click)="deleteSelectedItems()"
+            >
+              {{ isDeletingSelected ? 'Удаляем…' : 'Удалить выбранные' }}
+              @if (selectedCount > 0) {
+                ({{ selectedCount }})
+              }
+            </button>
+          }
           <select name="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="loadItems()">
             <option value="Draft">Черновики</option>
             <option value="Published">Опубликованные</option>
@@ -181,7 +203,23 @@
 
             <label class="span-2">
               <span>Текст материала (абзацы через пустую строку)</span>
-              <textarea name="body" [(ngModel)]="form.body" rows="12" required></textarea>
+              <div class="format-toolbar" aria-label="Форматирование текста">
+                <button type="button" title="Жирный" (click)="insertFormat('b')"><b>B</b></button>
+                <button type="button" title="Курсив" (click)="insertFormat('i')"><i>I</i></button>
+                <button type="button" title="Подчёркнутый" (click)="insertFormat('u')"><u>U</u></button>
+                <button type="button" title="Зачёркнутый" (click)="insertFormat('s')"><s>S</s></button>
+                <button type="button" title="Ссылка" (click)="insertFormat('a')">🔗</button>
+                <button type="button" title="Перенос строки" (click)="insertFormat('br')">↵</button>
+                <button type="button" title="Список" (click)="insertFormat('ul')">☰</button>
+                <button type="button" title="Цитата" (click)="insertFormat('blockquote')">❝</button>
+              </div>
+              <textarea #bodyInput name="body" [(ngModel)]="form.body" rows="12" required></textarea>
+              <small class="field-hint">
+                Разрешено форматирование: &lt;b&gt;, &lt;strong&gt;, &lt;i&gt;, &lt;em&gt;,
+                &lt;u&gt;, &lt;s&gt;, &lt;p&gt;, &lt;br&gt;, &lt;ul&gt;/&lt;ol&gt;/&lt;li&gt;,
+                &lt;blockquote&gt;, &lt;h2&gt;–&lt;h6&gt;, &lt;code&gt;, &lt;pre&gt;,
+                &lt;a href="..."&gt;. Остальные теги будут удалены.
+              </small>
             </label>
 
             <label>
@@ -337,7 +375,15 @@
       } @else {
         <div class="event-list">
           @for (item of items; track item.id) {
-            <article class="admin-event">
+            <article class="admin-event" [class.admin-event--selected]="isSelected(item.id)">
+              <label class="item-select">
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(item.id)"
+                  [attr.aria-label]="'Выбрать материал: ' + item.title"
+                  (change)="toggleItemSelection(item.id, $any($event.target).checked)"
+                />
+              </label>
               <div class="admin-event-main">
                 <div class="admin-event-title">
                   <h3>{{ item.title }}</h3>
@@ -455,6 +501,10 @@
                 }
               </div>
 
+              @if (publishErrorId === item.id) {
+                <p class="inline-error">{{ publishErrorText }}</p>
+              }
+
               @if (rejectingId === item.id) {
                 <form class="reject-form" (ngSubmit)="confirmReject(item)">
                   <input
@@ -541,8 +591,17 @@
               </label>
 
               <label class="span-2">
-                <span>Теги по умолчанию</span>
-                <input type="text" name="sourceTags" [(ngModel)]="sourceForm.defaultTags" />
+                <span>Ключевые слова через запятую</span>
+                <input
+                  type="text"
+                  name="sourceTags"
+                  [(ngModel)]="sourceForm.defaultTags"
+                  placeholder="свидания, отношения, Москва"
+                />
+                <small class="field-hint">
+                  По этим словам краулер ищет статьи в источнике: черновик создаётся,
+                  если совпало хотя бы одно слово. Оставьте пустым, чтобы отбирать все статьи.
+                </small>
               </label>
 
               <label>
@@ -654,6 +713,9 @@
                     }
                     @if (source.city) {
                       <span>📍 {{ source.city }}</span>
+                    }
+                    @if (source.defaultTags) {
+                      <span>Ключевые слова: {{ source.defaultTags }}</span>
                     }
                   </p>
 

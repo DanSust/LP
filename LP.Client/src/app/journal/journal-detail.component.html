@@ -75,7 +75,7 @@
           }
 
           @for (paragraph of paragraphs; track $index) {
-            <p class="paragraph">{{ paragraph }}</p>
+            <div class="paragraph" [innerHTML]="paragraph"></div>
           }
 
           @if (item.sourceUrl) {

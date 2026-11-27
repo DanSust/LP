@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +13,7 @@ import {
   JournalSourceUpsert,
   NewsUpsert
 } from '../services/JournalAdminService';
+import { ConfirmDialogService } from '../common/confirm-dialog.service';
 import { SeoService } from '../services/SeoService';
 
 type NewsStatusFilter = 'Draft' | 'Published' | 'Rejected' | 'all';
@@ -27,6 +28,7 @@ type AdminTab = 'items' | 'sources';
 })
 export class AdminJournalComponent implements OnInit, OnDestroy {
   private readonly adminService = inject(JournalAdminService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly seoService = inject(SeoService);
   private readonly destroy$ = new Subject<void>();
   private readonly storageKey = 'made4love.journal.adminKey';
@@ -37,6 +39,8 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
   error: string | null = null;
   notice: string | null = null;
   busyId: string | null = null;
+  publishErrorId: string | null = null;
+  publishErrorText: string | null = null;
 
   config: JournalConfig = {
     aiConfigured: false,
@@ -46,6 +50,8 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
 
   items: AdminNewsDto[] = [];
   statusFilter: NewsStatusFilter = 'Draft';
+  readonly selectedIds = new Set<string>();
+  isDeletingSelected = false;
 
   activeTab: AdminTab = 'items';
 
@@ -69,6 +75,8 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
 
   rejectingId: string | null = null;
   rejectReason = '';
+
+  @ViewChild('bodyInput') private bodyInput?: ElementRef<HTMLTextAreaElement>;
 
   ngOnInit(): void {
     this.seoService.updateMetaTags({
@@ -125,12 +133,15 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
     this.adminKey = '';
     this.isAuthorized = false;
     this.items = [];
+    this.selectedIds.clear();
     this.sources = [];
     this.showForm = false;
     this.editingId = null;
     this.showSourceForm = false;
     this.editingSourceId = null;
     this.sourceTestResult = null;
+    this.publishErrorId = null;
+    this.publishErrorText = null;
   }
 
   refresh(): void {
@@ -151,6 +162,7 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
         next: ({ config, items }) => {
           this.config = config;
           this.items = items;
+          this.selectedIds.clear();
           this.isAuthorized = true;
           sessionStorage.setItem(this.storageKey, this.adminKey);
         },
@@ -172,6 +184,8 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
     this.error = null;
+    this.publishErrorId = null;
+    this.publishErrorText = null;
 
     this.adminService
       .getItems(this.adminKey, this.statusFilter)
@@ -184,11 +198,45 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (items) => {
           this.items = items;
+          this.selectedIds.clear();
         },
         error: (error: unknown) => {
           this.error = this.describeError(error);
         }
       });
+  }
+
+  get selectedCount(): number {
+    return this.selectedIds.size;
+  }
+
+  get allItemsSelected(): boolean {
+    return this.items.length > 0 && this.items.every(item => this.selectedIds.has(item.id));
+  }
+
+  get someItemsSelected(): boolean {
+    return this.selectedCount > 0 && !this.allItemsSelected;
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedIds.has(id);
+  }
+
+  toggleItemSelection(id: string, checked: boolean): void {
+    if (checked) {
+      this.selectedIds.add(id);
+    } else {
+      this.selectedIds.delete(id);
+    }
+  }
+
+  toggleSelectAll(checked: boolean): void {
+    this.selectedIds.clear();
+    if (checked) {
+      for (const item of this.items) {
+        this.selectedIds.add(item.id);
+      }
+    }
   }
 
   setTab(tab: AdminTab): void {
@@ -294,8 +342,16 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
       });
   }
 
-  deleteSource(source: JournalSourceDto): void {
-    if (!window.confirm(`Удалить источник «${source.name}»? Черновики останутся в журнале.`)) {
+  async deleteSource(source: JournalSourceDto): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Удалить источник?',
+      message: `Источник «${source.name}» будет удалён. Черновики останутся в журнале.`,
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      tone: 'danger',
+      icon: 'trash'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -546,12 +602,18 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
       });
   }
 
-  publish(item: AdminNewsDto): void {
-    if (
-      !window.confirm(
-        `Опубликовать «${item.title}»? Материал появится на сайте и в sitemap.`
-      )
-    ) {
+  async publish(item: AdminNewsDto): Promise<void> {
+    this.publishErrorId = null;
+    this.publishErrorText = null;
+
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Опубликовать материал?',
+      message: `«${item.title}» появится на сайте и в sitemap.`,
+      details: ['Если не заполнен чек-лист, откроется форма редактирования.'],
+      confirmText: 'Опубликовать',
+      cancelText: 'Отмена'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -573,17 +635,24 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
           this.loadItems();
         },
         error: (error: unknown) => {
-          this.error = this.describeError(error);
+          const message = this.describeError(error);
+          this.publishErrorId = item.id;
+          this.publishErrorText = `${message} Материал открыт в форме редактирования.`;
+          this.error = null;
+          this.editItem(item);
         }
       });
   }
 
-  unpublish(item: AdminNewsDto): void {
-    if (
-      !window.confirm(
-        `Снять «${item.title}» с публикации? Материал вернётся в черновики и исчезнет с сайта.`
-      )
-    ) {
+  async unpublish(item: AdminNewsDto): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Снять с публикации?',
+      message: `«${item.title}» вернётся в черновики и исчезнет с сайта.`,
+      confirmText: 'Снять с публикации',
+      cancelText: 'Отмена',
+      tone: 'warning'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -654,8 +723,16 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
       });
   }
 
-  deleteItem(item: AdminNewsDto): void {
-    if (!window.confirm(`Удалить материал «${item.title}» без возможности восстановления?`)) {
+  async deleteItem(item: AdminNewsDto): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Удалить материал?',
+      message: `«${item.title}» будет удалён без возможности восстановления.`,
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      tone: 'danger',
+      icon: 'trash'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -674,6 +751,49 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.notice = 'Материал удалён.';
+          this.loadItems();
+        },
+        error: (error: unknown) => {
+          this.error = this.describeError(error);
+        }
+      });
+  }
+
+  async deleteSelectedItems(): Promise<void> {
+    if (this.isDeletingSelected || this.selectedCount === 0) {
+      return;
+    }
+
+    const ids = [...this.selectedIds];
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Удалить выбранные материалы?',
+      message: `Будет удалено материалов: ${ids.length}. Опубликованные материалы тоже исчезнут с сайта.`,
+      details: ['Действие безвозвратно', 'Страницы исчезнут из sitemap'],
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      tone: 'danger',
+      icon: 'trash'
+    });
+    if (!confirmed) {
+      return;
+    }
+
+    this.isDeletingSelected = true;
+    this.error = null;
+    this.notice = null;
+
+    this.adminService
+      .deleteItems(this.adminKey, ids)
+      .pipe(
+        finalize(() => {
+          this.isDeletingSelected = false;
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (result) => {
+          this.selectedIds.clear();
+          this.notice = `Удалено материалов: ${result.deleted}.`;
           this.loadItems();
         },
         error: (error: unknown) => {
@@ -723,6 +843,36 @@ export class AdminJournalComponent implements OnInit, OnDestroy {
   private scrollToForm(): void {
     setTimeout(() => {
       document.querySelector('.form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+
+  insertFormat(tag: 'b' | 'i' | 'u' | 's' | 'a' | 'br' | 'ul' | 'blockquote'): void {
+    const input = this.bodyInput?.nativeElement;
+    if (!input) {
+      return;
+    }
+
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const selected = this.form.body.slice(start, end);
+
+    const replacement =
+      tag === 'a'
+        ? `<a href="https://">${selected || 'ссылка'}</a>`
+        : tag === 'br'
+          ? '<br>'
+          : tag === 'ul'
+            ? `<ul>\n${selected || '<li>пункт</li>'}\n</ul>`
+            : tag === 'blockquote'
+              ? `<blockquote>${selected || 'цитата'}</blockquote>`
+              : `<${tag}>${selected || 'текст'}</${tag}>`;
+
+    this.form.body = this.form.body.slice(0, start) + replacement + this.form.body.slice(end);
+
+    setTimeout(() => {
+      input.focus();
+      const cursor = selected ? start + replacement.indexOf(selected) : start + replacement.length;
+      input.setSelectionRange(cursor, cursor + (selected ? selected.length : 0));
     }, 0);
   }
 

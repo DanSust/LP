@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.DotNet.Scaffolding.Shared;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Http.Logging;
 using StackExchange.Redis;
@@ -33,7 +35,7 @@ class Program
 
     static async Task Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);        
+        var builder = WebApplication.CreateBuilder(args);
 
         var imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img");
         Directory.CreateDirectory(imgPath);
@@ -43,7 +45,7 @@ class Program
 
         imgPath = Path.Combine(builder.Environment.ContentRootPath, "..", "img", "back");
         Directory.CreateDirectory(imgPath);
-        
+
         if (builder.Environment.IsDevelopment())
             builder.WebHost.UseUrls("https://0.0.0.0:7010");
         else
@@ -63,14 +65,22 @@ class Program
                 builder.Configuration.GetConnectionString(builder.Environment.IsDevelopment() ? "RedisLocal" : "Redis");
             return ConnectionMultiplexer.Connect(config);
         });
-        builder.Services.AddStackExchangeRedisCache(options =>
-        {
-            options.ConnectionMultiplexerFactory = () =>
-                Task.FromResult(builder.Services
-                    .BuildServiceProvider()
-                    .GetRequiredService<IConnectionMultiplexer>());
-            options.InstanceName = "LP_";
-        });
+        //builder.Services.AddStackExchangeRedisCache(options =>
+        //{
+        //    options.ConnectionMultiplexerFactory = () =>
+        //        Task.FromResult(builder.Services
+        //            .BuildServiceProvider()
+        //            .GetRequiredService<IConnectionMultiplexer>());
+        //    options.InstanceName = "LP_";
+        //});
+
+        builder.Services.AddSingleton<IDistributedCache>(sp =>
+            new RedisCache(new RedisCacheOptions
+            {
+                InstanceName = "LP_",
+                ConnectionMultiplexerFactory = () =>
+                    Task.FromResult(sp.GetRequiredService<IConnectionMultiplexer>())
+            }));
 
 
         var AIkey = builder.Configuration["DeepSeek:Key"];
@@ -91,14 +101,14 @@ class Program
                             sqlOptions.EnableRetryOnFailure();
                         })
                     .LogTo(Console.WriteLine, LogLevel.Warning);
-                    //.LogTo(
-                    //    msg => Console.WriteLine($"[EF] {msg}"),
-                    //    new[]
-                    //    {
-                    //        DbLoggerCategory.Database.Connection.Name,
-                    //        DbLoggerCategory.Database.Command.Name
-                    //    },
-                    //    LogLevel.Debug);
+                //.LogTo(
+                //    msg => Console.WriteLine($"[EF] {msg}"),
+                //    new[]
+                //    {
+                //        DbLoggerCategory.Database.Connection.Name,
+                //        DbLoggerCategory.Database.Command.Name
+                //    },
+                //    LogLevel.Debug);
             },
             ServiceLifetime.Scoped,  // Явно указываем Scoped
             ServiceLifetime.Scoped   // Опции тоже Scoped (обычно так же)
@@ -215,7 +225,7 @@ class Program
         builder.Services.AddHostedService<EventImportBackgroundService>();
 
         //builder.Services.AddHttpClient<GoogleProvider>().AddLogger<IHttpClientLogger>();   // 
-        
+
         builder.Services.AddControllers();
 
         var app = builder.Build();
